@@ -184,7 +184,7 @@
                     <!-- ETAPA 4: CONTRATAÇÃO E ORGANOGRAMA -->
                     <section v-if="currentStep === 4 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 4: Expansão da Equipe</h2>
-                        <p class="mb-4 text-gray-600">Sua liderança está formada, mas para crescer, vocês precisam de mais talentos. Sua equipe recebeu <strong class="text-indigo-600">{{ resourcePoints }} Pontos de Recurso (PR)</strong> para as primeiras contratações.</p>
+                        <p class="mb-4 text-gray-600">Sua liderança está formada, mas para crescer, vocês precisam de mais talentos. Sua equipe recebeu um orçamento inicial de <strong class="text-indigo-600">{{ formatCurrency(orcamentoInicial) }} / mês</strong> para as primeiras contratações.</p>
                         
                         <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6">
                             <h3 class="font-bold text-amber-800">Análise de Mercado para: {{ getSelectedCompanyName() }}</h3>
@@ -195,7 +195,7 @@
                             <div v-for="hire in availableHires" :key="hire.role" class="bg-gray-50 p-4 rounded-lg border">
                                 <h4 class="font-bold">{{ hire.role }}</h4>
                                 <p class="text-sm text-gray-600 mb-2">{{ hire.description }}</p>
-                                <p class="text-sm font-semibold mb-3">Custo: <span class="text-indigo-600">{{ hire.cost }} PR</span></p>
+                                <p class="text-sm font-semibold mb-3">Salário Médio: <span class="text-indigo-600">{{ formatCurrency(hire.salario) }}</span></p>
                                 <div class="flex items-center justify-end space-x-4">
                                     <button @click="adjustHireCount(hire, -1)" class="bg-gray-200 h-8 w-8 rounded-full font-bold text-lg flex items-center justify-center">-</button>
                                     <span class="font-bold text-xl w-8 text-center">{{ getHireCount(hire.role) }}</span>
@@ -205,9 +205,9 @@
                         </div>
 
                         <div class="mt-8 pt-4 border-t">
-                            <p class="text-xl font-bold text-right">PR Restantes: <span class="text-indigo-600">{{ remainingPoints }}</span></p>
-                             <p v-if="remainingPoints < 0" class="text-red-500 text-right font-semibold">Você gastou mais recursos do que possuía!</p>
-                            <button @click="confirmHires" class="mt-4 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="remainingPoints < 0">Finalizar Contratações e Gerar Organograma</button>
+                            <p class="text-xl font-bold text-right">Saldo Restante do Orçamento: <span :class="saldoRestanteMensal < 0 ? 'text-red-500' : 'text-green-600'">{{ formatCurrency(saldoRestanteMensal) }}</span></p>
+                             <p v-if="saldoRestanteMensal < 0" class="text-red-500 text-right font-semibold">Atenção: A folha de pagamento excedeu o orçamento!</p>
+                            <button @click="confirmHires" class="mt-4 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="saldoRestanteMensal < 0">Finalizar Contratações e Gerar Organograma</button>
                         </div>
                     </section>
 
@@ -354,7 +354,12 @@
                     { text: "Qual ambiente de trabalho te deixa mais produtivo?", options: [{text: "Um lugar quieto, com dados e gráficos para analisar.", type: "Analista"},{text: "Uma sala cheia de quadros brancos, post-its e liberdade para criar.", type: "Inovador"},{text: "Qualquer lugar onde eu possa colocar a mão na massa e ver resultados.", type: "Executor"},{text: "Um ambiente colaborativo, cheio de reuniões e conversas.", type: "Comunicador"}]},
                     { text: "Um cliente reporta um problema inesperado. O que você faz?", options: [{text: "Investigo a causa raiz do problema sistematicamente.", type: "Analista"},{text: "Penso em três soluções completamente novas para resolver e encantar.", type: "Inovador"},{text: "Aplico uma correção rápida para resolver o agora, e depois melhoro.", type: "Executor"},{text: "Ligo para o cliente, ouço com atenção e garanto que ele se sinta compreendido.", type: "Comunicador"}]},
                     { text: "Como você prefere aprender algo novo?", options: [{text: "Lendo a documentação completa e fazendo anotações.", type: "Analista"},{text: "Assistindo a vídeos inspiradores e experimentando sem medo de errar.", type: "Inovador"},{text: "Seguindo um tutorial prático, passo a passo.", type: "Executor"},{text: "Participando de um workshop em grupo e discutindo com colegas.", type: "Comunicador"}]},
-                    { text: "O que é mais importante para o sucesso de uma empresa?", options: [{text: "Processos eficientes e decisões baseadas em dados.", type: "Analista"},{text: "Uma visão de futuro ousada e capacidade de se reinventar.", type: "Inovador"},{text: "Entregar resultados de forma rápida e consistente.", type: "Executor"},{text: "Uma cultura forte e um bom relacionamento com clientes e equipe.", type: "Comunicador"}]}
+                    { text: "O que é mais importante para o sucesso de uma empresa?", options: [{text: "Processos eficientes e decisões baseadas em dados.", type: "Analista"},{text: "Uma visão de futuro ousada e capacidade de se reinventar.", type: "Inovador"},{text: "Entregar resultados de forma rápida e consistente.", type: "Executor"},{text: "Uma cultura forte e um bom relacionamento com clientes e equipe.", type: "Comunicador"}]},
+                    { text: "Quando um projeto em que você trabalhou intensamente falha, sua reação é:", options: [{text: "Analisar o que deu errado para criar um relatório de lições aprendidas.", type: "Analista"},{text: "Ver o fracasso como uma oportunidade de pivotar para uma ideia ainda melhor.", type: "Inovador"},{text: "Começar a trabalhar imediatamente em uma nova versão, corrigindo os erros.", type: "Executor"},{text: "Reunir a equipe para levantar o moral e discutir o que aprenderam juntos.", type: "Comunicador"}]},
+                    { text: "Você precisa apresentar sua ideia para investidores. Qual sua abordagem?", options: [{text: "Um pitch deck recheado de dados de mercado, projeções financeiras e KPIs.", type: "Analista"},{text: "Uma apresentação visionária, focada na história e no potencial transformador da ideia.", type: "Inovador"},{text: "Uma demonstração ao vivo do protótipo, mostrando o que já funciona.", type: "Executor"},{text: "Focar em construir um relacionamento com os investidores, entendendo suas dores e visões.", type: "Comunicador"}]},
+                    { text: "O que te dá mais satisfação?", options: [{text: "Resolver um problema complexo que ninguém mais conseguiu.", type: "Analista"},{text: "Ter uma ideia que muda completamente as regras do jogo.", type: "Inovador"},{text: "Entregar um projeto no prazo e ver as pessoas usando o produto.", type: "Executor"},{text: "Receber um feedback positivo de um cliente ou colega de equipe.", type: "Comunicador"}]},
+                    { text: "Como você lida com feedback sobre seu trabalho?", options: [{text: "Agradeço e peço dados ou exemplos específicos para entender a fundo.", type: "Analista"},{text: "Uso o feedback como combustível para ter ideias ainda mais criativas.", type: "Inovador"},{text: "Agradeço e já começo a implementar as mudanças sugeridas.", type: "Executor"},{text: "Inicio uma conversa para entender a perspectiva da pessoa e o sentimento por trás do feedback.", type: "Comunicador"}]},
+                    { text: "Em uma equipe, qual papel você naturalmente assume?", options: [{text: "O que organiza os processos e garante que nada seja esquecido.", type: "Analista"},{text: "O que traz novas perspectivas e desafia o status quo.", type: "Inovador"},{text: "O que arregaça as mangas e incentiva todos a focarem na entrega.", type: "Executor"},{text: "O que mantém a equipe unida e garante que todos estão se comunicando bem.", type: "Comunicador"}]}
                 ]);
                 const answers = ref(Array(questions.length).fill(null));
                 const userProfile = ref(null);
@@ -366,9 +371,9 @@
                 };
 
                 const companies = reactive([
-                    { id: 'Fintech', name: 'Plataforma Fintech "ConectaBank"', slogan: 'Simplificando o futuro do dinheiro.', description: 'Uma plataforma para gestão de finanças pessoais e investimentos para o público jovem, com foco em usabilidade, segurança robusta e relatórios analíticos precisos.'},
-                    { id: 'Edtech', name: 'Game Educacional "Aventura do Saber"', slogan: 'Aprender nunca foi tão divertido.', description: 'Um jogo mobile de aventura com quizzes e desafios interativos, focado em engajar estudantes com uma experiência de aprendizado imersiva e criativa.'},
-                    { id: 'Logtech', name: 'App de Logística "Entrega Ágil"', slogan: 'Sua entrega, no tempo certo.', description: 'Um aplicativo para otimizar rotas de entrega para pequenas e médias empresas, com foco em velocidade de implementação, eficiência e resultados rápidos e mensuráveis.'}
+                    { id: 'Fintech', name: 'Segmento: Fintech', slogan: 'Simplificando o futuro do dinheiro.', description: 'Um aplicativo focado em planejamento financeiro e micro-investimentos para universitários e jovens profissionais. O mercado é competitivo e exige máxima segurança de dados (aderência à LGPD), transparência nas informações e uma interface extremamente confiável. O desafio é educar o usuário enquanto oferece ferramentas poderosas, mas simples.'},
+                    { id: 'Edtech', name: 'Segmento: Edtech', slogan: 'Aprender nunca foi tão divertido.', description: 'Uma plataforma de aprendizado adaptativo baseada em gamificação, voltada para o ensino fundamental. O objetivo é criar uma jornada de estudos personalizada que se ajusta ao ritmo de cada aluno. O sucesso depende do alto engajamento dos estudantes, da aprovação dos pais e educadores, e de um conteúdo criativo que torne o aprendizado viciante.'},
+                    { id: 'Logtech', name: 'Segmento: Logtech', slogan: 'Sua entrega, no tempo certo.', description: 'Uma solução SaaS (Software as a Service) para otimizar a logística de última milha (last-mile delivery) para e-commerces locais. A proposta de valor é reduzir custos de entrega e aumentar a eficiência operacional dos clientes. O mercado valoriza resultados rápidos, um sistema estável que não falhe em picos de demanda (como Black Friday) e fácil integração com plataformas existentes.'}
                 ]);
                 const selectedCompany = ref(null);
 
@@ -382,12 +387,12 @@
                 const assignedRoles = ref({});
                 const teamMembers = ref([]);
 
-                const resourcePoints = ref(100);
+                const orcamentoInicial = ref(25000);
                 const availableHires = reactive([
-                    { role: 'Desenvolvedor Sênior', description: 'Acelera o desenvolvimento de funcionalidades complexas.', cost: 40 },
-                    { role: 'Desenvolvedor Júnior', description: 'Dá suporte ao time de tecnologia e aprende rápido.', cost: 20 },
-                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos.', cost: 30 },
-                    { role: 'Analista de Qualidade', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', cost: 25 },
+                    { role: 'Desenvolvedor Sênior', description: 'Acelera o desenvolvimento de funcionalidades complexas.', salario: 12000 },
+                    { role: 'Desenvolvedor Júnior', description: 'Dá suporte ao time de tecnologia e aprende rápido.', salario: 4000 },
+                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos.', salario: 11000 },
+                    { role: 'Analista de Qualidade', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', salario: 5000 },
                 ]);
                 const hiredCounts = ref({});
 
@@ -404,8 +409,9 @@
                     return [...allTeams.value].sort((a, b) => (b.score || 0) - (a.score || 0));
                 });
 
-                const remainingPoints = computed(() => {
-                    return resourcePoints.value - Object.values(hiredCounts.value).reduce((total, hire) => total + (hire.count * hire.cost), 0);
+                const saldoRestanteMensal = computed(() => {
+                    const custoTotal = Object.values(hiredCounts.value).reduce((total, hire) => total + (hire.count * hire.salario), 0);
+                    return orcamentoInicial.value - custoTotal;
                 });
 
                 const availableRoles = computed(() => {
@@ -447,6 +453,10 @@
                 });
 
                 // Funções e Métodos
+                const formatCurrency = (value) => {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+                };
+
                 const setupFirebase = () => {
                     if (!auth || !db) {
                         loadingMessage.ref = 'Falha na inicialização do Firebase.';
@@ -724,7 +734,7 @@
 
                 const adjustHireCount = (hire, amount) => {
                     if (!hiredCounts.value[hire.role]) {
-                        hiredCounts.value[hire.role] = { count: 0, cost: hire.cost };
+                        hiredCounts.value[hire.role] = { count: 0, salario: hire.salario };
                     }
                     const newCount = hiredCounts.value[hire.role].count + amount;
                     if (newCount >= 0) {
@@ -836,12 +846,12 @@
                     questions, answers, userProfile,
                     companies, selectedCompany, selectCompany, confirmCompanyChoice,
                     availableRoles, otherRoles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, updateRoles, confirmRoles,
-                    resourcePoints, availableHires, hiredCounts, remainingPoints, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount, confirmHires,
+                    orcamentoInicial, availableHires, hiredCounts, saldoRestanteMensal, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount, confirmHires,
                     getRoleHolderName, downloadOrganogram, getRoleColor,
                     createTeam, joinTeam, copyJoinCode, startStep1,
                     showScoreboard, sortedTeams, teamId, scoresVisible,
                     showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility, confirmResetGame,
-                    currentUserProfileCompleted, calculateProfile, confirmProfile
+                    currentUserProfileCompleted, calculateProfile, confirmProfile, formatCurrency
                 }
             }
         }).mount('#app')
