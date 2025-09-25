@@ -131,7 +131,7 @@
                                     </li>
                                 </ul>
                             </div>
-                             <button v-if="isTeamCreator" @click="goToCeoVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all disabled:bg-green-300" :disabled="!allMembersHaveProfile">
+                             <button @click="goToCeoVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all disabled:bg-green-300" :disabled="!allMembersHaveProfile">
                                 Todos estão prontos! Ir para votação do CEO
                             </button>
                         </div>
@@ -537,10 +537,10 @@
                 });
                 
                 watch(() => suggestions.value?.ceoVotes, (newVotes) => {
-                    if (newVotes && Object.keys(newVotes).length === teamMembers.value.length && teamMembers.value.length > 0) {
-                         if (isTeamCreator.value) { // Apenas o criador calcula para evitar múltiplas execuções
-                            calculateCeoVoteResult();
-                         }
+                    if (newVotes && teamMembers.value.length > 0 && Object.keys(newVotes).length === teamMembers.value.length) {
+                         // A verificação para evitar execuções múltiplas agora está dentro da função calculateCeoVoteResult.
+                        // Qualquer membro da equipe pode acionar o cálculo do resultado.
+                        calculateCeoVoteResult();
                     }
                 }, { deep: true });
 
@@ -780,6 +780,13 @@
                 }
 
                 const calculateCeoVoteResult = async () => {
+                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
+                    const currentTeamDoc = await getDoc(docRef);
+                    // Prevenção de race condition: só executa se o passo atual ainda for a votação.
+                    if (currentTeamDoc.data().currentStep !== 2) {
+                        return; 
+                    }
+
                     const votes = suggestions.value.ceoVotes;
                     const voteCounts = Object.values(votes).reduce((acc, id) => {
                         acc[id] = (acc[id] || 0) + 1;
@@ -803,8 +810,6 @@
                         scoreUpdate -= 15; // Dividido
                     }
                     
-                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
-                    const currentTeamDoc = await getDoc(docRef);
                     const currentScore = currentTeamDoc.data().score || 0;
 
                     const newRoles = { 'CEO': electedCeoId };
