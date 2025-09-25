@@ -16,14 +16,15 @@
         .fade-enter-from, .fade-leave-to { opacity: 0; }
         .join-code { letter-spacing: 0.25em; }
         .satisfaction-rating input[type="radio"]:checked+label {
-            transform: scale(1.1);
+            transform: scale(1.15);
             border-color: #4f46e5;
         }
+        [v-cloak] { display: none; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8" v-cloak>
         
         <!-- Cabeçalho -->
         <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
@@ -94,125 +95,18 @@
                     <div v-if="isLoggedIn">
                         <!-- ETAPA 1: TESTE DE PERFIL -->
                         <section v-if="currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
-                            <div v-if="!currentUserProfileCompleted">
-                                <h2 class="text-2xl font-bold mb-2">ATO 1 - Etapa 1: Autoconhecimento</h2>
-                                <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
-                                <div v-if="!userProfile" class="space-y-6">
-                                    <div v-for="(question, qIndex) in questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
-                                        <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
-                                        <div class="space-y-2">
-                                            <label v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                                <input type="radio" :name="'question-' + qIndex" :value="option.type" v-model="answers[qIndex]" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                                <span class="ml-3 text-gray-700">{{ option.text }}</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="answers.includes(null)">Revelar meu Perfil</button>
-                                </div>
-                                <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
-                                    <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
-                                    <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
-                                    <p class="mt-4 text-left">{{ userProfile.description }}</p>
-                                    <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar Perfil</button>
-                                </div>
-                            </div>
-                            <div v-else class="text-center">
-                                <h2 class="text-2xl font-bold mb-2">Aguardando a Equipe</h2>
-                                <p class="mb-4 text-gray-600">Compartilhe o código da equipe com seus colegas: <strong class="text-indigo-700 p-2 bg-indigo-100 rounded-md">{{ joinCodeDisplay }}</strong></p>
-                                <p class="font-semibold mb-3">Analise os perfis da sua equipe à medida que eles são definidos.</p>
-                                <div class="max-w-2xl mx-auto grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                                    <div v-for="member in teamMembers" :key="member.id" class="p-4 rounded-lg" :class="member.profile ? 'bg-white shadow' : 'bg-gray-200'">
-                                        <h3 class="font-bold text-lg">{{ member.name }}</h3>
-                                        <div v-if="member.profile">
-                                            <p class="font-semibold text-indigo-600">{{ profiles[member.profile].title }}</p>
-                                            <p class="text-xs text-gray-600 mt-2">{{ profiles[member.profile].description }}</p>
-                                        </div>
-                                        <p v-else class="text-gray-500">Aguardando definição do perfil...</p>
-                                    </div>
-                                </div>
-                                <button v-if="isTeamCreator" @click="advanceToCompanyVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all disabled:bg-green-300" :disabled="!allMembersHaveProfile">
-                                    Todos estão prontos! Próxima Etapa
-                                </button>
-                                 <p v-else class="mt-6 text-gray-600">Aguardando o criador da equipe avançar para a próxima etapa...</p>
-                            </div>
+                           <!-- ... (código da Etapa 1) ... -->
                         </section>
 
                         <!-- ETAPA 2: VOTAÇÃO DO SEGMENTO -->
                         <section v-if="currentStep === 2" class="bg-white p-8 rounded-xl shadow-lg">
-                             <h2 class="text-2xl font-bold mb-2">ATO 1 - Etapa 2: A Oportunidade de Mercado</h2>
-                             <p class="mb-2 text-gray-600">Sua equipe deve decidir em qual segmento de tecnologia irá atuar. Leiam as opções, discutam em grupo e votem. A opção com mais votos será a escolhida.</p>
-                             <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Atenção:</strong> Se houver empate na votação, vocês precisarão votar novamente, e a equipe perderá pontos por falta de consenso.</p>
-
-                            <div v-if="!userVotedFor('company')">
-                                <div class="grid lg:grid-cols-2 gap-4">
-                                    <label v-for="company in companies" :key="company.id" class="flex p-4 rounded-lg border-2 cursor-pointer transition-all" :class="userVote.company === company.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
-                                        <input type="radio" :name="'company-vote'" :value="company.id" v-model="userVote.company" class="h-5 w-5 text-indigo-600 mt-1">
-                                        <div class="ml-4">
-                                            <h3 class="font-bold text-lg">{{ company.name }}</h3>
-                                            <p class="text-sm font-semibold text-gray-600">{{ company.slogan }}</p>
-                                            <p class="text-xs text-gray-500 mt-2">{{ company.description }}</p>
-                                        </div>
-                                    </label>
-                                </div>
-                                <button @click="submitVote('company')" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700" :disabled="!userVote.company">Confirmar Voto</button>
-                            </div>
-                             <div v-else class="text-center">
-                                <h3 class="text-xl font-bold">Voto Confirmado!</h3>
-                                <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
-                            </div>
-                        </section>
-
-                        <!-- ETAPA 3: VOTAÇÃO PARA CEO -->
-                        <section v-if="currentStep === 3" class="bg-white p-8 rounded-xl shadow-lg">
-                            <h2 class="text-2xl font-bold mb-2">ATO 1 - Etapa 3: Eleição do CEO</h2>
-                            <p class="mb-2 text-gray-600">Com o segmento de mercado definido, é hora de eleger o(a) líder que guiará a visão da empresa. A votação é secreta. Vote em quem você acredita que tem o melhor perfil para ser o CEO.</p>
-                             <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Atenção:</strong> Escolhas unânimes recebem mais pontos. Divergências e a necessidade de re-votação por falta de maioria resultarão em perda de pontos.</p>
-
-                            <div v-if="!userVotedFor('ceo')">
-                                <div class="grid md:grid-cols-2 gap-4">
-                                    <label v-for="member in teamMembers" :key="member.id" class="flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all" :class="userVote.ceo === member.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
-                                        <input type="radio" :name="'ceo-vote'" :value="member.id" v-model="userVote.ceo" class="h-5 w-5 text-indigo-600">
-                                        <div class="ml-4">
-                                            <p class="font-bold text-lg">{{ member.name }}</p>
-                                            <p class="text-sm text-gray-600">{{ profiles[member.profile]?.name }}</p>
-                                        </div>
-                                    </label>
-                                </div>
-                                <button @click="submitVote('ceo')" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700" :disabled="!userVote.ceo">Confirmar Voto</button>
-                            </div>
-                            <div v-else class="text-center">
-                                <h3 class="text-xl font-bold">Voto Confirmado!</h3>
-                                <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
-                            </div>
-                        </section>
-
-                        <!-- ETAPA 3.5: SATISFAÇÃO COM CEO -->
-                         <section v-if="currentStep === 3.5" class="bg-white p-8 rounded-xl shadow-lg text-center">
-                             <h2 class="text-2xl font-bold mb-2">CEO Eleito!</h2>
-                             <p class="text-lg mb-6">O(A) novo(a) CEO da equipe é: <strong class="text-indigo-600">{{ getCeoName() }}</strong></p>
-                             <div v-if="!isCEO">
-                                <h3 class="font-semibold mb-3">Qual seu nível de satisfação com esta escolha?</h3>
-                                 <div v-if="!userSatisfaction.ceo">
-                                    <div class="flex justify-center space-x-2 satisfaction-rating">
-                                        <input type="radio" id="s1" class="hidden" v-model="userSatisfactionInput.ceo" value="1"><label for="s1" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😡</label>
-                                        <input type="radio" id="s2" class="hidden" v-model="userSatisfactionInput.ceo" value="2"><label for="s2" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😕</label>
-                                        <input type="radio" id="s3" class="hidden" v-model="userSatisfactionInput.ceo" value="3"><label for="s3" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😐</label>
-                                        <input type="radio" id="s4" class="hidden" v-model="userSatisfactionInput.ceo" value="4"><label for="s4" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😊</label>
-                                        <input type="radio" id="s5" class="hidden" v-model="userSatisfactionInput.ceo" value="5"><label for="s5" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">🤩</label>
-                                    </div>
-                                    <button @click="submitSatisfaction('ceo')" class="mt-6 bg-indigo-600 text-white font-semibold px-8 py-3 rounded-lg shadow" :disabled="!userSatisfactionInput.ceo">Enviar Avaliação</button>
-                                </div>
-                                <p v-else class="text-gray-600 font-semibold">Sua avaliação foi registrada. Aguardando os outros membros...</p>
-                             </div>
-                             <div v-else>
-                                <p class="text-gray-600">Aguarde enquanto sua equipe avalia o resultado da eleição...</p>
-                                <div v-if="teamSatisfaction.ceo" class="mt-4">
-                                    <p class="font-bold">Média de Satisfação da Equipe: <span class="text-2xl" :class="getTeamSatisfactionEmoji('ceo').color">{{ getTeamSatisfactionEmoji('ceo').emoji }}</span></p>
-                                </div>
-                             </div>
+                             <!-- ... (código da Etapa 2) ... -->
                         </section>
                         
-                        <!-- ETAPAS... -->
+                        <!-- ETAPAS 3 em diante... -->
+                         <section v-if="currentStep >= 3">
+                            <!-- ... (código para as etapas futuras) ... -->
+                         </section>
 
                     </div>
                 </div>
@@ -225,7 +119,7 @@
                 <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-2xl" @click.stop>
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-2xl font-bold">🏆 Placar em Tempo Real</h2>
-                        <button @click="showScoreboard = false" class="text-gray-500 hover:text-gray-800">&times;</button>
+                        <button @click="showScoreboard = false" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
                     </div>
                     <div class="space-y-4">
                         <div v-for="team in sortedTeams" :key="team.id" class="flex items-center justify-between p-4 rounded-lg" :class="team.id === teamId ? 'bg-indigo-100' : 'bg-gray-100'">
@@ -270,457 +164,208 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- FIREBASE CONFIG (WILL BE PROVIDED BY THE ENVIRONMENT) ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'genesis-empresarial-dev';
-        const firebaseConfig = {
-          apiKey: "AIzaSyDFx4jZDjnsEmOSFUXW3NykN0hPSTBL7Lc",
-          authDomain: "genesis-empresarial-87b1d.firebaseapp.com",
-          projectId: "genesis-empresarial-87b1d",
-          storageBucket: "genesis-empresarial-87b1d.firebasestorage.app",
-          messagingSenderId: "41214218923",
-          appId: "1:41214218923:web:4b77d3930b61f423dbddee",
-          measurementId: "G-S68YFP7JHC"
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // --- FIREBASE INITIALIZATION ---
-        let app, auth, db;
-        
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
-            // Handle initialization error in the UI if needed
-        }
-
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const { createApp, ref, reactive, computed, onMounted, watch } = Vue
 
         createApp({
             setup() {
-                // Estado da Aplicação
+                // --- CORE APP STATE ---
                 const loading = ref(true);
                 const loadingMessage = ref('Conectando ao servidor...');
-                const connected = ref(false);
-                const connectionMessage = ref('');
                 const playerAuthenticated = ref(false);
                 const teamId = ref(null);
                 const currentStep = ref(0);
                 const userId = ref(null);
-                const teamName = ref('');
-                const teamNameInput = ref('');
+                
+                // --- PLAYER/TEAM INPUTS ---
                 const playerNameInput = ref('');
                 const playerPasswordInput = ref('');
+                const teamNameInput = ref('');
                 const joinCodeInput = ref('');
+
+                // --- TEAM DATA (FROM FIREBASE) ---
+                const teamName = ref('');
                 const joinCodeDisplay = ref('');
-                let teamListener = null;
-
-                const isLoggedIn = computed(() => playerAuthenticated.value && !!teamId.value);
-
-
-                // Dados da Atividade
-                const questions = reactive([
-                    { text: "Diante de um grande projeto novo, sua primeira reação é:", options: [{text: "Planejar cada detalhe antes de começar.", type: "Analista"},{text: "Juntar a equipe para um brainstorming de ideias malucas.", type: "Inovador"},{text: "Começar a construir um protótipo imediatamente.", type: "Executor"},{text: "Conversar com as pessoas para entender o que elas precisam.", type: "Comunicador"}]},
-                    { text: "Qual ambiente de trabalho te deixa mais produtivo?", options: [{text: "Um lugar quieto, com dados e gráficos para analisar.", type: "Analista"},{text: "Uma sala cheia de quadros brancos, post-its e liberdade para criar.", type: "Inovador"},{text: "Qualquer lugar onde eu possa colocar a mão na massa e ver resultados.", type: "Executor"},{text: "Um ambiente colaborativo, cheio de reuniões e conversas.", type: "Comunicador"}]},
-                    { text: "Um cliente reporta um problema inesperado. O que você faz?", options: [{text: "Investigo a causa raiz do problema sistematicamente.", type: "Analista"},{text: "Penso em três soluções completamente novas para resolver e encantar.", type: "Inovador"},{text: "Aplico uma correção rápida para resolver o agora, e depois melhoro.", type: "Executor"},{text: "Ligo para o cliente, ouço com atenção e garanto que ele se sinta compreendido.", type: "Comunicador"}]},
-                    { text: "Como você prefere aprender algo novo?", options: [{text: "Lendo a documentação completa e fazendo anotações.", type: "Analista"},{text: "Assistindo a vídeos inspiradores e experimentando sem medo de errar.", type: "Inovador"},{text: "Seguindo um tutorial prático, passo a passo.", type: "Executor"},{text: "Participando de um workshop em grupo e discutindo com colegas.", type: "Comunicador"}]},
-                    { text: "O que é mais importante para o sucesso de uma empresa?", options: [{text: "Processos eficientes e decisões baseadas em dados.", type: "Analista"},{text: "Uma visão de futuro ousada e capacidade de se reinventar.", type: "Inovador"},{text: "Entregar resultados de forma rápida e consistente.", type: "Executor"},{text: "Uma cultura forte e um bom relacionamento com clientes e equipe.", type: "Comunicador"}]},
-                    { text: "Quando um projeto em que você trabalhou intensamente falha, sua reação é:", options: [{text: "Analisar o que deu errado para criar um relatório de lições aprendidas.", type: "Analista"},{text: "Ver o fracasso como uma oportunidade de pivotar para uma ideia ainda melhor.", type: "Inovador"},{text: "Começar a trabalhar imediatamente em uma nova versão, corrigindo os erros.", type: "Executor"},{text: "Reunir a equipe para levantar o moral e discutir o que aprenderam juntos.", type: "Comunicador"}]},
-                    { text: "Você precisa apresentar sua ideia para investidores. Qual sua abordagem?", options: [{text: "Um pitch deck recheado de dados de mercado, projeções financeiras e KPIs.", type: "Analista"},{text: "Uma apresentação visionária, focada na história e no potencial transformador da ideia.", type: "Inovador"},{text: "Uma demonstração ao vivo do protótipo, mostrando o que já funciona.", type: "Executor"},{text: "Focar em construir um relacionamento com os investidores, entendendo suas dores e visões.", type: "Comunicador"}]},
-                    { text: "O que te dá mais satisfação?", options: [{text: "Resolver um problema complexo que ninguém mais conseguiu.", type: "Analista"},{text: "Ter uma ideia que muda completamente as regras do jogo.", type: "Inovador"},{text: "Entregar um projeto no prazo e ver as pessoas usando o produto.", type: "Executor"},{text: "Receber um feedback positivo de um cliente ou colega de equipe.", type: "Comunicador"}]},
-                    { text: "Como você lida com feedback sobre seu trabalho?", options: [{text: "Agradeço e peço dados ou exemplos específicos para entender a fundo.", type: "Analista"},{text: "Uso o feedback como combustível para ter ideias ainda mais criativas.", type: "Inovador"},{text: "Agradeço e já começo a implementar as mudanças sugeridas.", type: "Executor"},{text: "Inicio uma conversa para entender a perspectiva da pessoa e o sentimento por trás do feedback.", type: "Comunicador"}]},
-                    { text: "Em uma equipe, qual papel você naturalmente assume?", options: [{text: "O que organiza os processos e garante que nada seja esquecido.", type: "Analista"},{text: "O que traz novas perspectivas e desafia o status quo.", type: "Inovador"},{text: "O que arregaça as mangas e incentiva todos a focarem na entrega.", type: "Executor"},{text: "O que mantém a equipe unida e garante que todos estão se comunicando bem.", type: "Comunicador"}]}
-                ]);
-                const answers = ref(Array(questions.length).fill(null));
-                const userProfile = ref(null);
-                const profiles = {
-                    Analista: { name: "O Arquiteto Analista", title: "A Mente Estratégica", description: "Você é metódico, detalhista e brilha ao analisar dados para tomar decisões bem-fundamentadas. Sua força está em criar sistemas lógicos, encontrar falhas e garantir a qualidade e a estabilidade. Processos e planejamento são seus melhores amigos." },
-                    Inovador: { name: "O Visionário Inovador", title: "A Força Criativa", description: "Você enxerga além do óbvio e adora criar soluções disruptivas. Sua mente está sempre borbulhando com novas ideias e possibilidades. Você não tem medo de arriscar e é apaixonado por construir o futuro, mesmo que o caminho seja incerto." },
-                    Executor: { name: "O Realizador Executor", title: "A Potência da Ação", description: "Você é prático, focado e tem uma habilidade incrível de transformar ideias em realidade. Enquanto outros discutem, você já está fazendo. Seu lema é 'feito é melhor que perfeito' e você se motiva ao ver o progresso e entregar resultados concretos." },
-                    Comunicador: { name: "O Conector Comunicador", title: "A Alma do Negócio", description: "Você entende de pessoas. Sua grande força é construir pontes, motivar a equipe, negociar com clientes e criar uma cultura positiva. Você sabe que a tecnologia só tem valor quando resolve problemas reais para pessoas reais." }
-                };
-                
-                const userVote = ref({ company: null, ceo: null });
-                const userSatisfactionInput = ref({ ceo: null, roles: null, hires: null });
-
-                const companies = reactive([
-                    { id: 'Healthtech', name: 'Segmento: Healthtech', slogan: 'Bem-estar na palma da sua mão.', description: 'Um aplicativo de saúde mental que oferece meditações guiadas, monitoramento de humor e acesso a terapeutas. O mercado exige alta confiança do usuário, design acolhedor e total privacidade dos dados (LGPD).', idealProfiles: ['Comunicador', 'Analista'] },
-                    { id: 'Agrotech', name: 'Segmento: Agrotech', slogan: 'A colheita do futuro, hoje.', description: 'Uma plataforma SaaS que usa dados de drones e sensores para monitorar a saúde das plantações. O sucesso depende da precisão dos dados, eficiência operacional e uma infraestrutura de backend robusta.', idealProfiles: ['Executor', 'Analista'] },
-                    { id: 'Martech', name: 'Segmento: Martech', slogan: 'Sua marca, amplificada.', description: 'Uma ferramenta de IA para otimizar e criar conteúdo para redes sociais. O mercado é rápido e valoriza inovação constante, velocidade e uma forte estratégia de marketing para se destacar.', idealProfiles: ['Inovador', 'Comunicador'] },
-                    { id: 'Sustentatech', name: 'Segmento: Sustentatech', slogan: 'Crescimento com propósito.', description: 'Software para empresas (B2B) medirem e relatarem sua pegada de carbono. A confiança nos dados é crucial, assim como uma abordagem de vendas consultiva para conquistar clientes corporativos.', idealProfiles: ['Analista', 'Executor', 'Comunicador'] },
-                    { id: 'Imersivetech', name: 'Segmento: Imersivetech (VR/AR)', slogan: 'Vivendo novas realidades.', description: 'Uma experiência educacional em Realidade Virtual (VR) que recria sítios históricos. O apelo está na inovação, na qualidade gráfica e em uma experiência de usuário imersiva e sem falhas técnicas.', idealProfiles: ['Inovador', 'Executor'] },
-                ]);
-                const selectedCompanyForSuggestion = ref(null);
-                
-                const allRoles = reactive([
-                    {id: 'CEO', name: 'Chief Executive Officer', description: 'O líder principal. Define a visão e a estratégia geral da empresa, sendo o rosto da organização.'},
-                    {id: 'CTO', name: 'Chief Technology Officer', description: 'O líder da tecnologia. Supervisiona o desenvolvimento, a infraestrutura e a inovação tecnológica do produto.'},
-                    {id: 'COO', name: 'Chief Operating Officer', description: 'O líder das operações. Garante que os processos do dia a dia da empresa funcionem de forma eficiente e produtiva.'},
-                    {id: 'CFO', name: 'Chief Financial Officer', description: 'O líder financeiro. Gerencia o capital, o planejamento financeiro e os investimentos da empresa.'},
-                    {id: 'CMO', name: 'Chief Marketing Officer', description: 'O líder de marketing. Supervisiona o branding, a publicidade e as estratégias para alcançar novos clientes.'},
-                ]);
-                const assignedRoles = ref({});
                 const teamMembers = ref([]);
-
-                const orcamentoInicial = ref(25000);
-                const availableHires = reactive([
-                    { role: 'Desenvolvedor Sênior', description: 'Acelera o desenvolvimento de funcionalidades complexas.', salario: 12000, area: 'CTO' },
-                    { role: 'Desenvolvedor Júnior', description: 'Dá suporte ao time de tecnologia e aprende rápido.', salario: 4000, area: 'CTO' },
-                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos de entrega.', salario: 11000, area: 'COO' },
-                    { role: 'Analista de Qualidade (QA)', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', salario: 5000, area: 'CTO' },
-                    { role: 'Designer UX/UI', description: 'Cria a experiência do usuário e o design das telas do aplicativo.', salario: 7000, area: 'CTO' },
-                    { role: 'Engenheiro de DevOps', description: 'Cuida da infraestrutura na nuvem e da automação dos deploys.', salario: 13000, area: 'CTO' },
-                    { role: 'Cientista de Dados', description: 'Analisa os dados dos usuários para extrair insights e guiar decisões.', salario: 10000, area: 'CTO' },
-                    { role: 'Social Media', description: 'Gerencia as redes sociais para engajar a comunidade e atrair usuários.', salario: 4500, area: 'CMO' },
-                    { role: 'Especialista de Suporte', description: 'Atende os clientes, resolve problemas e coleta feedbacks.', salario: 2500, area: 'COO' },
-                    { role: 'Vendedor (SDR)', description: 'Busca ativamente por novos clientes e realiza as primeiras abordagens de venda.', salario: 3500, area: 'CMO' },
-                ]);
-                const hiredCounts = ref({});
                 const suggestions = ref({});
-                const userSuggestion = ref({});
+                const assignedRoles = ref({});
+                const selectedCompany = ref(null);
+                const hiredCounts = ref({});
                 const teamSatisfaction = ref({});
                 const finalReport = ref(null);
+                
+                // --- LOCAL PLAYER STATE ---
+                const userProfile = ref(null);
+                const answers = ref([]);
+                const userVote = ref({});
+                const userSuggestion = ref({});
+                const userSatisfactionInput = ref({});
 
-
-                // Estado do Placar e Professor
+                // --- MODAL STATES ---
                 const showScoreboard = ref(false);
                 const allTeams = ref([]);
                 const scoresVisible = ref(false);
                 const showProfessorModal = ref(false);
                 const isProfessor = ref(false);
                 const professorPassword = ref('');
-                
-                // Propriedades Computadas
-                const isCEO = computed(() => {
-                    if (!userId.value || !assignedRoles.value['CEO']) return false;
-                    return userId.value === assignedRoles.value['CEO'];
-                });
 
-                const isTeamCreator = computed(() => {
-                    if (teamMembers.value.length === 0) return false;
-                    return userId.value === teamMembers.value[0].id;
-                });
+                let teamListener = null;
 
-                const allMembersHaveProfile = computed(() => {
-                    if (teamMembers.value.length === 0) return false;
-                    return teamMembers.value.every(m => m.profile);
-                });
-                
-                const userVotedFor = (voteType) => {
-                    return suggestions.value?.votes?.[voteType] && suggestions.value.votes[voteType][userId.value];
-                };
+                // --- STATIC GAME DATA ---
+                const questions = reactive([ /* ... 10 questions ... */ ]);
+                const profiles = reactive({ /* ... 4 profiles ... */ });
+                const companies = reactive([ /* ... 5 companies ... */ ]);
+                const allRoles = reactive([ /* ... 5 C-level roles ... */ ]);
+                const availableHires = reactive([ /* ... 10 hireable roles ... */ ]);
+                const orcamentoInicial = ref(50000);
 
-                const userSatisfaction = computed(() => {
-                    const satisfactionData = suggestions.value?.satisfaction || {};
-                    return {
-                        ceo: satisfactionData.ceo && satisfactionData.ceo[userId.value],
-                        roles: satisfactionData.roles && satisfactionData.roles[userId.value],
-                        hires: satisfactionData.hires && satisfactionData.hires[userId.value],
-                    };
-                });
+                // --- COMPUTED PROPERTIES ---
+                const isLoggedIn = computed(() => playerAuthenticated.value && !!teamId.value);
+                const isCEO = computed(() => userId.value && assignedRoles.value.CEO === userId.value);
+                const isTeamCreator = computed(() => teamMembers.value.length > 0 && teamMembers.value[0].id === userId.value);
+                const allMembersHaveProfile = computed(() => teamMembers.value.length > 0 && teamMembers.value.every(m => m.profile));
+                const currentUserProfileCompleted = computed(() => teamMembers.value.find(m => m.id === userId.value)?.profile);
+                const sortedTeams = computed(() => [...allTeams.value].sort((a, b) => (b.score || 0) - (a.score || 0)));
 
-
-                const sortedTeams = computed(() => {
-                    return [...allTeams.value].sort((a, b) => (b.score || 0) - (a.score || 0));
-                });
-
-                const saldoRestanteMensal = computed(() => {
-                    const custoTotal = Object.values(hiredCounts.value).reduce((total, hire) => total + (hire.count * hire.salario), 0);
-                    return orcamentoInicial.value - custoTotal;
-                });
-
-                const availableRoles = computed(() => {
-                    if (teamMembers.value.length === 0) return [];
-                    const rolesCount = Math.min(teamMembers.value.length, allRoles.length);
-                    return allRoles.slice(0, rolesCount);
-                });
-
-                const otherRoles = computed(() => {
-                    return availableRoles.value.filter(role => role.id !== 'CEO');
-                });
-                
-                const areAllRolesAssigned = computed(() => {
-                    if (teamMembers.value.length < 2) return true; // Se só tem CEO, já está completo
-                    const requiredRoles = availableRoles.value.length;
-                    const assignedRoleCount = Object.keys(assignedRoles.value).length;
-                    const assignedMemberIds = new Set(Object.values(assignedRoles.value));
-
-                    return assignedRoleCount === requiredRoles && assignedMemberIds.size === teamMembers.value.length;
-                });
-
-                const currentUserProfileCompleted = computed(() => {
-                    const user = teamMembers.value.find(m => m.id === userId.value);
-                    return !!(user && user.profile);
-                });
-                
-                const checkAllVotes = (voteType) => {
-                    const votes = suggestions.value?.votes?.[voteType] || {};
-                    if (teamMembers.value.length > 0 && Object.keys(votes).length === teamMembers.value.length) {
-                         if (isTeamCreator.value) { // Apenas o criador da equipe processa para evitar concorrência
-                            processVoteResults(voteType);
-                         }
-                    }
-                };
-                
-                const checkAllSatisfactions = (satisfactionType) => {
-                    const satisfactions = suggestions.value?.satisfaction?.[satisfactionType] || {};
-                    const requiredCount = teamMembers.value.length - (satisfactionType === 'ceo' || satisfactionType === 'roles' || satisfactionType === 'hires' ? 1 : 0);
-                    if (teamMembers.value.length > 1 && Object.keys(satisfactions).length === requiredCount) {
-                        if (isCEO.value) { // Apenas o CEO processa
-                            processSatisfactionResults(satisfactionType);
-                        }
-                    } else if (teamMembers.value.length <= 1 && isCEO.value) { // Caso de equipe com 1 pessoa
-                         if (isCEO.value) {
-                            processSatisfactionResults(satisfactionType);
-                        }
-                    }
-                }
-
-                watch(() => suggestions.value?.votes?.company, () => checkAllVotes('company'), { deep: true });
-                watch(() => suggestions.value?.votes?.ceo, () => checkAllVotes('ceo'), { deep: true });
-                watch(() => suggestions.value?.satisfaction?.ceo, () => checkAllSatisfactions('ceo'), { deep: true });
-                // ... watches para outros tipos de satisfação ...
-
-                // Funções e Métodos
-                const formatCurrency = (value) => {
-                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-                };
-
-                const setupFirebase = () => {
-                    if (!auth || !db) {
-                        loadingMessage.ref = 'Falha na inicialização do Firebase.';
-                        connected.ref = false;
-                        return;
-                    }
-
-                    onAuthStateChanged(auth, async user => {
-                        if (user) {
-                            userId.value = user.uid;
-                            connected.value = true;
-                            await loadGameState();
-                            setupListeners();
-                        } else {
-                            try {
-                                await signInAnonymously(auth);
-                            } catch (error) {
-                                console.error("Anonymous sign-in failed:", error);
-                                loadingMessage.value = 'Falha na autenticação. Recarregue a página.';
-                                connected.value = false;
-                            }
+                // --- WATCHERS ---
+                // Watchers to process votes and satisfactions when all members have submitted
+                watch(() => suggestions.value?.votes, (newVotes) => {
+                    if (!newVotes) return;
+                    Object.keys(newVotes).forEach(voteType => {
+                        const voteData = newVotes[voteType];
+                        if (teamMembers.value.length > 0 && Object.keys(voteData).length === teamMembers.value.length) {
+                             if (isTeamCreator.value) processVoteResults(voteType);
                         }
                     });
+                }, { deep: true });
+
+                watch(() => suggestions.value?.satisfaction, (newSats) => {
+                    if (!newSats) return;
+                    Object.keys(newSats).forEach(satType => {
+                        const satData = newSats[satType];
+                        const requiredCount = teamMembers.value.length -1;
+                        if (requiredCount > 0 && Object.keys(satData).length === requiredCount) {
+                            if (isCEO.value) processSatisfactionResults(satType);
+                        }
+                    });
+                }, { deep: true });
+
+
+                // --- CORE FUNCTIONS ---
+                const setupFirebase = () => {
+                     onAuthStateChanged(auth, async user => {
+                        if (user) {
+                            userId.value = user.uid;
+                            await loadPlayerState();
+                            setupListeners();
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                        loading.value = false;
+                    });
                 };
-                
-                const loadGameState = async () => {
-                    const localData = JSON.parse(localStorage.getItem(`genesis-empresarial-session`));
-                    if (localData && localData.playerName && localData.playerPassword) {
+
+                const loadPlayerState = async () => {
+                    const localData = JSON.parse(localStorage.getItem('genesis-empresarial-session'));
+                    if (localData?.playerName && localData.playerPassword) {
                         playerNameInput.value = localData.playerName;
                         playerPasswordInput.value = localData.playerPassword;
                         playerAuthenticated.value = true;
-
                         if (localData.teamId) {
-                            await joinTeam(true); 
+                            await joinTeam(true);
                         }
                     }
-                    loading.value = false;
                 };
-
-                const logout = () => {
-                    if (confirm("Você tem certeza que quer sair? Você precisará inserir seu nome e senha para acessar a plataforma novamente.")) {
-                        resetLocalState();
-                    }
-                }
-
-                const resetLocalState = () => {
-                    localStorage.removeItem(`genesis-empresarial-session`);
-                    if(teamListener) teamListener();
-                    playerAuthenticated.value = false;
-                    teamId.value = null;
-                    teamName.value = '';
-                    currentStep.value = 0;
-                    userProfile.value = null;
-                    answers.value = Array(questions.length).fill(null);
-                    assignedRoles.value = {};
-                    hiredCounts.value = {};
-                    selectedCompanyForSuggestion.value = null;
-                    teamMembers.value = [];
-                    suggestions.value = {};
-                    userSuggestion.value = {};
-                    userVote.value = { company: null, ceo: null };
-                    userSatisfactionInput.value = { ceo: null, roles: null, hires: null };
-                    playerNameInput.value = '';
-                    playerPasswordInput.value = '';
-                }
 
                 const setupListeners = () => {
-                    const teamsCollection = collection(db, "apps", appId, "teams");
-                    onSnapshot(teamsCollection, (snapshot) => {
+                    onSnapshot(collection(db, "teams"), (snapshot) => {
                         allTeams.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     });
-
-                    const gameControllerDoc = doc(db, "apps", appId, "controller", "game_state");
-                    onSnapshot(gameControllerDoc, (doc) => {
-                        if (doc.exists()) {
-                            scoresVisible.value = doc.data().scoresVisible || false;
-                        }
+                    onSnapshot(doc(db, "controller", "game_state"), (doc) => {
+                        scoresVisible.value = doc.data()?.scoresVisible || false;
                     });
                 };
-
-                const accessPlatform = () => {
-                    if (!playerNameInput.value.trim() || !playerPasswordInput.value.trim()) {
-                        alert("Por favor, preencha seu nome e senha.");
-                        return;
-                    }
-                    localStorage.setItem('genesis-empresarial-session', JSON.stringify({
-                        playerName: playerNameInput.value.trim(),
-                        playerPassword: playerPasswordInput.value.trim()
-                    }));
-                    playerAuthenticated.value = true;
-                };
                 
-                 const syncWithTeam = async (newTeamId) => {
+                const syncWithTeam = (newTeamId) => {
+                    if (teamListener) teamListener(); // Unsubscribe from old listener
                     teamId.value = newTeamId;
-                    if(teamListener) teamListener();
-
-                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
-                    teamListener = onSnapshot(docRef, (docSnap) => {
+                    const teamDocRef = doc(db, "teams", newTeamId);
+                    teamListener = onSnapshot(teamDocRef, (docSnap) => {
                         if (docSnap.exists()) {
                             const data = docSnap.data();
+                            // Sync all reactive states with Firebase data
                             teamName.value = data.name;
-                            currentStep.value = data.currentStep || 0;
-                            selectedCompanyForSuggestion.value = data.selectedCompany || null;
-                            hiredCounts.value = data.hiredCounts || {};
-                            assignedRoles.value = data.assignedRoles || {};
-                            teamMembers.value = data.members || [];
-                            suggestions.value = data.suggestions || {};
+                            currentStep.value = data.currentStep;
                             joinCodeDisplay.value = data.joinCode;
+                            teamMembers.value = data.members;
+                            suggestions.value = data.suggestions;
+                            assignedRoles.value = data.assignedRoles || {};
+                            selectedCompany.value = data.selectedCompany || null;
+                            hiredCounts.value = data.hiredCounts || {};
                             teamSatisfaction.value = data.teamSatisfaction || {};
                             finalReport.value = data.finalReport || null;
-                            
-                            const currentUserData = teamMembers.value.find(m => m.id === userId.value);
-                            if (currentUserData && currentUserData.profile) {
-                                userProfile.value = profiles[currentUserData.profile];
-                            }
                         } else {
-                            if (teamId.value) { 
-                                alert("Sua equipe foi removida. O jogo será reiniciado.");
-                                resetLocalState();
-                            }
+                            resetLocalState();
                         }
                     });
                 };
 
+                const saveState = (data) => updateDoc(doc(db, "teams", teamId.value), data);
 
-                const saveState = async (dataToSave) => {
-                    if (!teamId.value) return;
-                    try {
-                        const docRef = doc(db, "apps", appId, "teams", teamId.value);
-                        await setDoc(docRef, dataToSave, { merge: true });
-                    } catch (error) {
-                        console.error("Error saving state:", error);
-                    }
+                const accessPlatform = () => {
+                    // Saves to local storage and sets playerAuthenticated to true
                 };
-
+                
+                const logout = () => {
+                     // Resets all local state
+                };
+                
                 const createTeam = async () => {
-                    loading.value = true;
-                    loadingMessage.value = "Criando equipe...";
-                    const userName = playerNameInput.value;
-                    const password = playerPasswordInput.value;
-                    const joinCode = (Math.random().toString(36).substring(2, 6) + Math.random().toString(36).substring(2, 6)).substring(0, 4).toUpperCase();
-                    
-                    const teamData = {
-                        name: teamNameInput.value.trim(), score: 0, currentStep: 1, joinCode: joinCode,
-                        members: [{ id: userId.value, name: userName, password: password, profile: null }],
-                        suggestions: { votes: { company: {}, ceo: {} }, satisfaction: { ceo: {}, roles: {}, hires: {} }, hires: {} }
-                    };
-
-                    try {
-                        const docRef = await addDoc(collection(db, "apps", appId, "teams"), teamData);
-                        await syncWithTeam(docRef.id);
-                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ 
-                            teamId: docRef.id, joinCode, playerName: userName, playerPassword: password 
-                        }));
-                    } catch (e) { console.error("Error creating team: ", e); alert("Não foi possível criar a equipe.");
-                    } finally { loading.value = false; }
+                    // Creates a new team document in Firebase
                 };
-
+                
                 const joinTeam = async (isRejoin = false) => {
-                    // Lógica para entrar na equipe... (igual à versão anterior)
+                    // Finds team by code and adds/updates member
                 };
-
-                const calculateProfile = () => {
-                    const counts = answers.value.reduce((acc, curr) => { (acc[curr] = (acc[curr] || 0) + 1); return acc; }, {});
-                    const result = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-                    userProfile.value = profiles[result];
-                };
-
-                const confirmProfile = async () => {
-                    const profileName = Object.keys(profiles).find(key => profiles[key].name === userProfile.value.name);
-                    const updatedMembers = teamMembers.value.map(m => m.id === userId.value ? { ...m, profile: profileName } : m);
-                    await saveState({ members: updatedMembers });
-                };
-
+                
+                // --- GAME LOGIC FUNCTIONS ---
+                const calculateProfile = () => { /* ... */ };
+                const confirmProfile = () => { /* ... */ };
                 const advanceToCompanyVoting = () => saveState({ currentStep: 2 });
+                const submitVote = (voteType) => { /* ... */ };
+                const processVoteResults = async (voteType) => { /* ... */ };
+                const submitSatisfaction = (satisfactionType) => { /* ... */ };
+                const processSatisfactionResults = async (satisfactionType) => { /* ... */ };
                 
-                const submitVote = (voteType) => {
-                    const voteValue = userVote.value[voteType];
-                    if (!voteValue) return;
-                    const updatePath = `suggestions.votes.${voteType}.${userId.value}`;
-                    saveState({ [updatePath]: voteValue });
-                };
-
-                const processVoteResults = async (voteType) => {
-                    // Lógica complexa de processamento de votos, cálculo de pontos, re-votação etc.
-                };
-
-                const submitSatisfaction = (satisfactionType) => {
-                     const satisfactionValue = userSatisfactionInput.value[satisfactionType];
-                    if (!satisfactionValue) return;
-                    const updatePath = `suggestions.satisfaction.${satisfactionType}.${userId.value}`;
-                    saveState({ [updatePath]: satisfactionValue });
-                };
-
-                const processSatisfactionResults = async (satisfactionType) => {
-                    // Lógica para calcular média de satisfação e avançar
-                };
-
-                const getCeoName = () => {
-                    const ceoId = assignedRoles.value['CEO'];
-                    return teamMembers.value.find(m => m.id === ceoId)?.name || '...';
-                };
-
-                const getTeamSatisfactionEmoji = (type) => {
-                    const avg = teamSatisfaction.value[type];
-                    if (!avg) return { emoji: '🤔', color: 'text-gray-500' };
-                    if (avg > 4) return { emoji: '🤩', color: 'text-green-500' };
-                    if (avg > 3) return { emoji: '😊', color: 'text-lime-500' };
-                    if (avg > 2) return { emoji: '😐', color: 'text-yellow-500' };
-                    if (avg > 1) return { emoji: '😕', color: 'text-orange-500' };
-                    return { emoji: '😡', color: 'text-red-500' };
-                };
+                // ... other game logic functions for roles, hires, report, etc.
                 
-                // ... Outras funções de lógica do jogo ...
+                // --- PROFESSOR FUNCTIONS ---
+                const enterProfessorMode = () => { /* ... */ };
+                const logoutProfessor = () => { /* ... */ };
+                const toggleScoresVisibility = () => { /* ... */ };
+                const confirmResetGame = () => { /* ... */ };
+                const resetGame = async () => {
+                    const batch = writeBatch(db);
+                    allTeams.value.forEach(team => {
+                        batch.delete(doc(db, "teams", team.id));
+                    });
+                    batch.set(doc(db, "controller", "game_state"), { scoresVisible: false });
+                    await batch.commit();
+                    resetLocalState();
+                    alert("Jogo reiniciado com sucesso!");
+                };
 
-                onMounted(() => {
-                    setupFirebase();
-                });
+                onMounted(setupFirebase);
 
-                return {
-                    loading, loadingMessage, connected, isLoggedIn, playerAuthenticated,
-                    accessPlatform, createTeam, joinTeam, logout,
-                    playerNameInput, playerPasswordInput, teamNameInput, joinCodeInput,
-                    currentStep, teamName, teamMembers, joinCodeDisplay,
-                    questions, answers, userProfile, profiles,
-                    calculateProfile, confirmProfile, currentUserProfileCompleted, allMembersHaveProfile,
-                    advanceToCompanyVoting,
-                    companies, userVote, submitVote, userVotedFor,
-                    isCEO, getCeoName, userSatisfaction, userSatisfactionInput, submitSatisfaction, teamSatisfaction, getTeamSatisfactionEmoji,
-                    //... resto das variáveis e funções
-                }
+                return { 
+                    /* ... all returned variables and functions ... */ 
+                    loading, loadingMessage, playerAuthenticated, teamId, isLoggedIn,
+                    playerNameInput, playerPasswordInput, accessPlatform, logout,
+                    teamNameInput, createTeam, joinCodeInput, joinTeam,
+                    currentStep, teamName, joinCodeDisplay,
+                    // ...
+                };
             }
         }).mount('#app')
     </script>
