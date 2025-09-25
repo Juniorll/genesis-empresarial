@@ -107,8 +107,8 @@
                     </section>
 
 
-                    <!-- ETAPA 1: TESTE DE PERFIL -->
-                    <section v-if="currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
+                    <!-- ETAPA 1: TESTE DE PERFIL (Mecanismo de "catch-up") -->
+                    <section v-if="currentStep >= 1 && !currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 1: Quem é você no mundo dos negócios?</h2>
                         <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
                         <div v-if="!userProfile" class="space-y-6">
@@ -128,21 +128,24 @@
                              <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
                              <p class="mt-4 text-left">{{ userProfile.description }}</p>
                              <p class="mt-4 font-semibold text-left">Lembre-se: Este é um ponto de partida. Grandes profissionais combinam características de múltiplos perfis!</p>
-                             <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar e aguardar equipe</button>
-                        </div>
-                        
-                        <div v-if="hasUserConfirmedProfile" class="mt-6 text-center">
-                            <p class="font-semibold">Aguardando todos os membros da equipe preencherem seus perfis...</p>
-                            <ul class="list-none p-0 mt-2 text-sm">
-                                <li v-for="member in teamMembers" :key="member.id" :class="member.profile ? 'text-green-600' : 'text-red-600'">
-                                    {{ member.name }}: {{ member.profile ? 'Pronto ✔' : 'Pendente ⌛' }}
-                                </li>
-                            </ul>
+                             <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar Perfil</button>
                         </div>
                     </section>
                     
+                    <!-- Tela de Espera da Etapa 1 -->
+                    <section v-if="currentStep === 1 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg text-center">
+                        <h2 class="text-2xl font-bold mb-2">Perfil Confirmado!</h2>
+                        <p class="font-semibold">Aguardando todos os membros da equipe preencherem seus perfis para avançar...</p>
+                        <ul class="list-none p-0 mt-4 text-sm max-w-sm mx-auto">
+                            <li v-for="member in teamMembers" :key="member.id" class="flex justify-between p-2 rounded" :class="member.profile ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'">
+                                <span>{{ member.name }}</span>
+                                <span>{{ member.profile ? 'Pronto ✔' : 'Pendente ⌛' }}</span>
+                            </li>
+                        </ul>
+                    </section>
+
                     <!-- ETAPA 2: ESCOLHA DA EMPRESA -->
-                    <section v-if="currentStep === 2" class="bg-white p-8 rounded-xl shadow-lg">
+                    <section v-if="currentStep === 2 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 2: A Grande Decisão</h2>
                         <p class="mb-2 text-gray-600">Sua equipe agora tem uma missão: escolher uma das três oportunidades de negócio abaixo. Leiam com atenção, discutam e considerem os perfis de todos os membros da equipe.</p>
                         <p class="mb-6 text-gray-500 text-sm">A escolha certa pode impulsionar o sucesso de vocês desde o primeiro dia.</p>
@@ -160,7 +163,7 @@
                     </section>
 
                     <!-- ETAPA 3: DEFINIÇÃO DE CARGOS -->
-                    <section v-if="currentStep === 3" class="bg-white p-8 rounded-xl shadow-lg">
+                    <section v-if="currentStep === 3 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 3: Organizando a Liderança</h2>
                         <p class="mb-6 text-gray-600">Toda grande empresa precisa de uma estrutura. Com base nos perfis e habilidades, decidam quem ocupará os cargos de liderança iniciais (C-Level). Cada membro da equipe deve assumir um dos cargos abaixo.</p>
                         <div class="space-y-4">
@@ -179,7 +182,7 @@
                     </section>
 
                     <!-- ETAPA 4: CONTRATAÇÃO E ORGANOGRAMA -->
-                    <section v-if="currentStep === 4" class="bg-white p-8 rounded-xl shadow-lg">
+                    <section v-if="currentStep === 4 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 4: Expansão da Equipe</h2>
                         <p class="mb-4 text-gray-600">Sua liderança está formada, mas para crescer, vocês precisam de mais talentos. Sua equipe recebeu <strong class="text-indigo-600">{{ resourcePoints }} Pontos de Recurso (PR)</strong> para as primeiras contratações.</p>
                         
@@ -209,7 +212,7 @@
                     </section>
 
                     <!-- ETAPA 5: ORGANOGRAMA FINAL -->
-                    <section v-if="currentStep === 5" class="bg-white p-8 rounded-xl shadow-lg">
+                    <section v-if="currentStep === 5 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                          <h2 class="text-2xl font-bold mb-4 text-center">Estrutura da {{ teamName }}</h2>
                          <div id="organogram-container" class="bg-gray-50 p-6 rounded-lg border border-gray-200 overflow-x-auto">
                             <!-- CEO (se existir) -->
@@ -352,7 +355,6 @@
                 ]);
                 const answers = ref(Array(questions.length).fill(null));
                 const userProfile = ref(null);
-                const hasUserConfirmedProfile = ref(false);
                 const profiles = {
                     Analista: { name: "O Arquiteto Analista", title: "A Mente Estratégica", description: "Você é metódico, detalhista e brilha ao analisar dados para tomar decisões bem-fundamentadas. Sua força está em criar sistemas lógicos, encontrar falhas e garantir a qualidade e a estabilidade. Processos e planejamento são seus melhores amigos." },
                     Inovador: { name: "O Visionário Inovador", title: "A Força Criativa", description: "Você enxerga além do óbvio e adora criar soluções disruptivas. Sua mente está sempre borbulhando com novas ideias e possibilidades. Você não tem medo de arriscar e é apaixonado por construir o futuro, mesmo que o caminho seja incerto." },
@@ -405,7 +407,6 @@
 
                 const availableRoles = computed(() => {
                     if (teamMembers.value.length === 0) return [];
-                    // Garante que o número de cargos não exceda o total de cargos definidos
                     const rolesCount = Math.min(teamMembers.value.length, allRoles.length);
                     return allRoles.slice(0, rolesCount);
                 });
@@ -422,6 +423,11 @@
                     return allRolesFilled && uniqueAssignedCount === teamMembers.value.length;
                 });
 
+                const currentUserProfileCompleted = computed(() => {
+                    const user = teamMembers.value.find(m => m.id === userId.value);
+                    return !!(user && user.profile);
+                });
+
                 const areAllMembersReadyForNextStep = computed(() => {
                     if (currentStep.value === 1) {
                          return teamMembers.value.length > 0 && teamMembers.value.every(m => m.profile);
@@ -431,13 +437,11 @@
                 
                 watch(areAllMembersReadyForNextStep, (newValue) => {
                     if(newValue && currentStep.value === 1) {
-                        // Apenas o "líder" (primeiro a entrar) avança a etapa para evitar escritas múltiplas
                         if(teamMembers.value.length > 0 && userId.value === teamMembers.value[0].id) {
                            saveState({ currentStep: 2 });
                         }
                     }
                 });
-
 
                 // Funções e Métodos
                 const setupFirebase = () => {
@@ -476,12 +480,11 @@
 
                 const resetLocalState = () => {
                     localStorage.removeItem(`genesis-empresarial-user`);
-                    if(teamListener) teamListener(); // Unsubscribe from previous team listener
+                    if(teamListener) teamListener();
                     teamId.value = null;
                     teamName.value = '';
                     currentStep.value = 0;
                     userProfile.value = null;
-                    hasUserConfirmedProfile.value = false;
                 }
 
                 const setupListeners = () => {
@@ -500,7 +503,7 @@
                 
                  const syncWithTeam = async (newTeamId) => {
                     teamId.value = newTeamId;
-                    if(teamListener) teamListener(); // Detach old listener
+                    if(teamListener) teamListener();
 
                     const docRef = doc(db, "apps", appId, "teams", teamId.value);
                     teamListener = onSnapshot(docRef, (docSnap) => {
@@ -515,11 +518,8 @@
                             joinCodeDisplay.value = data.joinCode;
 
                             const currentUserData = teamMembers.value.find(m => m.id === userId.value);
-                            if (currentUserData) {
-                                if (currentUserData.profile) {
-                                    userProfile.value = profiles[currentUserData.profile];
-                                    hasUserConfirmedProfile.value = true;
-                                }
+                            if (currentUserData && currentUserData.profile) {
+                                userProfile.value = profiles[currentUserData.profile];
                             }
                              localStorage.setItem(`genesis-empresarial-user`, JSON.stringify({ teamId: teamId.value }));
                         } else {
@@ -550,7 +550,7 @@
                     const teamData = {
                         name: name,
                         score: 0,
-                        currentStep: 0.5, // Sala de espera
+                        currentStep: 0.5,
                         joinCode: joinCode,
                         members: [{ id: userId.value, name: userName, profile: null }],
                         assignedRoles: {},
@@ -587,7 +587,7 @@
                     }
 
                     const userName = prompt("Bem-vindo! Por favor, digite seu nome:", `Membro ${Math.floor(Math.random() * 1000)}`);
-                    if (!userName) return; // User cancelled prompt
+                    if (!userName) return;
                     const newMember = { id: userId.value, name: userName, profile: null };
 
                     try {
@@ -611,7 +611,6 @@
                     });
                 };
 
-
                 const calculateProfile = () => {
                     const counts = answers.value.reduce((acc, curr) => {
                         acc[curr] = (acc[curr] || 0) + 1;
@@ -631,14 +630,13 @@
                         }
                         return member;
                     });
-                    hasUserConfirmedProfile.value = true;
                     await saveState({ members: updatedMembers });
                 };
 
                 const calculatePoints = () => {
                     let totalScore = 0;
                     if(!selectedCompany.value) return 0;
-                    // Pontos da Empresa
+                    
                     const companyProfiles = {
                         'Fintech': ['Analista', 'Analista', 'Executor'],
                         'Edtech': ['Inovador', 'Inovador', 'Comunicador'],
@@ -650,7 +648,6 @@
                         return targetProfiles.includes(profile) ? score + 15 : score + 5;
                     }, 0);
 
-                    // Pontos dos Cargos
                     const roleAffinities = {
                         'CEO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 10, 'Analista': 5 },
                         'CTO': { 'Inovador': 20, 'Analista': 15, 'Executor': 10, 'Comunicador': 5 },
@@ -666,7 +663,6 @@
                         }
                     }
 
-                    // Pontos das Contratações
                     const hirePriorities = {
                        'Fintech': { 'Desenvolvedor Sênior': 20, 'Analista de Qualidade': 15, 'Desenvolvedor Júnior': 10, 'Gerente de Projetos': 5 },
                        'Edtech': { 'Desenvolvedor Sênior': 20, 'Desenvolvedor Júnior': 15, 'Gerente de Projetos': 10, 'Analista de Qualidade': 5 },
@@ -723,7 +719,7 @@
                     if (newCount >= 0) {
                         hiredCounts.value[hire.role].count = newCount;
                     }
-                    saveState({ hiredCounts: hiredCounts.value }); // Salva em tempo real
+                    saveState({ hiredCounts: hiredCounts.value });
                 };
 
                 const confirmHires = async () => {
@@ -793,14 +789,15 @@
 
                 return {
                     loading, loadingMessage, connected, connectionMessage, currentStep, teamName, teamNameInput, creatorNameInput, joinCodeInput, joinCodeDisplay,
-                    questions, answers, userProfile, hasUserConfirmedProfile, calculateProfile, confirmProfile,
+                    questions, answers, userProfile,
                     companies, selectedCompany, selectCompany, confirmCompanyChoice,
                     availableRoles, otherRoles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, updateRoles, confirmRoles,
                     resourcePoints, availableHires, hiredCounts, remainingPoints, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount, confirmHires,
                     getRoleHolderName, downloadOrganogram, getRoleColor,
                     createTeam, joinTeam, copyJoinCode, startStep1,
                     showScoreboard, sortedTeams, teamId, scoresVisible,
-                    showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility
+                    showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility,
+                    currentUserProfileCompleted, calculateProfile, confirmProfile
                 }
             }
         }).mount('#app')
