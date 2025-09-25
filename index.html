@@ -36,6 +36,9 @@
                 <p class="text-gray-600" v-if="teamName">Equipe: <span class="font-semibold">{{ teamName }}</span> <span v-if="isCEO" class="text-indigo-600 font-bold">(Você é o CEO)</span></p>
             </div>
             <div class="flex items-center space-x-4">
+                <button v-if="playerAuthenticated" @click="logout" title="Sair da sessão" class="bg-red-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-red-600 transition-all">
+                    Sair
+                </button>
                 <button @click="showScoreboard = true" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition-all">
                     🏆 Placar
                 </button>
@@ -598,6 +601,12 @@
                     loading.value = false;
                 };
 
+                const logout = () => {
+                    if (confirm("Você tem certeza que quer sair? Você precisará inserir seu nome e senha para acessar a plataforma novamente.")) {
+                        resetLocalState();
+                    }
+                }
+
                 const resetLocalState = () => {
                     localStorage.removeItem(`genesis-empresarial-session`);
                     if(teamListener) teamListener();
@@ -614,6 +623,8 @@
                     suggestions.value = {};
                     userSuggestion.value = {};
                     votedForCEO.value = null;
+                    playerNameInput.value = '';
+                    playerPasswordInput.value = '';
                 }
 
                 const setupListeners = () => {
@@ -1113,7 +1124,7 @@
                     currentUserProfileCompleted, calculateProfile, confirmProfile, formatCurrency,
                     isCEO, submitCompanySuggestion, confirmCompanyChoice, getSuggestionsFor, suggestions, userSuggestion,
                     submitHiresSuggestion, confirmHires,
-                    isLoggedIn, playerNameInput, playerPasswordInput, accessPlatform, playerAuthenticated,
+                    isLoggedIn, playerNameInput, playerPasswordInput, accessPlatform, playerAuthenticated, logout,
                     goToCeoVoting, isTeamCreator, allMembersHaveProfile, submitCeoVote, votedForCEO, userVotedForCEO, getCeoName, goToCompanyChoice
                 }
             }
