@@ -69,84 +69,143 @@
                 <div v-if="!loading && connected">
                     
                     <!-- ETAPA 0: ENTRAR/CRIAR EQUIPE -->
-                    <section v-if="currentStep === 0" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-4">Bem-vindos, Empreendedores!</h2>
+                    <section v-if="!isLoggedIn" class="bg-white p-8 rounded-xl shadow-lg">
+                         <h2 class="text-2xl font-bold mb-4">Acesso à Plataforma</h2>
                         <div class="grid md:grid-cols-2 gap-8">
                             <!-- Criar Equipe -->
                             <div>
                                 <h3 class="text-xl font-semibold mb-3">Criar uma Nova Equipe</h3>
-                                <p class="mb-4 text-gray-600 text-sm">Se você é o primeiro do seu grupo, crie a equipe e compartilhe o código com os outros.</p>
-                                <input type="text" v-model="teamNameInput" placeholder="Nome da sua nova equipe" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                <input type="text" v-model="creatorNameInput" placeholder="Seu nome" class="w-full p-3 mt-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                <button @click="createTeam" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!teamNameInput.trim() || !creatorNameInput.trim()">Criar Equipe</button>
+                                <p class="mb-4 text-gray-600 text-sm">Se você é o primeiro do seu grupo, defina os dados de acesso e crie a equipe.</p>
+                                <input type="text" v-model="playerNameInput" placeholder="Seu nome" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
+                                <input type="password" v-model="playerPasswordInput" placeholder="Crie uma senha" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
+                                <input type="text" v-model="teamNameInput" placeholder="Nome da sua nova equipe" class="w-full p-3 border border-gray-300 rounded-lg">
+                                <button @click="createTeam" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!teamNameInput.trim() || !playerNameInput.trim() || !playerPasswordInput.trim()">Criar Equipe e Entrar</button>
                             </div>
                              <!-- Entrar na Equipe -->
                             <div>
                                 <h3 class="text-xl font-semibold mb-3">Entrar em uma Equipe</h3>
-                                <p class="mb-4 text-gray-600 text-sm">Se sua equipe já foi criada, insira o código fornecido pelo seu colega.</p>
-                                <input type="text" v-model="joinCodeInput" @keyup.enter="joinTeam" placeholder="Código da Equipe (Ex: A1B2)" class="w-full p-3 border border-gray-300 rounded-lg uppercase text-center font-mono text-lg">
-                                <button @click="joinTeam" class="mt-3 w-full bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-all disabled:bg-gray-400" :disabled="!joinCodeInput.trim()">Entrar na Equipe</button>
+                                <p class="mb-4 text-gray-600 text-sm">Se sua equipe já foi criada, insira o código e seus dados de acesso.</p>
+                                <input type="text" v-model="joinCodeInput" placeholder="Código da Equipe" class="w-full p-3 mb-3 border border-gray-300 rounded-lg uppercase text-center font-mono text-lg">
+                                <input type="text" v-model="playerNameInput" placeholder="Seu nome" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
+                                <input type="password" v-model="playerPasswordInput" placeholder="Sua senha" class="w-full p-3 border border-gray-300 rounded-lg">
+                                <button @click="joinTeam" class="mt-3 w-full bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-all disabled:bg-gray-400" :disabled="!joinCodeInput.trim() || !playerNameInput.trim() || !playerPasswordInput.trim()">Entrar na Equipe</button>
                             </div>
                         </div>
                     </section>
                     
-                    <!-- SALA DE ESPERA -->
-                    <section v-if="currentStep === 0.5" class="bg-white p-8 rounded-xl shadow-lg text-center">
-                        <h2 class="text-2xl font-bold mb-2">Equipe: {{ teamName }}</h2>
-                        <p class="mb-4 text-gray-600">Compartilhe o código abaixo com seus colegas para eles entrarem na equipe:</p>
-                        <div class="bg-indigo-100 text-indigo-800 text-4xl font-bold p-4 rounded-lg inline-block mb-6 join-code cursor-pointer" @click="copyJoinCode">
-                            {{ joinCodeDisplay }}
-                        </div>
-                        <p class="font-semibold mb-3">Membros na equipe:</p>
-                        <div class="flex justify-center flex-wrap gap-4 mb-6">
-                            <div v-for="member in teamMembers" :key="member.id" class="bg-gray-200 px-4 py-2 rounded-full text-gray-800">
-                                {{ member.name }}
+                    <!-- ETAPA 1: TESTE DE PERFIL -->
+                    <section v-if="isLoggedIn && currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
+                        <div v-if="!currentUserProfileCompleted">
+                            <h2 class="text-2xl font-bold mb-2">Etapa 1: Quem é você no mundo dos negócios?</h2>
+                            <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
+                            <div v-if="!userProfile" class="space-y-6">
+                                <div v-for="(question, qIndex) in questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
+                                    <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
+                                    <div class="space-y-2">
+                                        <label v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                            <input type="radio" :name="'question-' + qIndex" :value="option.type" v-model="answers[qIndex]" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                            <span class="ml-3 text-gray-700">{{ option.text }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="answers.includes(null)">Revelar meu Perfil</button>
+                            </div>
+                            <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
+                                <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
+                                <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
+                                <p class="mt-4 text-left">{{ userProfile.description }}</p>
+                                <p class="mt-4 font-semibold text-left">Lembre-se: Este é um ponto de partida. Grandes profissionais combinam características de múltiplos perfis!</p>
+                                <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar Perfil</button>
                             </div>
                         </div>
-                        <button @click="startStep1" class="bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Começar Atividade!</button>
+                        <div v-else class="text-center">
+                             <h2 class="text-2xl font-bold mb-2">Perfil Definido!</h2>
+                             <p class="mb-4 text-gray-600">Compartilhe o código da equipe com seus colegas: <strong class="text-indigo-700 p-2 bg-indigo-100 rounded-md">{{ joinCodeDisplay }}</strong></p>
+                             <p class="font-semibold mb-3">Aguardando os outros membros da equipe definirem seus perfis...</p>
+                             <div class="max-w-md mx-auto bg-gray-50 p-4 rounded-lg">
+                                <h3 class="font-bold mb-3 text-lg">Perfis da Equipe</h3>
+                                <ul class="list-none p-0 text-sm">
+                                    <li v-for="member in teamMembers" :key="member.id" class="flex justify-between p-2 rounded mb-2" :class="member.profile ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'">
+                                        <span>{{ member.name }}</span>
+                                        <span class="font-semibold">{{ member.profile ? member.profile : 'Definindo...' }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                             <button v-if="isTeamCreator" @click="goToCeoVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all disabled:bg-green-300" :disabled="!allMembersHaveProfile">
+                                Todos estão prontos! Ir para votação do CEO
+                            </button>
+                        </div>
                     </section>
 
+                    <!-- ETAPA 2: VOTAÇÃO PARA CEO -->
+                    <section v-if="isLoggedIn && currentStep === 2" class="bg-white p-8 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-2">Etapa 2: A Votação para CEO</h2>
+                        <p class="mb-2 text-gray-600">O primeiro passo para uma grande empresa é definir sua liderança. Conversem em equipe, analisem os perfis de cada um e votem em quem vocês acreditam que será o melhor CEO.</p>
+                        <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Orientação:</strong> Façam uma breve reunião para que cada membro possa defender por que seria um bom líder antes de registrarem o voto. O consenso será recompensado.</p>
+                        
+                        <div v-if="!userVotedForCEO">
+                            <div class="space-y-3">
+                                <label v-for="member in teamMembers" :key="member.id" class="flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all" :class="votedForCEO === member.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
+                                    <input type="radio" :name="'ceo-vote'" :value="member.id" v-model="votedForCEO" class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                    <div class="ml-4">
+                                        <p class="font-bold text-lg">{{ member.name }}</p>
+                                        <p class="text-sm text-gray-600">{{ profiles[member.profile]?.name || 'Perfil desconhecido' }}</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <button @click="submitCeoVote" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!votedForCEO">Confirmar meu Voto</button>
+                        </div>
+                        <div v-else class="text-center">
+                            <h3 class="text-xl font-bold">Voto Confirmado!</h3>
+                            <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
+                        </div>
+                    </section>
 
-                    <!-- ETAPA 1: TESTE DE PERFIL (Mecanismo de "catch-up") -->
-                    <section v-if="currentStep >= 1 && !currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 1: Quem é você no mundo dos negócios?</h2>
-                        <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
-                        <div v-if="!userProfile" class="space-y-6">
-                            <div v-for="(question, qIndex) in questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
-                                <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
-                                <div class="space-y-2">
-                                    <label v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                        <input type="radio" :name="'question-' + qIndex" :value="option.type" v-model="answers[qIndex]" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                        <span class="ml-3 text-gray-700">{{ option.text }}</span>
-                                    </label>
+                    <!-- ETAPA 3: DEFINIÇÃO DE CARGOS -->
+                    <section v-if="isLoggedIn && currentStep === 3" class="bg-white p-8 rounded-xl shadow-lg">
+                        <div v-if="isCEO">
+                             <h2 class="text-2xl font-bold mb-2">Etapa 3: Defina sua Equipe de Liderança</h2>
+                             <p class="mb-6 text-gray-600">Parabéns, você foi eleito(a) CEO! Agora, sua primeira missão é montar a equipe de diretores (C-Level). Analise os perfis dos seus colegas e atribua os cargos da forma mais estratégica possível.</p>
+                            <div class="space-y-4">
+                                <div v-for="role in availableRoles.filter(r => r.id !== 'CEO')" :key="role.id" class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-bold">{{ role.name }} ({{ role.id }})</h3>
+                                    <p class="text-sm text-gray-600 mb-2">{{ role.description }}</p>
+                                    <select v-model="assignedRoles[role.id]" @change="updateRoles" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        <option :value="null" disabled>Selecione um membro da equipe</option>
+                                        <option v-for="member in teamMembers.filter(m => m.id !== assignedRoles['CEO'])" :key="member.id" :value="member.id" :disabled="isMemberAssigned(member.id, role.id)">
+                                            {{ member.name }} ({{ member.profile }})
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
-                            <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="answers.includes(null)">Revelar meu Perfil</button>
+                            <button @click="confirmRoles" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!areAllRolesAssigned">Confirmar Cargos e Revelar à Equipe</button>
                         </div>
-                        <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
-                             <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
-                             <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
-                             <p class="mt-4 text-left">{{ userProfile.description }}</p>
-                             <p class="mt-4 font-semibold text-left">Lembre-se: Este é um ponto de partida. Grandes profissionais combinam características de múltiplos perfis!</p>
-                             <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar Perfil</button>
+                        <div v-else class="text-center">
+                             <h2 class="text-2xl font-bold mb-2">Liderança Definida!</h2>
+                             <p class="text-lg">O CEO eleito foi: <strong class="text-indigo-600">{{ getCeoName() }}</strong></p>
+                             <p class="mt-4">Aguarde enquanto o CEO define os cargos para o restante da equipe...</p>
                         </div>
                     </section>
                     
-                    <!-- Tela de Espera da Etapa 1 -->
-                    <section v-if="currentStep === 1 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg text-center">
-                        <h2 class="text-2xl font-bold mb-2">Perfil Confirmado!</h2>
-                        <p class="font-semibold">Aguardando todos os membros da equipe preencherem seus perfis para avançar...</p>
-                        <ul class="list-none p-0 mt-4 text-sm max-w-sm mx-auto">
-                            <li v-for="member in teamMembers" :key="member.id" class="flex justify-between p-2 rounded" :class="member.profile ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'">
-                                <span>{{ member.name }}</span>
-                                <span>{{ member.profile ? 'Pronto ✔' : 'Pendente ⌛' }}</span>
-                            </li>
-                        </ul>
+                    <!-- ETAPA 3.5: REVELAÇÃO DOS CARGOS -->
+                    <section v-if="isLoggedIn && currentStep === 3.5" class="bg-white p-8 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-4 text-center">A Equipe de Liderança está Formada!</h2>
+                        <div class="max-w-md mx-auto space-y-3">
+                            <div v-for="role in availableRoles" :key="role.id" class="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">{{ role.name }} ({{ role.id }}):</span>
+                                <span class="text-indigo-600 font-semibold">{{ getRoleHolderName(role.id) }}</span>
+                            </div>
+                        </div>
+                         <button v-if="isCEO" @click="goToCompanyChoice" class="mt-8 w-full bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all">
+                             Continuar para a próxima etapa
+                         </button>
+                         <p v-else class="text-center mt-6">Aguardando o CEO avançar para a próxima etapa...</p>
                     </section>
 
-                    <!-- ETAPA 2: ESCOLHA DA EMPRESA -->
-                    <section v-if="currentStep === 2 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 2: A Grande Decisão</h2>
+
+                    <!-- ETAPA 4: ESCOLHA DA EMPRESA -->
+                    <section v-if="isLoggedIn && currentStep === 4" class="bg-white p-8 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-2">Etapa 4: A Grande Decisão</h2>
                         <p class="mb-2 text-gray-600">Sua equipe agora tem uma missão: escolher um dos três segmentos de negócio abaixo. Leiam com atenção, discutam e considerem os perfis de todos os membros da equipe.</p>
                         
                         <div v-if="!isCEO" class="text-center p-4 bg-blue-50 text-blue-800 rounded-lg my-4">
@@ -177,28 +236,9 @@
                          </button>
                     </section>
 
-                    <!-- ETAPA 3: DEFINIÇÃO DE CARGOS -->
-                    <section v-if="currentStep === 3 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 3: Organizando a Liderança</h2>
-                        <p class="mb-6 text-gray-600">Toda grande empresa precisa de uma estrutura. Com base nos perfis e habilidades, decidam quem ocupará os cargos de liderança iniciais (C-Level). Cada membro da equipe deve assumir um dos cargos abaixo.</p>
-                        <div class="space-y-4">
-                            <div v-for="role in availableRoles" :key="role.id" class="bg-gray-50 p-4 rounded-lg">
-                                <h3 class="font-bold">{{ role.name }} ({{ role.id }})</h3>
-                                <p class="text-sm text-gray-600 mb-2">{{ role.description }}</p>
-                                <select v-model="assignedRoles[role.id]" @change="updateRoles" class="w-full p-2 border border-gray-300 rounded-lg">
-                                    <option :value="null" disabled>Selecione um membro da equipe</option>
-                                    <option v-for="member in teamMembers" :key="member.id" :value="member.id" :disabled="isMemberAssigned(member.id) && assignedRoles[role.id] !== member.id">
-                                        {{ member.name }} ({{ member.profile }})
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <button @click="confirmRoles" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!areAllRolesAssigned">Confirmar Cargos</button>
-                    </section>
-
-                    <!-- ETAPA 4: CONTRATAÇÃO E ORGANOGRAMA -->
-                    <section v-if="currentStep === 4 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 4: Expansão da Equipe</h2>
+                    <!-- ETAPA 5: CONTRATAÇÃO E ORGANOGRAMA -->
+                    <section v-if="isLoggedIn && currentStep === 5" class="bg-white p-8 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-2">Etapa 5: Expansão da Equipe</h2>
                         <p class="mb-4 text-gray-600">Sua liderança está formada, mas para crescer, vocês precisam de mais talentos. Sua equipe recebeu um orçamento inicial de <strong class="text-indigo-600">{{ formatCurrency(orcamentoInicial) }} / mês</strong> para as primeiras contratações.</p>
                         
                         <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6">
@@ -215,7 +255,6 @@
                             </div>
                             <p v-else class="text-gray-500">Aguardando sugestões da equipe...</p>
                         </div>
-
 
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div v-for="hire in availableHires" :key="hire.role" class="bg-gray-50 p-4 rounded-lg border">
@@ -238,12 +277,11 @@
                              <button v-else @click="submitHiresSuggestion" class="mt-4 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="saldoRestanteMensal < 0 || userSuggestion.hires">
                                  {{ userSuggestion.hires ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
                              </button>
-
                         </div>
                     </section>
 
-                    <!-- ETAPA 5: ORGANOGRAMA FINAL -->
-                    <section v-if="currentStep === 5 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
+                    <!-- ETAPA 6: ORGANOGRAMA FINAL -->
+                    <section v-if="isLoggedIn && currentStep === 6" class="bg-white p-8 rounded-xl shadow-lg">
                          <h2 class="text-2xl font-bold mb-4 text-center">Estrutura da {{ teamName }}</h2>
                          <div id="organogram-container" class="bg-gray-50 p-6 rounded-lg border border-gray-200 overflow-x-auto">
                             <!-- CEO (se existir) -->
@@ -365,12 +403,14 @@
                 const loadingMessage = ref('Conectando ao servidor...');
                 const connected = ref(false);
                 const connectionMessage = ref('');
+                const isLoggedIn = ref(false);
                 const currentStep = ref(0);
                 const userId = ref(null);
                 const teamId = ref(null);
                 const teamName = ref('');
                 const teamNameInput = ref('');
-                const creatorNameInput = ref('');
+                const playerNameInput = ref('');
+                const playerPasswordInput = ref('');
                 const joinCodeInput = ref('');
                 const joinCodeDisplay = ref('');
                 let teamListener = null;
@@ -397,6 +437,8 @@
                     Executor: { name: "O Realizador Executor", title: "A Potência da Ação", description: "Você é prático, focado e tem uma habilidade incrível de transformar ideias em realidade. Enquanto outros discutem, você já está fazendo. Seu lema é 'feito é melhor que perfeito' e você se motiva ao ver o progresso e entregar resultados concretos." },
                     Comunicador: { name: "O Conector Comunicador", title: "A Alma do Negócio", description: "Você entende de pessoas. Sua grande força é construir pontes, motivar a equipe, negociar com clientes e criar uma cultura positiva. Você sabe que a tecnologia só tem valor quando resolve problemas reais para pessoas reais." }
                 };
+                
+                const votedForCEO = ref(null);
 
                 const companies = reactive([
                     { id: 'Fintech', name: 'Segmento: Fintech', slogan: 'Simplificando o futuro do dinheiro.', description: 'Um aplicativo focado em planejamento financeiro e micro-investimentos para universitários e jovens profissionais. O mercado é competitivo e exige máxima segurança de dados (aderência à LGPD), transparência nas informações e uma interface extremamente confiável. O desafio é educar o usuário enquanto oferece ferramentas poderosas, mas simples.'},
@@ -443,7 +485,22 @@
                 
                 // Propriedades Computadas
                 const isCEO = computed(() => {
+                    if (!userId.value || !assignedRoles.value['CEO']) return false;
                     return userId.value === assignedRoles.value['CEO'];
+                });
+
+                const isTeamCreator = computed(() => {
+                    if (teamMembers.value.length === 0) return false;
+                    return userId.value === teamMembers.value[0].id;
+                });
+
+                const allMembersHaveProfile = computed(() => {
+                    if (teamMembers.value.length === 0) return false;
+                    return teamMembers.value.every(m => m.profile);
+                });
+                
+                const userVotedForCEO = computed(() => {
+                    return suggestions.value?.ceoVotes && suggestions.value.ceoVotes[userId.value];
                 });
 
                 const sortedTeams = computed(() => {
@@ -466,32 +523,26 @@
                 });
                 
                 const areAllRolesAssigned = computed(() => {
-                    if (availableRoles.value.length === 0) return false;
-                    const assignedMemberIds = Object.values(assignedRoles.value).filter(id => id !== null);
-                    const allRolesFilled = availableRoles.value.every(role => assignedRoles.value[role.id]);
-                    const uniqueAssignedCount = new Set(assignedMemberIds).size;
-                    return allRolesFilled && uniqueAssignedCount === teamMembers.value.length;
+                    if (teamMembers.value.length < 2) return true; // Se só tem CEO, já está completo
+                    const requiredRoles = availableRoles.value.length;
+                    const assignedRoleCount = Object.keys(assignedRoles.value).length;
+                    const assignedMemberIds = new Set(Object.values(assignedRoles.value));
+
+                    return assignedRoleCount === requiredRoles && assignedMemberIds.size === teamMembers.value.length;
                 });
 
                 const currentUserProfileCompleted = computed(() => {
                     const user = teamMembers.value.find(m => m.id === userId.value);
                     return !!(user && user.profile);
                 });
-
-                const areAllMembersReadyForNextStep = computed(() => {
-                    if (currentStep.value === 1) {
-                         return teamMembers.value.length > 0 && teamMembers.value.every(m => m.profile);
-                    }
-                    return false;
-                });
                 
-                watch(areAllMembersReadyForNextStep, (newValue) => {
-                    if(newValue && currentStep.value === 1) {
-                        if(teamMembers.value.length > 0 && userId.value === teamMembers.value[0].id) {
-                           saveState({ currentStep: 2 });
-                        }
+                watch(() => suggestions.value?.ceoVotes, (newVotes) => {
+                    if (newVotes && Object.keys(newVotes).length === teamMembers.value.length && teamMembers.value.length > 0) {
+                         if (isTeamCreator.value) { // Apenas o criador calcula para evitar múltiplas execuções
+                            calculateCeoVoteResult();
+                         }
                     }
-                });
+                }, { deep: true });
 
                 // Funções e Métodos
                 const formatCurrency = (value) => {
@@ -525,16 +576,20 @@
                 };
                 
                 const loadGameState = async () => {
-                    const localData = JSON.parse(localStorage.getItem(`genesis-empresarial-user`));
-                    if (localData && localData.teamId) {
-                        await syncWithTeam(localData.teamId);
+                    const localData = JSON.parse(localStorage.getItem(`genesis-empresarial-session`));
+                    if (localData && localData.teamId && localData.playerName && localData.playerPassword) {
+                        joinCodeInput.value = localData.joinCode;
+                        playerNameInput.value = localData.playerName;
+                        playerPasswordInput.value = localData.playerPassword;
+                        await joinTeam(true); // Tenta um rejoin automático
                     }
                     loading.value = false;
                 };
 
                 const resetLocalState = () => {
-                    localStorage.removeItem(`genesis-empresarial-user`);
+                    localStorage.removeItem(`genesis-empresarial-session`);
                     if(teamListener) teamListener();
+                    isLoggedIn.value = false;
                     teamId.value = null;
                     teamName.value = '';
                     currentStep.value = 0;
@@ -546,6 +601,7 @@
                     teamMembers.value = [];
                     suggestions.value = {};
                     userSuggestion.value = {};
+                    votedForCEO.value = null;
                 }
 
                 const setupListeners = () => {
@@ -573,7 +629,6 @@
                             teamName.value = data.name;
                             currentStep.value = data.currentStep || 0;
                             
-                            // A decisão final do CEO prevalece sobre a sugestão local
                             selectedCompanyForSuggestion.value = data.selectedCompany || selectedCompanyForSuggestion.value;
                             hiredCounts.value = data.hiredCounts || {};
 
@@ -582,7 +637,6 @@
                             suggestions.value = data.suggestions || {};
                             joinCodeDisplay.value = data.joinCode;
                             
-                            // Atualiza o estado da sugestão do usuário
                             if(suggestions.value.company && suggestions.value.company[userId.value]){
                                 userSuggestion.value.company = true;
                             }
@@ -594,10 +648,9 @@
                             if (currentUserData && currentUserData.profile) {
                                 userProfile.value = profiles[currentUserData.profile];
                             }
-                             localStorage.setItem(`genesis-empresarial-user`, JSON.stringify({ teamId: teamId.value }));
+                             isLoggedIn.value = true;
                         } else {
-                            // Este bloco é ativado quando a equipe é deletada (pelo professor, por exemplo)
-                            if (teamId.value) { // Evita alerta em loop
+                            if (teamId.value) { 
                                 alert("Sua equipe foi removida pelo professor. O jogo será reiniciado.");
                                 resetLocalState();
                             }
@@ -606,15 +659,11 @@
                 };
 
 
-                const saveState = async (dataToSave, merge = true) => {
+                const saveState = async (dataToSave) => {
                     if (!teamId.value) return;
                     try {
                         const docRef = doc(db, "apps", appId, "teams", teamId.value);
-                        if (merge) {
-                            await setDoc(docRef, dataToSave, { merge: true });
-                        } else {
-                            await setDoc(docRef, dataToSave);
-                        }
+                        await setDoc(docRef, dataToSave, { merge: true });
                     } catch (error) {
                         console.error("Error saving state:", error);
                     }
@@ -622,74 +671,80 @@
 
                 const createTeam = async () => {
                     const name = teamNameInput.value.trim();
-                    const userName = creatorNameInput.value.trim();
-                    if (!name || !userName) return;
+                    const userName = playerNameInput.value.trim();
+                    const password = playerPasswordInput.value.trim();
+                    if (!name || !userName || !password) return;
+                    
+                    loading.value = true;
+                    loadingMessage.value = "Criando equipe...";
                     
                     const joinCode = (Math.random().toString(36).substring(2, 6) + Math.random().toString(36).substring(2, 6)).substring(0, 4).toUpperCase();
                     
                     const teamData = {
                         name: name,
                         score: 0,
-                        currentStep: 0.5,
+                        currentStep: 1,
                         joinCode: joinCode,
-                        members: [{ id: userId.value, name: userName, profile: null }],
+                        members: [{ id: userId.value, name: userName, password: password, profile: null }],
                         assignedRoles: {},
                         hiredCounts: {},
                         selectedCompany: null,
-                        suggestions: { company: {}, hires: {} }
+                        suggestions: { company: {}, hires: {}, ceoVotes: {} }
                     };
 
                     try {
                         const docRef = await addDoc(collection(db, "apps", appId, "teams"), teamData);
                         await syncWithTeam(docRef.id);
+                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ teamId: docRef.id, joinCode, playerName: userName, playerPassword: password }));
                     } catch (e) {
                         console.error("Error creating team: ", e);
                         alert("Não foi possível criar a equipe. Tente novamente.");
+                    } finally {
+                        loading.value = false;
                     }
                 };
 
-                const joinTeam = async () => {
+                const joinTeam = async (isRejoin = false) => {
                     const code = joinCodeInput.value.trim().toUpperCase();
-                    if(!code) return;
+                    const userName = playerNameInput.value.trim();
+                    const password = playerPasswordInput.value.trim();
+                    if(!code || !userName || !password) return;
+
+                    loading.value = true;
+                    loadingMessage.value = "Entrando na equipe...";
 
                     const q = query(collection(db, "apps", appId, "teams"), where("joinCode", "==", code));
                     const querySnapshot = await getDocs(q);
 
                     if (querySnapshot.empty) {
-                        alert("Código de equipe inválido. Verifique e tente novamente.");
+                        alert("Código de equipe inválido.");
+                        loading.value = false;
                         return;
                     }
                     
                     const teamDoc = querySnapshot.docs[0];
-                    const existingMembers = teamDoc.data().members || [];
-                    if(existingMembers.some(m => m.id === userId.value)) {
-                        await syncWithTeam(teamDoc.id);
-                        return;
+                    const teamData = teamDoc.data();
+                    const existingMember = teamData.members.find(m => m.name.toLowerCase() === userName.toLowerCase());
+
+                    if (existingMember) { // Verificando senha para membro existente
+                        if (existingMember.password !== password) {
+                            alert("Senha incorreta para este nome de usuário.");
+                            loading.value = false;
+                            return;
+                        }
+                         if(existingMember.id !== userId.value && !isRejoin) {
+                             alert('Este nome de usuário já está sendo usado por outra pessoa nesta equipe.');
+                             loading.value = false;
+                             return;
+                         }
+                    } else { // Adicionando novo membro
+                        const newMember = { id: userId.value, name: userName, password: password, profile: null };
+                        await updateDoc(teamDoc.ref, { members: arrayUnion(newMember) });
                     }
 
-                    const userName = prompt("Bem-vindo! Por favor, digite seu nome:", `Membro ${Math.floor(Math.random() * 1000)}`);
-                    if (!userName) return;
-                    const newMember = { id: userId.value, name: userName, profile: null };
-
-                    try {
-                        await updateDoc(teamDoc.ref, {
-                            members: arrayUnion(newMember)
-                        });
-                        await syncWithTeam(teamDoc.id);
-                    } catch(e) {
-                         console.error("Error joining team: ", e);
-                         alert("Não foi possível entrar na equipe. Tente novamente.");
-                    }
-                };
-                
-                const startStep1 = () => {
-                    saveState({ currentStep: 1 });
-                };
-
-                const copyJoinCode = () => {
-                    navigator.clipboard.writeText(joinCodeDisplay.value).then(() => {
-                        alert(`Código "${joinCodeDisplay.value}" copiado!`);
-                    });
+                    await syncWithTeam(teamDoc.id);
+                    localStorage.setItem('genesis-empresarial-session', JSON.stringify({ teamId: teamDoc.id, joinCode: code, playerName: userName, playerPassword: password }));
+                    loading.value = false;
                 };
 
                 const calculateProfile = () => {
@@ -714,29 +769,77 @@
                     await saveState({ members: updatedMembers });
                 };
 
+                const goToCeoVoting = () => {
+                    saveState({ currentStep: 2 });
+                }
+                
+                const submitCeoVote = () => {
+                    if(!votedForCEO.value) return;
+                    const updatePath = `suggestions.ceoVotes.${userId.value}`;
+                    saveState({ [updatePath]: votedForCEO.value });
+                }
+
+                const calculateCeoVoteResult = async () => {
+                    const votes = suggestions.value.ceoVotes;
+                    const voteCounts = Object.values(votes).reduce((acc, id) => {
+                        acc[id] = (acc[id] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    const sortedVotes = Object.entries(voteCounts).sort(([,a],[,b]) => b-a);
+                    const electedCeoId = sortedVotes[0][0];
+
+                    let scoreUpdate = 0;
+                    const ceoProfile = teamMembers.value.find(m => m.id === electedCeoId)?.profile;
+                    const profileScores = { 'Comunicador': 25, 'Inovador': 20, 'Executor': 15, 'Analista': 10 };
+                    scoreUpdate += profileScores[ceoProfile] || 0;
+                    
+                    const topVoteCount = sortedVotes[0][1];
+                    if (topVoteCount === teamMembers.value.length) {
+                        scoreUpdate += 20; // Unanime
+                    } else if (topVoteCount / teamMembers.value.length > 0.66) {
+                        scoreUpdate += 10; // Maioria
+                    } else {
+                        scoreUpdate -= 15; // Dividido
+                    }
+                    
+                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
+                    const currentTeamDoc = await getDoc(docRef);
+                    const currentScore = currentTeamDoc.data().score || 0;
+
+                    const newRoles = { 'CEO': electedCeoId };
+                    
+                    await saveState({
+                        currentStep: 3,
+                        assignedRoles: newRoles,
+                        score: currentScore + scoreUpdate
+                    });
+                };
+
+                const getCeoName = () => {
+                    const ceoId = assignedRoles.value['CEO'];
+                    return teamMembers.value.find(m => m.id === ceoId)?.name || '...';
+                }
+
+                const confirmRoles = async () => {
+                    await saveState({ currentStep: 3.5 });
+                };
+                
+                const goToCompanyChoice = () => {
+                    saveState({ currentStep: 4 });
+                }
+
                 const calculatePoints = () => {
                     let totalScore = 0;
                     const selectedCompanyId = selectedCompanyForSuggestion.value;
                     if(!selectedCompanyId) return 0;
                     
-                    const companyProfiles = {
-                        'Fintech': ['Analista', 'Analista', 'Executor'],
-                        'Edtech': ['Inovador', 'Inovador', 'Comunicador'],
-                        'Logtech': ['Executor', 'Executor', 'Analista']
-                    };
+                    const companyProfiles = { 'Fintech': ['Analista', 'Analista', 'Executor'], 'Edtech': ['Inovador', 'Inovador', 'Comunicador'], 'Logtech': ['Executor', 'Executor', 'Analista']};
                     const teamProfiles = teamMembers.value.map(m => m.profile);
                     const targetProfiles = companyProfiles[selectedCompanyId];
-                    totalScore += teamProfiles.reduce((score, profile) => {
-                        return targetProfiles.includes(profile) ? score + 15 : score + 5;
-                    }, 0);
+                    totalScore += teamProfiles.reduce((score, profile) => targetProfiles.includes(profile) ? score + 15 : score + 5, 0);
 
-                    const roleAffinities = {
-                        'CEO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 10, 'Analista': 5 },
-                        'CTO': { 'Inovador': 20, 'Analista': 15, 'Executor': 10, 'Comunicador': 5 },
-                        'COO': { 'Executor': 20, 'Analista': 15, 'Comunicador': 10, 'Inovador': 5 },
-                        'CFO': { 'Analista': 20, 'Executor': 15, 'Comunicador': 5, 'Inovador': 5 },
-                        'CMO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 5, 'Analista': 5 }
-                    };
+                    const roleAffinities = { 'CEO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 10, 'Analista': 5 }, 'CTO': { 'Inovador': 20, 'Analista': 15, 'Executor': 10, 'Comunicador': 5 }, 'COO': { 'Executor': 20, 'Analista': 15, 'Comunicador': 10, 'Inovador': 5 }, 'CFO': { 'Analista': 20, 'Executor': 15, 'Comunicador': 5, 'Inovador': 5 }, 'CMO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 5, 'Analista': 5 }};
                     for (const roleId in assignedRoles.value) {
                         const memberId = assignedRoles.value[roleId];
                         const member = teamMembers.value.find(m => m.id === memberId);
@@ -779,24 +882,28 @@
                 };
 
                 const confirmCompanyChoice = async () => {
+                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
+                    const currentTeamDoc = await getDoc(docRef);
+                    const currentScore = currentTeamDoc.data().score || 0;
+                    
+                    const scoreUpdate = calculatePoints();
+
                     await saveState({ 
                         selectedCompany: selectedCompanyForSuggestion.value, 
-                        currentStep: 3 
+                        currentStep: 5,
+                        score: scoreUpdate // A pontuação de contratação será adicionada depois
                     });
                 };
 
-                const isMemberAssigned = (memberId) => {
-                    return Object.values(assignedRoles.value).includes(memberId);
+                const isMemberAssigned = (memberId, currentRole) => {
+                    const assignedElsewhere = Object.entries(assignedRoles.value).some(([role, id]) => id === memberId && role !== currentRole);
+                    return assignedElsewhere;
                 };
                 
                 const updateRoles = () => {
                     saveState({ assignedRoles: assignedRoles.value });
                 };
-
-                const confirmRoles = async () => {
-                    await saveState({ currentStep: 4 });
-                };
-
+                
                 const getSelectedCompanyName = () => companies.find(c => c.id === selectedCompanyForSuggestion.value)?.name || 'sua empresa';
 
                 const getCompanyMarketInfo = () => {
@@ -833,10 +940,15 @@
                 };
 
                 const confirmHires = async () => {
+                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
+                    const currentTeamDoc = await getDoc(docRef);
+                    const currentScore = currentTeamDoc.data().score || 0;
+
                     const finalScore = calculatePoints();
+
                     await saveState({
-                        currentStep: 5,
-                        hiredCounts: hiredCounts.value, // Salva a decisão final do CEO
+                        currentStep: 6,
+                        hiredCounts: hiredCounts.value, 
                         score: finalScore
                     });
                 };
@@ -847,12 +959,7 @@
                 }
 
                 const getRoleColor = (roleId) => {
-                    const colors = {
-                        'CTO': 'bg-teal-500',
-                        'COO': 'bg-blue-500',
-                        'CFO': 'bg-green-500',
-                        'CMO': 'bg-purple-500',
-                    };
+                    const colors = { 'CTO': 'bg-teal-500', 'COO': 'bg-blue-500', 'CFO': 'bg-green-500', 'CMO': 'bg-purple-500' };
                     return colors[roleId] || 'bg-gray-500';
                 }
                 
@@ -909,13 +1016,11 @@
                     loading.value = true;
 
                     try {
-                        // Delete all team documents
                         const teamsRef = collection(db, "apps", appId, "teams");
                         const teamSnapshot = await getDocs(teamsRef);
                         const deletePromises = teamSnapshot.docs.map(d => deleteDoc(d.ref));
                         await Promise.all(deletePromises);
 
-                        // Reset game controller
                         const controllerRef = doc(db, "apps", appId, "controller", "game_state");
                         await setDoc(controllerRef, { scoresVisible: false });
 
@@ -930,24 +1035,25 @@
                     }
                 };
 
-
                 onMounted(() => {
                     setupFirebase();
                 });
 
                 return {
-                    loading, loadingMessage, connected, connectionMessage, currentStep, teamName, teamNameInput, creatorNameInput, joinCodeInput, joinCodeDisplay,
+                    loading, loadingMessage, connected, connectionMessage, currentStep, teamName, teamNameInput, joinCodeInput, joinCodeDisplay,
                     questions, answers, userProfile,
                     companies, selectedCompanyForSuggestion,
                     allRoles, availableRoles, otherRoles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, updateRoles, confirmRoles,
                     orcamentoInicial, availableHires, hiredCounts, saldoRestanteMensal, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount,
                     getRoleHolderName, downloadOrganogram, getRoleColor, getHiresForRole,
-                    createTeam, joinTeam, copyJoinCode, startStep1,
+                    createTeam, joinTeam,
                     showScoreboard, sortedTeams, teamId, scoresVisible,
                     showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility, confirmResetGame,
                     currentUserProfileCompleted, calculateProfile, confirmProfile, formatCurrency,
                     isCEO, submitCompanySuggestion, confirmCompanyChoice, getSuggestionsFor, suggestions, userSuggestion,
-                    submitHiresSuggestion, confirmHires
+                    submitHiresSuggestion, confirmHires,
+                    isLoggedIn, playerNameInput, playerPasswordInput,
+                    goToCeoVoting, isTeamCreator, allMembersHaveProfile, submitCeoVote, votedForCEO, userVotedForCEO, getCeoName, goToCompanyChoice
                 }
             }
         }).mount('#app')
@@ -955,4 +1061,5 @@
     </script>
 </body>
 </html>
+" and the user query is "Percebi que quando todos votam para o CEO, apenas o criador da equipe pode avançar, isso deve ser corrigido, pois nem sempre o criador será o CEO, acredito que o certo seria que o CEO eleito pudesse avançar para a proxima etapa, pode fazer isso? Outra coisa, o botão de avançar para a votação do CEO deve aparecer para todos e qualquer um deve poder clicar nele, desde que todos já tenham preenchido o perfil"
 
