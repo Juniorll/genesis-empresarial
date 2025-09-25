@@ -191,10 +191,10 @@
                             <p class="text-amber-700 text-sm">{{ getCompanyMarketInfo() }}</p>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-6">
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div v-for="hire in availableHires" :key="hire.role" class="bg-gray-50 p-4 rounded-lg border">
                                 <h4 class="font-bold">{{ hire.role }}</h4>
-                                <p class="text-sm text-gray-600 mb-2">{{ hire.description }}</p>
+                                <p class="text-sm text-gray-600 mb-2 h-12">{{ hire.description }}</p>
                                 <p class="text-sm font-semibold mb-3">Salário Médio: <span class="text-indigo-600">{{ formatCurrency(hire.salario) }}</span></p>
                                 <div class="flex items-center justify-end space-x-4">
                                     <button @click="adjustHireCount(hire, -1)" class="bg-gray-200 h-8 w-8 rounded-full font-bold text-lg flex items-center justify-center">-</button>
@@ -230,13 +230,21 @@
                                         <p class="text-xs">{{ role.id }} ({{ role.name.split('(')[0].trim() }})</p>
                                     </div>
                                     <!-- Funcionários subordinados -->
-                                    <div v-if="role.id === 'COO' && (getHireCount('Gerente de Projetos') > 0 || getHireCount('Analista de Qualidade') > 0)" class="mt-4 space-y-3">
+                                    <div v-if="role.id === 'COO'" class="mt-4 space-y-2">
                                         <div v-if="getHireCount('Gerente de Projetos') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Gerente de Projetos ({{ getHireCount('Gerente de Projetos') }})</div>
-                                        <div v-if="getHireCount('Analista de Qualidade') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Analista de Qualidade ({{ getHireCount('Analista de Qualidade') }})</div>
+                                        <div v-if="getHireCount('Especialista de Suporte') > 0" class="ml-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Suporte ({{ getHireCount('Especialista de Suporte') }})</div>
                                     </div>
-                                     <div v-if="role.id === 'CTO' && (getHireCount('Desenvolvedor Sênior') > 0 || getHireCount('Desenvolvedor Júnior') > 0)" class="mt-4 space-y-3">
+                                     <div v-if="role.id === 'CTO'" class="mt-4 space-y-2 text-left">
                                         <div v-if="getHireCount('Desenvolvedor Sênior') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Sênior ({{ getHireCount('Desenvolvedor Sênior') }})</div>
-                                        <div v-if="getHireCount('Desenvolvedor Júnior') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Júnior ({{ getHireCount('Desenvolvedor Júnior') }})</div>
+                                        <div v-if="getHireCount('Desenvolvedor Júnior') > 0" class="ml-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Júnior ({{ getHireCount('Desenvolvedor Júnior') }})</div>
+                                        <div v-if="getHireCount('Engenheiro de DevOps') > 0" class="mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">DevOps ({{ getHireCount('Engenheiro de DevOps') }})</div>
+                                        <div v-if="getHireCount('Analista de Qualidade (QA)') > 0" class="ml-2 mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">QA ({{ getHireCount('Analista de Qualidade (QA)') }})</div>
+                                        <div v-if="getHireCount('Cientista de Dados') > 0" class="mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Dados ({{ getHireCount('Cientista de Dados') }})</div>
+                                        <div v-if="getHireCount('Designer UX/UI') > 0" class="ml-2 mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">UX/UI ({{ getHireCount('Designer UX/UI') }})</div>
+                                    </div>
+                                    <div v-if="role.id === 'CMO'" class="mt-4 space-y-2">
+                                        <div v-if="getHireCount('Social Media') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Social Media ({{ getHireCount('Social Media') }})</div>
+                                        <div v-if="getHireCount('Vendedor (SDR)') > 0" class="ml-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Vendedor (SDR) ({{ getHireCount('Vendedor (SDR)') }})</div>
                                     </div>
                                 </div>
                             </div>
@@ -391,8 +399,14 @@
                 const availableHires = reactive([
                     { role: 'Desenvolvedor Sênior', description: 'Acelera o desenvolvimento de funcionalidades complexas.', salario: 12000 },
                     { role: 'Desenvolvedor Júnior', description: 'Dá suporte ao time de tecnologia e aprende rápido.', salario: 4000 },
-                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos.', salario: 11000 },
-                    { role: 'Analista de Qualidade', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', salario: 5000 },
+                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos de entrega.', salario: 11000 },
+                    { role: 'Analista de Qualidade (QA)', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', salario: 5000 },
+                    { role: 'Designer UX/UI', description: 'Cria a experiência do usuário e o design das telas do aplicativo.', salario: 7000 },
+                    { role: 'Engenheiro de DevOps', description: 'Cuida da infraestrutura na nuvem e da automação dos deploys.', salario: 13000 },
+                    { role: 'Cientista de Dados', description: 'Analisa os dados dos usuários para extrair insights e guiar decisões.', salario: 10000 },
+                    { role: 'Social Media', description: 'Gerencia as redes sociais para engajar a comunidade e atrair usuários.', salario: 4500 },
+                    { role: 'Especialista de Suporte', description: 'Atende os clientes, resolve problemas e coleta feedbacks.', salario: 2500 },
+                    { role: 'Vendedor (SDR)', description: 'Busca ativamente por novos clientes e realiza as primeiras abordagens de venda.', salario: 3500 },
                 ]);
                 const hiredCounts = ref({});
 
@@ -685,13 +699,26 @@
                     }
 
                     const hirePriorities = {
-                       'Fintech': { 'Desenvolvedor Sênior': 20, 'Analista de Qualidade': 15, 'Desenvolvedor Júnior': 10, 'Gerente de Projetos': 5 },
-                       'Edtech': { 'Desenvolvedor Sênior': 20, 'Desenvolvedor Júnior': 15, 'Gerente de Projetos': 10, 'Analista de Qualidade': 5 },
-                       'Logtech': { 'Gerente de Projetos': 20, 'Desenvolvedor Sênior': 15, 'Analista de Qualidade': 10, 'Desenvolvedor Júnior': 5 }
+                       'Fintech': { 
+                           'Desenvolvedor Sênior': 20, 'Analista de Qualidade (QA)': 20, 'Cientista de Dados': 15, 'Engenheiro de DevOps': 10, 
+                           'Designer UX/UI': 10, 'Desenvolvedor Júnior': 5, 'Especialista de Suporte': 5, 
+                           'Gerente de Projetos': 0, 'Social Media': 0, 'Vendedor (SDR)': 0 
+                       },
+                       'Edtech': { 
+                           'Designer UX/UI': 20, 'Desenvolvedor Sênior': 15, 'Social Media': 15, 'Especialista de Suporte': 15,
+                           'Desenvolvedor Júnior': 10, 'Analista de Qualidade (QA)': 5, 'Cientista de Dados': 5,
+                           'Gerente de Projetos': 0, 'Engenheiro de DevOps': 0, 'Vendedor (SDR)': 0
+                       },
+                       'Logtech': { 
+                           'Gerente de Projetos': 20, 'Engenheiro de DevOps': 20, 'Vendedor (SDR)': 15, 'Desenvolvedor Sênior': 10, 
+                           'Especialista de Suporte': 10, 'Analista de Qualidade (QA)': 5, 'Desenvolvedor Júnior': 5,
+                           'Cientista de Dados': 0, 'Designer UX/UI': 0, 'Social Media': 0
+                       }
                     };
+
                     for(const hireRole in hiredCounts.value) {
                         const count = hiredCounts.value[hireRole]?.count || 0;
-                        if (count > 0) {
+                        if (count > 0 && hirePriorities[selectedCompany.value]) {
                             totalScore += (hirePriorities[selectedCompany.value][hireRole] || 0) * count;
                         }
                     }
@@ -723,9 +750,9 @@
 
                 const getCompanyMarketInfo = () => {
                     const infos = {
-                        'Fintech': 'O mercado financeiro valoriza extrema segurança e precisão. Erros não são tolerados e a confiança do cliente é tudo. Uma base tecnológica sólida é essencial desde o início.',
-                        'Edtech': 'O setor de educação é altamente competitivo em engajamento. Para se destacar, seu jogo precisa ser criativo, divertido e tecnicamente polido para cativar os alunos.',
-                        'Logtech': 'Clientes de logística precisam de resultados rápidos e eficientes. A organização do projeto e a capacidade de entregar uma solução funcional rapidamente são cruciais para o sucesso inicial.'
+                        'Fintech': 'O mercado de Fintech é baseado em CONFIANÇA. Seus clientes confiam em você com o dinheiro deles. Falhas de segurança ou bugs que causem perdas financeiras são fatais. Além disso, a competição é acirrada. Para se destacar, você precisa entender o comportamento financeiro dos seus usuários para oferecer produtos personalizados. Pense em: Qualidade impecável, análise de dados e uma base de engenharia robusta.',
+                        'Edtech': 'O desafio da Edtech é a RETENÇÃO. É fácil baixar um app educativo, mas difícil manter o aluno engajado. Sua plataforma precisa ser visualmente atraente, intuitiva e, acima de tudo, divertida. A criação de uma comunidade forte nas redes sociais e um suporte atencioso aos pais e alunos pode ser um grande diferencial. Pense em: Experiência do usuário (UX), engajamento comunitário e suporte ao cliente.',
+                        'Logtech': 'O mundo da Logtech é sobre EFICIÊNCIA. Seus clientes são outras empresas (B2B) que querem economizar tempo e dinheiro. Eles não se importam com um design super inovador, mas sim com um sistema que seja estável, rápido e que entregue o resultado prometido. Para conseguir esses clientes, é preciso uma abordagem de vendas direta e proativa. Pense em: Estabilidade da infraestrutura, gestão de projetos e vendas diretas.'
                     };
                     return infos[selectedCompany.value] || '';
                 }
