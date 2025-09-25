@@ -285,6 +285,9 @@
                         <button @click="toggleScoresVisibility" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">
                             {{ scoresVisible ? 'Ocultar Pontuações' : 'Revelar Pontuações' }}
                         </button>
+                         <button @click="confirmResetGame" class="w-full bg-red-600 text-white font-semibold py-2 rounded-lg hover:bg-red-700">
+                            Zerar Jogo
+                        </button>
                         <button @click="logoutProfessor" class="w-full text-sm text-gray-600 hover:underline">Sair do Modo Professor</button>
                     </div>
                 </div>
@@ -297,7 +300,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- FIREBASE CONFIG (WILL BE PROVIDED BY THE ENVIRONMENT) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'genesis-empresarial-dev';
@@ -485,6 +488,11 @@
                     teamName.value = '';
                     currentStep.value = 0;
                     userProfile.value = null;
+                    answers.value = Array(questions.length).fill(null);
+                    assignedRoles.value = {};
+                    hiredCounts.value = {};
+                    selectedCompany.value = null;
+                    teamMembers.value = [];
                 }
 
                 const setupListeners = () => {
@@ -523,8 +531,11 @@
                             }
                              localStorage.setItem(`genesis-empresarial-user`, JSON.stringify({ teamId: teamId.value }));
                         } else {
-                            alert("A equipe que você estava parece ter sido deletada.");
-                            resetLocalState();
+                            // Este bloco é ativado quando a equipe é deletada (pelo professor, por exemplo)
+                            if (teamId.value) { // Evita alerta em loop
+                                alert("Sua equipe foi removida pelo professor. O jogo será reiniciado.");
+                                resetLocalState();
+                            }
                         }
                     });
                 };
@@ -781,6 +792,39 @@
                         alert("Não foi possível alterar a visibilidade. Verifique a conexão.");
                     }
                 };
+                
+                const confirmResetGame = () => {
+                    if (confirm("TEM CERTEZA? Isso irá apagar TODAS as equipes e reiniciar o jogo para todos os alunos. Esta ação não pode ser desfeita.")) {
+                        resetGame();
+                    }
+                };
+
+                const resetGame = async () => {
+                    loadingMessage.value = "Reiniciando o jogo para todos...";
+                    showProfessorModal.value = false;
+                    loading.value = true;
+
+                    try {
+                        // Delete all team documents
+                        const teamsRef = collection(db, "apps", appId, "teams");
+                        const teamSnapshot = await getDocs(teamsRef);
+                        const deletePromises = teamSnapshot.docs.map(d => deleteDoc(d.ref));
+                        await Promise.all(deletePromises);
+
+                        // Reset game controller
+                        const controllerRef = doc(db, "apps", appId, "controller", "game_state");
+                        await setDoc(controllerRef, { scoresVisible: false });
+
+                        alert("Jogo reiniciado com sucesso! Os alunos serão enviados para a tela inicial.");
+                        resetLocalState();
+                        loading.value = false;
+
+                    } catch (error) {
+                        console.error("Erro ao zerar o jogo:", error);
+                        alert("Ocorreu um erro ao zerar o jogo.");
+                        loading.value = false;
+                    }
+                };
 
 
                 onMounted(() => {
@@ -796,7 +840,7 @@
                     getRoleHolderName, downloadOrganogram, getRoleColor,
                     createTeam, joinTeam, copyJoinCode, startStep1,
                     showScoreboard, sortedTeams, teamId, scoresVisible,
-                    showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility,
+                    showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility, confirmResetGame,
                     currentUserProfileCompleted, calculateProfile, confirmProfile
                 }
             }
