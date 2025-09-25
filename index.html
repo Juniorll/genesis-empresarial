@@ -166,6 +166,30 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // --- FIREBASE CONFIG (WILL BE PROVIDED BY THE ENVIRONMENT) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'genesis-empresarial-dev';
+        const firebaseConfig = {
+          apiKey: "AIzaSyDFx4jZDjnsEmOSFUXW3NykN0hPSTBL7Lc",
+          authDomain: "genesis-empresarial-87b1d.firebaseapp.com",
+          projectId: "genesis-empresarial-87b1d",
+          storageBucket: "genesis-empresarial-87b1d.firebasestorage.app",
+          messagingSenderId: "41214218923",
+          appId: "1:41214218923:web:4b77d3930b61f423dbddee",
+          measurementId: "G-S68YFP7JHC"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+        }
+
+
         const { createApp, ref, reactive, computed, onMounted, watch } = Vue
 
         createApp({
