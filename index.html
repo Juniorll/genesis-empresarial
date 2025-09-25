@@ -808,9 +808,7 @@
                         console.error("Erro ao entrar na equipe:", error);
                         alert("Ocorreu um erro inesperado. Verifique o console para mais detalhes.");
                     } finally {
-                        if (!isRejoin) {
-                           loading.value = false;
-                        }
+                        loading.value = false;
                     }
                 };
 
