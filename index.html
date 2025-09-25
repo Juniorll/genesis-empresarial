@@ -53,7 +53,7 @@
         
         <!-- Conteúdo Principal -->
         <main>
-            <!-- Tela de Carregamento / Login -->
+            <!-- Tela de Carregamento -->
             <transition name="fade">
                 <div v-if="loading" class="text-center py-20">
                     <svg class="animate-spin h-10 w-10 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -68,249 +68,255 @@
             <transition name="fade">
                 <div v-if="!loading && connected">
                     
-                    <!-- ETAPA 0: ENTRAR/CRIAR EQUIPE -->
-                    <section v-if="!isLoggedIn" class="bg-white p-8 rounded-xl shadow-lg">
-                         <h2 class="text-2xl font-bold mb-4">Acesso à Plataforma</h2>
+                    <!-- ETAPA 0.1: LOGIN DO JOGADOR -->
+                     <section v-if="!playerAuthenticated" class="bg-white p-8 rounded-xl shadow-lg max-w-lg mx-auto">
+                        <h2 class="text-2xl font-bold mb-4">Acesso à Plataforma</h2>
+                        <p class="mb-4 text-gray-600 text-sm">Crie seu login para começar ou para continuar de onde parou. Use o mesmo nome e senha para voltar à sua equipe.</p>
+                        <input type="text" v-model="playerNameInput" placeholder="Seu nome" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
+                        <input type="password" v-model="playerPasswordInput" placeholder="Sua senha" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
+                        <button @click="accessPlatform" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!playerNameInput.trim() || !playerPasswordInput.trim()">Acessar</button>
+                    </section>
+
+                    <!-- ETAPA 0.2: HUB DE EQUIPES -->
+                    <section v-if="playerAuthenticated && !teamId" class="bg-white p-8 rounded-xl shadow-lg">
+                         <h2 class="text-2xl font-bold mb-4">Bem-vindo(a), {{ playerNameInput }}!</h2>
                         <div class="grid md:grid-cols-2 gap-8">
                             <!-- Criar Equipe -->
                             <div>
                                 <h3 class="text-xl font-semibold mb-3">Criar uma Nova Equipe</h3>
-                                <p class="mb-4 text-gray-600 text-sm">Se você é o primeiro do seu grupo, defina os dados de acesso e crie a equipe.</p>
-                                <input type="text" v-model="playerNameInput" placeholder="Seu nome" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                                <input type="password" v-model="playerPasswordInput" placeholder="Crie uma senha" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
+                                <p class="mb-4 text-gray-600 text-sm">Se você é o primeiro do seu grupo, crie a equipe e compartilhe o código com os outros.</p>
                                 <input type="text" v-model="teamNameInput" placeholder="Nome da sua nova equipe" class="w-full p-3 border border-gray-300 rounded-lg">
-                                <button @click="createTeam" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!teamNameInput.trim() || !playerNameInput.trim() || !playerPasswordInput.trim()">Criar Equipe e Entrar</button>
+                                <button @click="createTeam" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!teamNameInput.trim()">Criar Equipe</button>
                             </div>
                              <!-- Entrar na Equipe -->
                             <div>
                                 <h3 class="text-xl font-semibold mb-3">Entrar em uma Equipe</h3>
-                                <p class="mb-4 text-gray-600 text-sm">Se sua equipe já foi criada, insira o código e seus dados de acesso.</p>
+                                <p class="mb-4 text-gray-600 text-sm">Se sua equipe já foi criada, insira o código fornecido pelo seu colega.</p>
                                 <input type="text" v-model="joinCodeInput" placeholder="Código da Equipe" class="w-full p-3 mb-3 border border-gray-300 rounded-lg uppercase text-center font-mono text-lg">
-                                <input type="text" v-model="playerNameInput" placeholder="Seu nome" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                                <input type="password" v-model="playerPasswordInput" placeholder="Sua senha" class="w-full p-3 border border-gray-300 rounded-lg">
-                                <button @click="joinTeam" class="mt-3 w-full bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-all disabled:bg-gray-400" :disabled="!joinCodeInput.trim() || !playerNameInput.trim() || !playerPasswordInput.trim()">Entrar na Equipe</button>
+                                <button @click="joinTeam" class="mt-3 w-full bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-all disabled:bg-gray-400" :disabled="!joinCodeInput.trim()">Entrar na Equipe</button>
                             </div>
                         </div>
                     </section>
                     
-                    <!-- ETAPA 1: TESTE DE PERFIL -->
-                    <section v-if="isLoggedIn && currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
-                        <div v-if="!currentUserProfileCompleted">
-                            <h2 class="text-2xl font-bold mb-2">Etapa 1: Quem é você no mundo dos negócios?</h2>
-                            <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
-                            <div v-if="!userProfile" class="space-y-6">
-                                <div v-for="(question, qIndex) in questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
-                                    <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
-                                    <div class="space-y-2">
-                                        <label v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                            <input type="radio" :name="'question-' + qIndex" :value="option.type" v-model="answers[qIndex]" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                            <span class="ml-3 text-gray-700">{{ option.text }}</span>
-                                        </label>
+                    <div v-if="isLoggedIn">
+                        <!-- ETAPA 1: TESTE DE PERFIL -->
+                        <section v-if="currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
+                            <div v-if="!currentUserProfileCompleted">
+                                <h2 class="text-2xl font-bold mb-2">Etapa 1: Quem é você no mundo dos negócios?</h2>
+                                <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
+                                <div v-if="!userProfile" class="space-y-6">
+                                    <div v-for="(question, qIndex) in questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
+                                        <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
+                                        <div class="space-y-2">
+                                            <label v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                                <input type="radio" :name="'question-' + qIndex" :value="option.type" v-model="answers[qIndex]" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                                <span class="ml-3 text-gray-700">{{ option.text }}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="answers.includes(null)">Revelar meu Perfil</button>
+                                </div>
+                                <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
+                                    <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
+                                    <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
+                                    <p class="mt-4 text-left">{{ userProfile.description }}</p>
+                                    <p class="mt-4 font-semibold text-left">Lembre-se: Este é um ponto de partida. Grandes profissionais combinam características de múltiplos perfis!</p>
+                                    <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar Perfil</button>
+                                </div>
+                            </div>
+                            <div v-else class="text-center">
+                                <h2 class="text-2xl font-bold mb-2">Perfil Definido!</h2>
+                                <p class="mb-4 text-gray-600">Compartilhe o código da equipe com seus colegas: <strong class="text-indigo-700 p-2 bg-indigo-100 rounded-md">{{ joinCodeDisplay }}</strong></p>
+                                <p class="font-semibold mb-3">Aguardando os outros membros da equipe definirem seus perfis...</p>
+                                <div class="max-w-md mx-auto bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-bold mb-3 text-lg">Perfis da Equipe</h3>
+                                    <ul class="list-none p-0 text-sm">
+                                        <li v-for="member in teamMembers" :key="member.id" class="flex justify-between p-2 rounded mb-2" :class="member.profile ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'">
+                                            <span>{{ member.name }}</span>
+                                            <span class="font-semibold">{{ member.profile ? member.profile : 'Definindo...' }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <button @click="goToCeoVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all disabled:bg-green-300" :disabled="!allMembersHaveProfile">
+                                    Todos estão prontos! Ir para votação do CEO
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- ETAPA 2: VOTAÇÃO PARA CEO -->
+                        <section v-if="currentStep === 2" class="bg-white p-8 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-bold mb-2">Etapa 2: A Votação para CEO</h2>
+                            <p class="mb-2 text-gray-600">O primeiro passo para uma grande empresa é definir sua liderança. Conversem em equipe, analisem os perfis de cada um e votem em quem vocês acreditam que será o melhor CEO.</p>
+                            <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Orientação:</strong> Façam uma breve reunião para que cada membro possa defender por que seria um bom líder antes de registrarem o voto. O consenso será recompensado.</p>
+                            
+                            <div v-if="!userVotedForCEO">
+                                <div class="space-y-3">
+                                    <label v-for="member in teamMembers" :key="member.id" class="flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all" :class="votedForCEO === member.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
+                                        <input type="radio" :name="'ceo-vote'" :value="member.id" v-model="votedForCEO" class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                        <div class="ml-4">
+                                            <p class="font-bold text-lg">{{ member.name }}</p>
+                                            <p class="text-sm text-gray-600">{{ profiles[member.profile]?.name || 'Perfil desconhecido' }}</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <button @click="submitCeoVote" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!votedForCEO">Confirmar meu Voto</button>
+                            </div>
+                            <div v-else class="text-center">
+                                <h3 class="text-xl font-bold">Voto Confirmado!</h3>
+                                <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
+                            </div>
+                        </section>
+
+                        <!-- ETAPA 3: DEFINIÇÃO DE CARGOS -->
+                        <section v-if="currentStep === 3" class="bg-white p-8 rounded-xl shadow-lg">
+                            <div v-if="isCEO">
+                                <h2 class="text-2xl font-bold mb-2">Etapa 3: Defina sua Equipe de Liderança</h2>
+                                <p class="mb-6 text-gray-600">Parabéns, você foi eleito(a) CEO! Agora, sua primeira missão é montar a equipe de diretores (C-Level). Analise os perfis dos seus colegas e atribua os cargos da forma mais estratégica possível.</p>
+                                <div class="space-y-4">
+                                    <div v-for="role in availableRoles.filter(r => r.id !== 'CEO')" :key="role.id" class="bg-gray-50 p-4 rounded-lg">
+                                        <h3 class="font-bold">{{ role.name }} ({{ role.id }})</h3>
+                                        <p class="text-sm text-gray-600 mb-2">{{ role.description }}</p>
+                                        <select v-model="assignedRoles[role.id]" @change="updateRoles" class="w-full p-2 border border-gray-300 rounded-lg">
+                                            <option :value="null" disabled>Selecione um membro da equipe</option>
+                                            <option v-for="member in teamMembers.filter(m => m.id !== assignedRoles['CEO'])" :key="member.id" :value="member.id" :disabled="isMemberAssigned(member.id, role.id)">
+                                                {{ member.name }} ({{ member.profile }})
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
-                                <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="answers.includes(null)">Revelar meu Perfil</button>
+                                <button @click="confirmRoles" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!areAllRolesAssigned">Confirmar Cargos e Revelar à Equipe</button>
                             </div>
-                            <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
-                                <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
-                                <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
-                                <p class="mt-4 text-left">{{ userProfile.description }}</p>
-                                <p class="mt-4 font-semibold text-left">Lembre-se: Este é um ponto de partida. Grandes profissionais combinam características de múltiplos perfis!</p>
-                                <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar Perfil</button>
+                            <div v-else class="text-center">
+                                <h2 class="text-2xl font-bold mb-2">Liderança Definida!</h2>
+                                <p class="text-lg">O CEO eleito foi: <strong class="text-indigo-600">{{ getCeoName() }}</strong></p>
+                                <p class="mt-4">Aguarde enquanto o CEO define os cargos para o restante da equipe...</p>
                             </div>
-                        </div>
-                        <div v-else class="text-center">
-                             <h2 class="text-2xl font-bold mb-2">Perfil Definido!</h2>
-                             <p class="mb-4 text-gray-600">Compartilhe o código da equipe com seus colegas: <strong class="text-indigo-700 p-2 bg-indigo-100 rounded-md">{{ joinCodeDisplay }}</strong></p>
-                             <p class="font-semibold mb-3">Aguardando os outros membros da equipe definirem seus perfis...</p>
-                             <div class="max-w-md mx-auto bg-gray-50 p-4 rounded-lg">
-                                <h3 class="font-bold mb-3 text-lg">Perfis da Equipe</h3>
-                                <ul class="list-none p-0 text-sm">
-                                    <li v-for="member in teamMembers" :key="member.id" class="flex justify-between p-2 rounded mb-2" :class="member.profile ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'">
-                                        <span>{{ member.name }}</span>
-                                        <span class="font-semibold">{{ member.profile ? member.profile : 'Definindo...' }}</span>
-                                    </li>
-                                </ul>
+                        </section>
+                        
+                        <!-- ETAPA 3.5: REVELAÇÃO DOS CARGOS -->
+                        <section v-if="currentStep === 3.5" class="bg-white p-8 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-bold mb-4 text-center">A Equipe de Liderança está Formada!</h2>
+                            <div class="max-w-md mx-auto space-y-3">
+                                <div v-for="role in availableRoles" :key="role.id" class="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+                                    <span class="font-bold">{{ role.name }} ({{ role.id }}):</span>
+                                    <span class="text-indigo-600 font-semibold">{{ getRoleHolderName(role.id) }}</span>
+                                </div>
                             </div>
-                             <button @click="goToCeoVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all disabled:bg-green-300" :disabled="!allMembersHaveProfile">
-                                Todos estão prontos! Ir para votação do CEO
+                            <button v-if="isCEO" @click="goToCompanyChoice" class="mt-8 w-full bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all">
+                                Continuar para a próxima etapa
                             </button>
-                        </div>
-                    </section>
+                            <p v-else class="text-center mt-6">Aguardando o CEO avançar para a próxima etapa...</p>
+                        </section>
 
-                    <!-- ETAPA 2: VOTAÇÃO PARA CEO -->
-                    <section v-if="isLoggedIn && currentStep === 2" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 2: A Votação para CEO</h2>
-                        <p class="mb-2 text-gray-600">O primeiro passo para uma grande empresa é definir sua liderança. Conversem em equipe, analisem os perfis de cada um e votem em quem vocês acreditam que será o melhor CEO.</p>
-                        <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Orientação:</strong> Façam uma breve reunião para que cada membro possa defender por que seria um bom líder antes de registrarem o voto. O consenso será recompensado.</p>
-                        
-                        <div v-if="!userVotedForCEO">
-                            <div class="space-y-3">
-                                <label v-for="member in teamMembers" :key="member.id" class="flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all" :class="votedForCEO === member.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
-                                    <input type="radio" :name="'ceo-vote'" :value="member.id" v-model="votedForCEO" class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                    <div class="ml-4">
-                                        <p class="font-bold text-lg">{{ member.name }}</p>
-                                        <p class="text-sm text-gray-600">{{ profiles[member.profile]?.name || 'Perfil desconhecido' }}</p>
+
+                        <!-- ETAPA 4: ESCOLHA DA EMPRESA -->
+                        <section v-if="currentStep === 4" class="bg-white p-8 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-bold mb-2">Etapa 4: A Grande Decisão</h2>
+                            <p class="mb-2 text-gray-600">Sua equipe agora tem uma missão: escolher um dos três segmentos de negócio abaixo. Leiam com atenção, discutam e considerem os perfis de todos os membros da equipe.</p>
+                            
+                            <div v-if="!isCEO" class="text-center p-4 bg-blue-50 text-blue-800 rounded-lg my-4">
+                                <p v-if="!userSuggestion.company">Discuta com sua equipe e envie sua sugestão de segmento para o CEO.</p>
+                                <p v-else class="font-semibold">Sugestão enviada! Aguardando a decisão final do CEO.</p>
+                            </div>
+                            <div v-else class="text-center p-4 bg-indigo-50 text-indigo-800 rounded-lg my-4">
+                                <p>Como CEO, analise as sugestões da sua equipe e tome a decisão final sobre o rumo da empresa.</p>
+                            </div>
+
+                            <div class="grid md:grid-cols-3 gap-6">
+                                <div v-for="company in companies" :key="company.id" 
+                                    class="border-2 rounded-xl p-6 flex flex-col transition-all cursor-pointer"
+                                    :class="selectedCompanyForSuggestion === company.id ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-200 hover:border-indigo-400'"
+                                    @click="selectedCompanyForSuggestion = company.id">
+                                    <h3 class="text-xl font-bold text-gray-900">{{ company.name }}</h3>
+                                    <div v-if="isCEO && getSuggestionsFor('company', company.id).length > 0" class="text-xs text-gray-500 mt-1">
+                                        Sugestões: {{ getSuggestionsFor('company', company.id).join(', ') }}
                                     </div>
-                                </label>
-                            </div>
-                            <button @click="submitCeoVote" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!votedForCEO">Confirmar meu Voto</button>
-                        </div>
-                        <div v-else class="text-center">
-                            <h3 class="text-xl font-bold">Voto Confirmado!</h3>
-                            <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
-                        </div>
-                    </section>
-
-                    <!-- ETAPA 3: DEFINIÇÃO DE CARGOS -->
-                    <section v-if="isLoggedIn && currentStep === 3" class="bg-white p-8 rounded-xl shadow-lg">
-                        <div v-if="isCEO">
-                             <h2 class="text-2xl font-bold mb-2">Etapa 3: Defina sua Equipe de Liderança</h2>
-                             <p class="mb-6 text-gray-600">Parabéns, você foi eleito(a) CEO! Agora, sua primeira missão é montar a equipe de diretores (C-Level). Analise os perfis dos seus colegas e atribua os cargos da forma mais estratégica possível.</p>
-                            <div class="space-y-4">
-                                <div v-for="role in availableRoles.filter(r => r.id !== 'CEO')" :key="role.id" class="bg-gray-50 p-4 rounded-lg">
-                                    <h3 class="font-bold">{{ role.name }} ({{ role.id }})</h3>
-                                    <p class="text-sm text-gray-600 mb-2">{{ role.description }}</p>
-                                    <select v-model="assignedRoles[role.id]" @change="updateRoles" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        <option :value="null" disabled>Selecione um membro da equipe</option>
-                                        <option v-for="member in teamMembers.filter(m => m.id !== assignedRoles['CEO'])" :key="member.id" :value="member.id" :disabled="isMemberAssigned(member.id, role.id)">
-                                            {{ member.name }} ({{ member.profile }})
-                                        </option>
-                                    </select>
+                                    <p class="text-indigo-600 font-semibold text-sm my-3">{{ company.slogan }}</p>
+                                    <p class="text-gray-600 flex-grow">{{ company.description }}</p>
                                 </div>
                             </div>
-                            <button @click="confirmRoles" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!areAllRolesAssigned">Confirmar Cargos e Revelar à Equipe</button>
-                        </div>
-                        <div v-else class="text-center">
-                             <h2 class="text-2xl font-bold mb-2">Liderança Definida!</h2>
-                             <p class="text-lg">O CEO eleito foi: <strong class="text-indigo-600">{{ getCeoName() }}</strong></p>
-                             <p class="mt-4">Aguarde enquanto o CEO define os cargos para o restante da equipe...</p>
-                        </div>
-                    </section>
-                    
-                    <!-- ETAPA 3.5: REVELAÇÃO DOS CARGOS -->
-                    <section v-if="isLoggedIn && currentStep === 3.5" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-4 text-center">A Equipe de Liderança está Formada!</h2>
-                        <div class="max-w-md mx-auto space-y-3">
-                            <div v-for="role in availableRoles" :key="role.id" class="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
-                                <span class="font-bold">{{ role.name }} ({{ role.id }}):</span>
-                                <span class="text-indigo-600 font-semibold">{{ getRoleHolderName(role.id) }}</span>
+                            
+                            <button v-if="isCEO" @click="confirmCompanyChoice" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!selectedCompanyForSuggestion">Confirmar Escolha (CEO)</button>
+                            <button v-else @click="submitCompanySuggestion" class="mt-8 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="!selectedCompanyForSuggestion || userSuggestion.company">
+                                {{ userSuggestion.company ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
+                            </button>
+                        </section>
+
+                        <!-- ETAPA 5: CONTRATAÇÃO E ORGANOGRAMA -->
+                        <section v-if="currentStep === 5" class="bg-white p-8 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-bold mb-2">Etapa 5: Expansão da Equipe</h2>
+                            <p class="mb-4 text-gray-600">Sua liderança está formada, mas para crescer, vocês precisam de mais talentos. Sua equipe recebeu um orçamento inicial de <strong class="text-indigo-600">{{ formatCurrency(orcamentoInicial) }} / mês</strong> para as primeiras contratações.</p>
+                            
+                            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6">
+                                <h3 class="font-bold text-amber-800">Análise de Mercado para: {{ getSelectedCompanyName() }}</h3>
+                                <p class="text-amber-700 text-sm" v-html="getCompanyMarketInfo()"></p>
                             </div>
-                        </div>
-                         <button v-if="isCEO" @click="goToCompanyChoice" class="mt-8 w-full bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all">
-                             Continuar para a próxima etapa
-                         </button>
-                         <p v-else class="text-center mt-6">Aguardando o CEO avançar para a próxima etapa...</p>
-                    </section>
-
-
-                    <!-- ETAPA 4: ESCOLHA DA EMPRESA -->
-                    <section v-if="isLoggedIn && currentStep === 4" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 4: A Grande Decisão</h2>
-                        <p class="mb-2 text-gray-600">Sua equipe agora tem uma missão: escolher um dos três segmentos de negócio abaixo. Leiam com atenção, discutam e considerem os perfis de todos os membros da equipe.</p>
-                        
-                        <div v-if="!isCEO" class="text-center p-4 bg-blue-50 text-blue-800 rounded-lg my-4">
-                            <p v-if="!userSuggestion.company">Discuta com sua equipe e envie sua sugestão de segmento para o CEO.</p>
-                            <p v-else class="font-semibold">Sugestão enviada! Aguardando a decisão final do CEO.</p>
-                        </div>
-                         <div v-else class="text-center p-4 bg-indigo-50 text-indigo-800 rounded-lg my-4">
-                            <p>Como CEO, analise as sugestões da sua equipe e tome a decisão final sobre o rumo da empresa.</p>
-                        </div>
-
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div v-for="company in companies" :key="company.id" 
-                                 class="border-2 rounded-xl p-6 flex flex-col transition-all cursor-pointer"
-                                 :class="selectedCompanyForSuggestion === company.id ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-200 hover:border-indigo-400'"
-                                 @click="selectCompanyForSuggestion = company.id">
-                                <h3 class="text-xl font-bold text-gray-900">{{ company.name }}</h3>
-                                <div v-if="isCEO && getSuggestionsFor('company', company.id).length > 0" class="text-xs text-gray-500 mt-1">
-                                    Sugestões: {{ getSuggestionsFor('company', company.id).join(', ') }}
+                            
+                            <div v-if="isCEO" class="my-4">
+                                <h3 class="font-semibold text-lg mb-2">Sugestões de Contratação da Equipe:</h3>
+                                <div v-if="Object.keys(suggestions.hires || {}).length > 0" class="space-y-2">
+                                <div v-for="(suggestion, memberId) in suggestions.hires" :key="memberId" class="bg-gray-100 p-3 rounded-lg text-sm">
+                                    <p><span class="font-bold">{{ suggestion.memberName }}:</span> Sugeriu {{ Object.values(suggestion.hires).reduce((acc,h) => acc + h.count, 0) }} contratações, com um custo de <span class="font-semibold">{{ formatCurrency(suggestion.totalCost) }}</span>.</p>
                                 </div>
-                                <p class="text-indigo-600 font-semibold text-sm my-3">{{ company.slogan }}</p>
-                                <p class="text-gray-600 flex-grow">{{ company.description }}</p>
-                            </div>
-                        </div>
-                         
-                         <button v-if="isCEO" @click="confirmCompanyChoice" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!selectedCompanyForSuggestion">Confirmar Escolha (CEO)</button>
-                         <button v-else @click="submitCompanySuggestion" class="mt-8 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="!selectedCompanyForSuggestion || userSuggestion.company">
-                             {{ userSuggestion.company ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
-                         </button>
-                    </section>
-
-                    <!-- ETAPA 5: CONTRATAÇÃO E ORGANOGRAMA -->
-                    <section v-if="isLoggedIn && currentStep === 5" class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Etapa 5: Expansão da Equipe</h2>
-                        <p class="mb-4 text-gray-600">Sua liderança está formada, mas para crescer, vocês precisam de mais talentos. Sua equipe recebeu um orçamento inicial de <strong class="text-indigo-600">{{ formatCurrency(orcamentoInicial) }} / mês</strong> para as primeiras contratações.</p>
-                        
-                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6">
-                            <h3 class="font-bold text-amber-800">Análise de Mercado para: {{ getSelectedCompanyName() }}</h3>
-                            <p class="text-amber-700 text-sm" v-html="getCompanyMarketInfo()"></p>
-                        </div>
-                        
-                        <div v-if="isCEO" class="my-4">
-                            <h3 class="font-semibold text-lg mb-2">Sugestões de Contratação da Equipe:</h3>
-                            <div v-if="Object.keys(suggestions.hires || {}).length > 0" class="space-y-2">
-                               <div v-for="(suggestion, memberId) in suggestions.hires" :key="memberId" class="bg-gray-100 p-3 rounded-lg text-sm">
-                                   <p><span class="font-bold">{{ suggestion.memberName }}:</span> Sugeriu {{ Object.values(suggestion.hires).reduce((acc,h) => acc + h.count, 0) }} contratações, com um custo de <span class="font-semibold">{{ formatCurrency(suggestion.totalCost) }}</span>.</p>
-                               </div>
-                            </div>
-                            <p v-else class="text-gray-500">Aguardando sugestões da equipe...</p>
-                        </div>
-
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div v-for="hire in availableHires" :key="hire.role" class="bg-gray-50 p-4 rounded-lg border">
-                                <h4 class="font-bold">{{ hire.role }}</h4>
-                                <p class="text-sm text-gray-600 mb-2 h-12">{{ hire.description }}</p>
-                                <p class="text-sm font-semibold mb-3">Salário Médio: <span class="text-indigo-600">{{ formatCurrency(hire.salario) }}</span></p>
-                                <div class="flex items-center justify-end space-x-4">
-                                    <button @click="adjustHireCount(hire, -1)" class="bg-gray-200 h-8 w-8 rounded-full font-bold text-lg flex items-center justify-center">-</button>
-                                    <span class="font-bold text-xl w-8 text-center">{{ getHireCount(hire.role) }}</span>
-                                    <button @click="adjustHireCount(hire, 1)" class="bg-gray-200 h-8 w-8 rounded-full font-bold text-lg flex items-center justify-center">+</button>
                                 </div>
+                                <p v-else class="text-gray-500">Aguardando sugestões da equipe...</p>
                             </div>
-                        </div>
 
-                        <div class="mt-8 pt-4 border-t">
-                            <p class="text-xl font-bold text-right">Saldo Restante do Orçamento: <span :class="saldoRestanteMensal < 0 ? 'text-red-500' : 'text-green-600'">{{ formatCurrency(saldoRestanteMensal) }}</span></p>
-                             <p v-if="saldoRestanteMensal < 0" class="text-red-500 text-right font-semibold">Atenção: A folha de pagamento excedeu o orçamento!</p>
-                             
-                            <button v-if="isCEO" @click="confirmHires" class="mt-4 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="saldoRestanteMensal < 0">Finalizar Contratações (CEO)</button>
-                             <button v-else @click="submitHiresSuggestion" class="mt-4 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="saldoRestanteMensal < 0 || userSuggestion.hires">
-                                 {{ userSuggestion.hires ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
-                             </button>
-                        </div>
-                    </section>
-
-                    <!-- ETAPA 6: ORGANOGRAMA FINAL -->
-                    <section v-if="isLoggedIn && currentStep === 6" class="bg-white p-8 rounded-xl shadow-lg">
-                         <h2 class="text-2xl font-bold mb-4 text-center">Estrutura da {{ teamName }}</h2>
-                         <div id="organogram-container" class="bg-gray-50 p-6 rounded-lg border border-gray-200 overflow-x-auto">
-                            <!-- CEO (se existir) -->
-                            <div class="text-center mb-8" v-if="assignedRoles['CEO']">
-                                <div class="inline-block bg-indigo-600 text-white p-4 rounded-lg shadow-lg">
-                                    <p class="font-bold text-lg">{{ getRoleHolderName('CEO') }}</p>
-                                    <p class="text-sm">CEO (Diretor Executivo)</p>
-                                </div>
-                            </div>
-                            <!-- Outros cargos C-Level -->
-                            <div class="flex justify-center items-start gap-4 md:gap-8 flex-wrap">
-                                <div class="text-center" v-for="role in otherRoles" :key="role.id">
-                                     <div class="inline-block text-white p-3 rounded-lg shadow" :class="getRoleColor(role.id)">
-                                        <p class="font-bold">{{ getRoleHolderName(role.id) }}</p>
-                                        <p class="text-xs">{{ role.id }} ({{ role.name.split('(')[0].trim() }})</p>
+                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div v-for="hire in availableHires" :key="hire.role" class="bg-gray-50 p-4 rounded-lg border">
+                                    <h4 class="font-bold">{{ hire.role }}</h4>
+                                    <p class="text-sm text-gray-600 mb-2 h-12">{{ hire.description }}</p>
+                                    <p class="text-sm font-semibold mb-3">Salário Médio: <span class="text-indigo-600">{{ formatCurrency(hire.salario) }}</span></p>
+                                    <div class="flex items-center justify-end space-x-4">
+                                        <button @click="adjustHireCount(hire, -1)" class="bg-gray-200 h-8 w-8 rounded-full font-bold text-lg flex items-center justify-center">-</button>
+                                        <span class="font-bold text-xl w-8 text-center">{{ getHireCount(hire.role) }}</span>
+                                        <button @click="adjustHireCount(hire, 1)" class="bg-gray-200 h-8 w-8 rounded-full font-bold text-lg flex items-center justify-center">+</button>
                                     </div>
-                                    <!-- Funcionários subordinados -->
-                                    <div class="mt-4 space-y-2 flex flex-col items-center">
-                                        <div v-for="hire in getHiresForRole(role.id)" :key="hire.role" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">
-                                            {{ hire.role }} ({{ getHireCount(hire.role) }})
+                                </div>
+                            </div>
+
+                            <div class="mt-8 pt-4 border-t">
+                                <p class="text-xl font-bold text-right">Saldo Restante do Orçamento: <span :class="saldoRestanteMensal < 0 ? 'text-red-500' : 'text-green-600'">{{ formatCurrency(saldoRestanteMensal) }}</span></p>
+                                <p v-if="saldoRestanteMensal < 0" class="text-red-500 text-right font-semibold">Atenção: A folha de pagamento excedeu o orçamento!</p>
+                                
+                                <button v-if="isCEO" @click="confirmHires" class="mt-4 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="saldoRestanteMensal < 0">Finalizar Contratações (CEO)</button>
+                                <button v-else @click="submitHiresSuggestion" class="mt-4 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="saldoRestanteMensal < 0 || userSuggestion.hires">
+                                    {{ userSuggestion.hires ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- ETAPA 6: ORGANOGRAMA FINAL -->
+                        <section v-if="currentStep === 6" class="bg-white p-8 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-bold mb-4 text-center">Estrutura da {{ teamName }}</h2>
+                            <div id="organogram-container" class="bg-gray-50 p-6 rounded-lg border border-gray-200 overflow-x-auto">
+                                <!-- CEO (se existir) -->
+                                <div class="text-center mb-8" v-if="assignedRoles['CEO']">
+                                    <div class="inline-block bg-indigo-600 text-white p-4 rounded-lg shadow-lg">
+                                        <p class="font-bold text-lg">{{ getRoleHolderName('CEO') }}</p>
+                                        <p class="text-sm">CEO (Diretor Executivo)</p>
+                                    </div>
+                                </div>
+                                <!-- Outros cargos C-Level -->
+                                <div class="flex justify-center items-start gap-4 md:gap-8 flex-wrap">
+                                    <div class="text-center" v-for="role in otherRoles" :key="role.id">
+                                        <div class="inline-block text-white p-3 rounded-lg shadow" :class="getRoleColor(role.id)">
+                                            <p class="font-bold">{{ getRoleHolderName(role.id) }}</p>
+                                            <p class="text-xs">{{ role.id }} ({{ role.name.split('(')[0].trim() }})</p>
+                                        </div>
+                                        <!-- Funcionários subordinados -->
+                                        <div class="mt-4 space-y-2 flex flex-col items-center">
+                                            <div v-for="hire in getHiresForRole(role.id)" :key="hire.role" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">
+                                                {{ hire.role }} ({{ getHireCount(hire.role) }})
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                         </div>
-                         <button @click="downloadOrganogram" class="mt-8 w-full bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Baixar Organograma (.png)</button>
-                         <p class="text-center mt-6 text-lg font-semibold">Parabéns! A primeira fase da sua empresa está completa. Aguarde as instruções do professor.</p>
-                    </section>
-
+                            <button @click="downloadOrganogram" class="mt-8 w-full bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Baixar Organograma (.png)</button>
+                            <p class="text-center mt-6 text-lg font-semibold">Parabéns! A primeira fase da sua empresa está completa. Aguarde as instruções do professor.</p>
+                        </section>
+                    </div>
                 </div>
             </transition>
         </main>
@@ -403,10 +409,10 @@
                 const loadingMessage = ref('Conectando ao servidor...');
                 const connected = ref(false);
                 const connectionMessage = ref('');
-                const isLoggedIn = ref(false);
+                const playerAuthenticated = ref(false);
+                const teamId = ref(null);
                 const currentStep = ref(0);
                 const userId = ref(null);
-                const teamId = ref(null);
                 const teamName = ref('');
                 const teamNameInput = ref('');
                 const playerNameInput = ref('');
@@ -414,6 +420,8 @@
                 const joinCodeInput = ref('');
                 const joinCodeDisplay = ref('');
                 let teamListener = null;
+
+                const isLoggedIn = computed(() => playerAuthenticated.value && !!teamId.value);
 
 
                 // Dados da Atividade
@@ -577,11 +585,15 @@
                 
                 const loadGameState = async () => {
                     const localData = JSON.parse(localStorage.getItem(`genesis-empresarial-session`));
-                    if (localData && localData.teamId && localData.playerName && localData.playerPassword) {
-                        joinCodeInput.value = localData.joinCode;
+                    if (localData && localData.playerName && localData.playerPassword) {
                         playerNameInput.value = localData.playerName;
                         playerPasswordInput.value = localData.playerPassword;
-                        await joinTeam(true); // Tenta um rejoin automático
+                        playerAuthenticated.value = true;
+
+                        if (localData.teamId) {
+                            joinCodeInput.value = localData.joinCode;
+                            await joinTeam(true); 
+                        }
                     }
                     loading.value = false;
                 };
@@ -589,7 +601,7 @@
                 const resetLocalState = () => {
                     localStorage.removeItem(`genesis-empresarial-session`);
                     if(teamListener) teamListener();
-                    isLoggedIn.value = false;
+                    playerAuthenticated.value = false;
                     teamId.value = null;
                     teamName.value = '';
                     currentStep.value = 0;
@@ -616,6 +628,18 @@
                             scoresVisible.value = doc.data().scoresVisible || false;
                         }
                     });
+                };
+
+                const accessPlatform = () => {
+                    if (!playerNameInput.value.trim() || !playerPasswordInput.value.trim()) {
+                        alert("Por favor, preencha seu nome e senha.");
+                        return;
+                    }
+                    localStorage.setItem('genesis-empresarial-session', JSON.stringify({
+                        playerName: playerNameInput.value.trim(),
+                        playerPassword: playerPasswordInput.value.trim()
+                    }));
+                    playerAuthenticated.value = true;
                 };
                 
                  const syncWithTeam = async (newTeamId) => {
@@ -648,7 +672,6 @@
                             if (currentUserData && currentUserData.profile) {
                                 userProfile.value = profiles[currentUserData.profile];
                             }
-                             isLoggedIn.value = true;
                         } else {
                             if (teamId.value) { 
                                 alert("Sua equipe foi removida pelo professor. O jogo será reiniciado.");
@@ -671,12 +694,13 @@
 
                 const createTeam = async () => {
                     const name = teamNameInput.value.trim();
-                    const userName = playerNameInput.value.trim();
-                    const password = playerPasswordInput.value.trim();
-                    if (!name || !userName || !password) return;
+                    if (!name) return;
                     
                     loading.value = true;
                     loadingMessage.value = "Criando equipe...";
+                    
+                    const userName = playerNameInput.value;
+                    const password = playerPasswordInput.value;
                     
                     const joinCode = (Math.random().toString(36).substring(2, 6) + Math.random().toString(36).substring(2, 6)).substring(0, 4).toUpperCase();
                     
@@ -695,7 +719,12 @@
                     try {
                         const docRef = await addDoc(collection(db, "apps", appId, "teams"), teamData);
                         await syncWithTeam(docRef.id);
-                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ teamId: docRef.id, joinCode, playerName: userName, playerPassword: password }));
+                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ 
+                            teamId: docRef.id, 
+                            joinCode, 
+                            playerName: userName, 
+                            playerPassword: password 
+                        }));
                     } catch (e) {
                         console.error("Error creating team: ", e);
                         alert("Não foi possível criar a equipe. Tente novamente.");
@@ -706,9 +735,10 @@
 
                 const joinTeam = async (isRejoin = false) => {
                     const code = joinCodeInput.value.trim().toUpperCase();
-                    const userName = playerNameInput.value.trim();
-                    const password = playerPasswordInput.value.trim();
-                    if (!code || !userName || !password) return;
+                    if (!code) return;
+
+                    const userName = playerNameInput.value;
+                    const password = playerPasswordInput.value;
 
                     loading.value = true;
                     loadingMessage.value = "Entrando na equipe...";
@@ -756,13 +786,20 @@
                         }
 
                         await syncWithTeam(teamDoc.id);
-                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ teamId: teamDoc.id, joinCode: code, playerName: userName, playerPassword: password }));
+                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ 
+                            teamId: teamDoc.id, 
+                            joinCode: code, 
+                            playerName: userName, 
+                            playerPassword: password 
+                        }));
                     
                     } catch (error) {
                         console.error("Erro ao entrar na equipe:", error);
                         alert("Ocorreu um erro inesperado. Verifique o console para mais detalhes.");
                     } finally {
-                        loading.value = false;
+                        if (!isRejoin) {
+                           loading.value = false;
+                        }
                     }
                 };
 
@@ -1076,7 +1113,7 @@
                     currentUserProfileCompleted, calculateProfile, confirmProfile, formatCurrency,
                     isCEO, submitCompanySuggestion, confirmCompanyChoice, getSuggestionsFor, suggestions, userSuggestion,
                     submitHiresSuggestion, confirmHires,
-                    isLoggedIn, playerNameInput, playerPasswordInput,
+                    isLoggedIn, playerNameInput, playerPasswordInput, accessPlatform, playerAuthenticated,
                     goToCeoVoting, isTeamCreator, allMembersHaveProfile, submitCeoVote, votedForCEO, userVotedForCEO, getCeoName, goToCompanyChoice
                 }
             }
