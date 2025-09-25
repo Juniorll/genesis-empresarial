@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade Online: Gênesis Empresarial</title>    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .screen { display: none; }
+        .active-screen { display: flex; }
+        .card { background-color: #1F2937; border: 1px solid #374151; transition: all 0.3s ease; }
+        .card.selected { border-color: #3B82F6; transform: scale(1.05); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .option-label { display: block; padding: 1rem; border: 1px solid #4B5563; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; }
+        .option-label:hover { background-color: #374151; }
+        input[type="radio"]:checked + .option-label, input[type="checkbox"]:checked + .option-label { background-color: #3B82F6; border-color: #3B82F6; }
+        .professor-btn { position: fixed; bottom: 10px; right: 10px; background-color: #4B5563; color: #D1D5DB; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; opacity: 0.5; hover:opacity: 1; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div id="app-container" class="w-full max-w-4xl mx-auto">
+        <!-- All screens will be injected here -->
+    </div>
+
+    <!-- Professor Button -->
+    <div id="professor-button" class="professor-btn" onclick="showProfessorLogin()">Modo Professor</div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- FIREBASE CONFIG (WILL BE PROVIDED BY THE ENVIRONMENT) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'genesis-empresarial-dev';
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyDFx4jZDjnsEmOSFUXW3NykN0hPSTBL7Lc",
+          authDomain: "genesis-empresarial-87b1d.firebaseapp.com",
+          projectId: "genesis-empresarial-87b1d",
+          storageBucket: "genesis-empresarial-87b1d.firebasestorage.app",
+          messagingSenderId: "41214218923",
+          appId: "1:41214218923:web:4b77d3930b61f423dbddee",
+          measurementId: "G-S68YFP7JHC"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            document.getElementById('app-container').innerHTML = `<div class="text-red-500 text-center">Erro ao conectar com a base de dados. Verifique a configuração.</div>`;
+        }
+
+        const state = {
+            groupId: localStorage.getItem(`groupId_${appId}`),
+            groupData: {},
+            allGroups: [],
+            scoresVisible: false,
+            currentMemberIndex: 0,
+        };
+        
+        // --- GAME DATA (Questions, Profiles, etc.) ---
+        const quizQuestions = [
+            { question: "Diante de um problema complexo...", options: { A: "Ter várias ideias...", B: "Pesquisar dados...", C: "Conversar com as pessoas...", D: "Dividir o problema..." } },
+            { question: "Qual ambiente de trabalho te energiza?", options: { A: "Um laboratório de ideias...", B: "Uma sala de estratégia...", C: "Um espaço colaborativo...", D: "Uma área de produção organizada..." } },
+            { question: "Seu maior trunfo em um grupo é:", options: { A: "Trazer uma perspectiva nova.", B: "Garantir que o projeto tenha rumo.", C: "Manter a equipe unida.", D: "Assegurar que tarefas sejam cumpridas." } },
+            { question: "O que mais te frustra?", options: { A: "Regras rígidas.", B: "Decisões por impulso.", C: "Falta de comunicação.", D: "Projetos desorganizados." } },
+            { question: "Como prefere apresentar resultados?", options: { A: "Com um protótipo.", B: "Com gráficos e relatórios.", C: "Com uma apresentação envolvente.", D: "Com uma lista de tarefas concluídas." } }
+        ];
+        const profiles = {
+            A: { name: "O Inovador", description: "Sua mente é uma fonte de ideias." }, B: { name: "O Estrategista", description: "Sua força está na análise e no planejamento." }, C: { name: "O Comunicador", description: "Seu talento é conectar pessoas e ideias." }, D: { name: "O Executor", description: "Seu poder está na ação e na organização." }
+        };
+        const companies = [
+            { id: 'inovaTech', name: 'InovaTech Soluções', tagline: 'A Vanguarda da IA', description: 'Foco em criar tecnologia de ponta, com alto risco e alta velocidade.', hint: 'Seu foco total deve ser em Pesquisa e Desenvolvimento (P&D) para criar um produto único.' },
+            { id: 'conectaSoft', name: 'ConectaSoft', tagline: 'A Parceria Estratégica', description: 'Foco em entender o cliente e construir soluções sob medida.', hint: 'A experiência do usuário e o gerenciamento do relacionamento são cruciais.' },
+            { id: 'ordoSys', name: 'OrdoSys', tagline: 'A Fortaleza da Confiança', description: 'Foco em qualidade, estabilidade e processos para um produto robusto.', hint: 'Garantir que tudo funcione sem falhas e que seus clientes tenham amparo é a prioridade máxima.' }
+        ];
+        const roles = [
+            { name: "CEO", desc: "O líder geral, define a visão e estratégia." }, { name: "CTO", desc: "Lidera a tecnologia e a inovação." }, { name: "CPO", desc: "Define o que será construído, focado no produto." }, { name: "CMO", desc: "Responsável por marketing, vendas e comunicação." }, { name: "COO", desc: "Garante que as operações do dia a dia funcionem." }
+        ];
+        const hireableRoles = [
+            { name: "Desenvolvedor Sênior", cost: 5, strategicFor: 'inovaTech' }, { name: "Designer UX/UI", cost: 4, strategicFor: 'conectaSoft' }, { name: "Analista de QA (Qualidade)", cost: 3, strategicFor: 'ordoSys' }, { name: "Cientista de Dados", cost: 5, strategicFor: 'inovaTech' }, { name: "Gerente de Contas", cost: 4, strategicFor: 'conectaSoft' }, { name: "Engenheiro de Suporte", cost: 3, strategicFor: 'ordoSys' }
+        ];
+        
+        // --- CORE APP LOGIC ---
+        function render() {
+            const container = document.getElementById('app-container');
+            if (!state.groupId || !state.groupData.name) container.innerHTML = WelcomeScreen();
+            else if (!state.groupData.members || state.groupData.members.some(m => !m.profile)) container.innerHTML = TestScreen();
+            else if (!state.groupData.companyId) container.innerHTML = CompanyScreen();
+            else if (!state.groupData.roles) container.innerHTML = RolesScreen();
+            else if (!state.groupData.hires) container.innerHTML = HiringScreen();
+            else container.innerHTML = SummaryScreen();
+        }
+
+        async function updateGroupData(newData) {
+            if (!state.groupId) return;
+            const groupRef = doc(db, `artifacts/${appId}/public/data/groups`, state.groupId);
+            await setDoc(groupRef, newData, { merge: true });
+        }
+        
+        // --- SCREENS ---
+        const WelcomeScreen = () => `
+            <div class="flex flex-col items-center text-center gap-6">
+                <h1 class="text-5xl font-bold text-blue-400">Missão: Gênesis Empresarial</h1>
+                <p class="text-xl text-gray-300 max-w-2xl">Crie sua equipe e comece a jornada para fundar sua empresa de tecnologia.</p>
+                <input type="text" id="group-name" placeholder="Nome da Equipe" class="w-full max-w-md p-3 bg-gray-800 border border-gray-700 rounded-lg">
+                <div id="members-inputs" class="w-full max-w-md space-y-3">
+                    <input type="text" placeholder="Nome do Membro 1" class="member-name w-full p-3 bg-gray-800 border-gray-700 rounded-lg">
+                    <input type="text" placeholder="Nome do Membro 2" class="member-name w-full p-3 bg-gray-800 border-gray-700 rounded-lg">
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="window.addMemberField()" class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg">Adicionar Membro</button>
+                    <button onclick="window.createGroup()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-lg font-bold">Iniciar Missão</button>
+                </div>
+            </div>
+        `;
+        
+        const TestScreen = () => {
+            const member = state.groupData.members[state.currentMemberIndex];
+            return `
+                <div class="flex flex-col w-full">
+                    <h2 class="text-3xl font-bold text-center mb-2">Etapa 1: O Teste de Perfil</h2>
+                    <p class="text-lg text-gray-400 text-center mb-6"><span class="font-bold text-blue-400">${member.name}</span>, é a sua vez!</p>
+                    <div id="quiz-form" class="space-y-6">
+                    ${quizQuestions.map((q, index) => `
+                        <div>
+                            <p class="text-lg font-semibold mb-3">${index + 1}. ${q.question}</p>
+                            <div class="space-y-2">
+                                ${Object.entries(q.options).map(([key, value]) => `
+                                    <div>
+                                        <input type="radio" name="question-${index}" value="${key}" id="q${index}_${key}" class="hidden">
+                                        <label for="q${index}_${key}" class="option-label">${value}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                    </div>
+                    <button onclick="window.submitTest()" class="w-full mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-lg font-bold">Confirmar Respostas</button>
+                </div>
+            `;
+        };
+
+        const CompanyScreen = () => `
+            <div class="flex flex-col items-center gap-6">
+                 <h2 class="text-4xl font-bold text-center">Resultados e Decisão</h2>
+                 <p class="text-xl text-gray-300">Analisem suas forças e escolham o caminho da sua empresa.</p>
+                 <div class="p-4 bg-gray-800 rounded-lg w-full max-w-lg text-center">
+                    <h3 class="text-2xl font-bold mb-2">Resumo do Grupo</h3>
+                    <p class="text-lg text-blue-300">${Object.entries(state.groupData.members.reduce((acc, m) => { acc[m.profile.name] = (acc[m.profile.name] || 0) + 1; return acc; }, {})).map(([name, count]) => `${count}x ${name}`).join(', ')}</p>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-4">
+                    ${companies.map(c => `<div id="${c.id}" class="card p-6 rounded-lg cursor-pointer" onclick="window.selectCompany('${c.id}')">
+                        <h3 class="text-2xl font-bold">${c.name}</h3>
+                        <p class="text-blue-400 font-semibold">${c.tagline}</p>
+                        <p class="mt-2 text-gray-300">${c.description}</p>
+                    </div>`).join('')}
+                 </div>
+                 <button onclick="window.confirmCompany()" id="confirm-company-btn" class="mt-4 px-8 py-3 bg-gray-600 rounded-lg cursor-not-allowed" disabled>Confirmar Empresa</button>
+            </div>
+        `;
+        
+        const RolesScreen = () => `
+            <div class="flex flex-col items-center gap-6">
+                <h2 class="text-4xl font-bold text-center">Montando a Liderança</h2>
+                <p class="text-xl text-gray-300">Definam o nome da empresa e distribuam os cargos.</p>
+                <input type="text" id="company-name-input" placeholder="Nome da Empresa" class="w-full max-w-lg p-3 mt-4 bg-gray-800 border-gray-700 rounded-lg">
+                <div class="w-full max-w-2xl space-y-4 mt-4">
+                    ${roles.slice(0, state.groupData.members.length).map(role => `
+                        <div class="flex items-center gap-4 bg-gray-800 p-3 rounded-lg">
+                            <div class="w-1/3">
+                                <label class="text-lg font-semibold">${role.name}:</label>
+                                <p class="text-sm text-gray-400">${role.desc}</p>
+                            </div>
+                            <select id="role-${role.name}" class="role-select w-2/3 p-3 bg-gray-700 border-gray-600 rounded-lg">
+                                <option value="">Selecione um membro</option>
+                                ${state.groupData.members.map(m => `<option value="${m.name}">${m.name} (${m.profile.name})</option>`).join('')}
+                            </select>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="window.confirmRoles()" class="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-lg font-bold">Confirmar Cargos</button>
+            </div>
+        `;
+        
+        const HiringScreen = () => {
+            const company = companies.find(c => c.id === state.groupData.companyId);
+            return `
+            <div class="flex flex-col items-center gap-6">
+                <h2 class="text-4xl font-bold text-center">Expandindo a Equipe</h2>
+                <p class="text-xl text-gray-300">Vocês têm <span class="font-bold text-blue-400">10 Pontos de Recurso (PR)</span> para as primeiras contratações.</p>
+                <div class="p-4 bg-gray-800 rounded-lg w-full max-w-2xl text-center border border-blue-500">
+                    <h3 class="text-xl font-bold mb-1">Dica Estratégica para ${company.name}</h3>
+                    <p class="text-gray-300">${company.hint}</p>
+                </div>
+                <div class="w-full max-w-2xl space-y-3 mt-4" id="hire-options">
+                    ${hireableRoles.map(r => `
+                        <div>
+                          <input type="checkbox" id="hire-${r.name.replace(/\s/g, '')}" value="${r.name}" data-cost="${r.cost}" class="hidden hire-checkbox" onchange="window.updateHiringCost()">
+                          <label for="hire-${r.name.replace(/\s/g, '')}" class="option-label flex justify-between items-center">
+                            <span>${r.name}</span>
+                            <span class="font-bold text-yellow-400">${r.cost} PR</span>
+                          </label>
+                        </div>
+                    `).join('')}
+                </div>
+                <p class="text-xl">Custo Total: <span id="total-cost" class="font-bold">0</span> / 10 PR</p>
+                <button onclick="window.confirmHires()" class="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-lg font-bold">Confirmar Contratações</button>
+            </div>
+        `};
+
+        const SummaryScreen = () => `
+            <div class="flex flex-col items-center text-center gap-6">
+                <h2 class="text-4xl font-bold text-green-400">Etapa 1 Concluída!</h2>
+                <p class="text-xl text-gray-300">Aguardem as instruções do professor para a próxima fase.</p>
+                <div class="flex flex-col md:flex-row gap-6 w-full">
+                    <!-- Your Company -->
+                    <div class="p-6 bg-gray-800 rounded-lg w-full text-left space-y-4 border-2 border-blue-500">
+                        <h3 class="text-3xl font-bold text-center">${state.groupData.companyName}</h3>
+                        <div>
+                            <h4 class="text-xl font-semibold text-blue-400">Equipe de Liderança:</h4>
+                            <ul class="list-disc list-inside space-y-1">${Object.entries(state.groupData.roles).map(([role, name]) => `<li><span class="font-bold">${role}:</span> ${name}</li>`).join('')}</ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold text-blue-400">Novas Contratações:</h4>
+                            <ul class="list-disc list-inside space-y-1">${state.groupData.hires.map(hire => `<li>${hire.name}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                    <!-- Scoreboard -->
+                    <div class="p-6 bg-gray-800 rounded-lg w-full md:w-2/3">
+                        <h3 class="text-3xl font-bold text-center">Placar da Rodada</h3>
+                        <div class="mt-4 space-y-2">
+                        ${state.scoresVisible 
+                            ? state.allGroups.sort((a,b) => b.score - a.score).map(g => `
+                                <div class="flex justify-between items-center p-2 bg-gray-700 rounded-lg ${g.id === state.groupId ? 'border-2 border-yellow-400' : ''}">
+                                    <span class="font-semibold">${g.name}</span>
+                                    <span class="font-bold text-xl text-green-400">${g.score} pts</span>
+                                </div>`).join('')
+                            : '<p class="text-gray-400">Aguardando o professor revelar as pontuações...</p>'
+                        }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // --- EVENT HANDLERS (attached to window) ---
+        window.addMemberField = () => {
+            const container = document.getElementById('members-inputs');
+            const newIndex = container.children.length + 1;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Nome do Membro ${newIndex}`;
+            input.className = "member-name w-full p-3 bg-gray-800 border-gray-700 rounded-lg";
+            container.appendChild(input);
+        };
+        
+        window.createGroup = async () => {
+            const groupName = document.getElementById('group-name').value.trim();
+            const memberInputs = document.querySelectorAll('.member-name');
+            const members = Array.from(memberInputs).map(input => ({ name: input.value.trim() })).filter(m => m.name);
+            if (!groupName || members.length < 2) {
+                alert('Preencha o nome da equipe e pelo menos 2 membros.');
+                return;
+            }
+            const groupId = groupName.replace(/\s+/g, '-') + '-' + Date.now();
+            localStorage.setItem(`groupId_${appId}`, groupId);
+            state.groupId = groupId;
+            const initialData = { name: groupName, members: members, id: groupId };
+            await updateGroupData(initialData);
+            // No need to call render manually, onSnapshot will do it.
+        };
+        
+        window.submitTest = () => {
+            const answers = quizQuestions.map((_, i) => document.querySelector(`input[name="question-${i}"]:checked`)?.value).filter(Boolean);
+            if (answers.length < quizQuestions.length) {
+                alert('Responda todas as perguntas.');
+                return;
+            }
+            const counts = answers.reduce((acc, curr) => { acc[curr] = (acc[curr] || 0) + 1; return acc; }, {});
+            const profileKey = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            
+            let updatedMembers = [...state.groupData.members];
+            updatedMembers[state.currentMemberIndex].profile = profiles[profileKey];
+
+            if (state.currentMemberIndex < state.groupData.members.length - 1) {
+                state.currentMemberIndex++;
+                render(); // Re-render for the next student
+            } else {
+                updateGroupData({ members: updatedMembers });
+            }
+        };
+
+        window.selectCompany = (companyId) => {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+            document.getElementById(companyId).classList.add('selected');
+            document.getElementById('confirm-company-btn').disabled = false;
+            document.getElementById('confirm-company-btn').classList.remove('bg-gray-600', 'cursor-not-allowed');
+            document.getElementById('confirm-company-btn').classList.add('bg-blue-600');
+            state.selectedCompanyId = companyId;
+        };
+
+        window.confirmCompany = () => {
+            if (state.selectedCompanyId) {
+                updateGroupData({ companyId: state.selectedCompanyId });
+            }
+        };
+
+        window.confirmRoles = () => {
+            const companyName = document.getElementById('company-name-input').value.trim();
+            if(!companyName) { alert('Defina um nome para a empresa.'); return; }
+
+            const roleAssignments = {};
+            const assignedMembers = new Set();
+            let allRolesAssigned = true, duplicate = false;
+            
+            document.querySelectorAll('.role-select').forEach(select => {
+                const role = select.id.replace('role-', '');
+                const memberName = select.value;
+                if(!memberName) allRolesAssigned = false;
+                if(assignedMembers.has(memberName) && memberName) duplicate = true;
+                assignedMembers.add(memberName);
+                roleAssignments[role] = memberName;
+            });
+
+            if(!allRolesAssigned) { alert("Atribua todos os cargos."); return; }
+            if(duplicate) { alert("Cada membro só pode ocupar um cargo."); return; }
+
+            updateGroupData({ companyName: companyName, roles: roleAssignments });
+        };
+        
+        window.updateHiringCost = () => {
+            let totalCost = 0;
+            document.querySelectorAll('.hire-checkbox:checked').forEach(checkbox => {
+                totalCost += parseInt(checkbox.dataset.cost);
+            });
+            document.getElementById('total-cost').textContent = totalCost;
+            if (totalCost > 10) {
+                document.getElementById('total-cost').classList.add('text-red-500');
+            } else {
+                document.getElementById('total-cost').classList.remove('text-red-500');
+            }
+        };
+
+        window.confirmHires = () => {
+            let totalCost = 0;
+            const hires = [];
+            document.querySelectorAll('.hire-checkbox:checked').forEach(checkbox => {
+                const cost = parseInt(checkbox.dataset.cost);
+                totalCost += cost;
+                hires.push({ name: checkbox.value, cost: cost });
+            });
+
+            if (totalCost > 10) {
+                alert('Seu custo total excede 10 PR. Desmarque algumas opções.');
+                return;
+            }
+            // Calculate score and update
+            calculateScore({ ...state.groupData, hires: hires });
+        };
+
+        const calculateScore = (finalGroupData) => {
+            let score = 0;
+            const members = finalGroupData.members;
+            const companyId = finalGroupData.companyId;
+
+            // Company choice score
+            const profilesCount = members.reduce((acc, m) => {
+                if (m.profile.name === profiles.A.name) acc.A = (acc.A || 0) + 1;
+                if (m.profile.name === profiles.B.name) acc.B = (acc.B || 0) + 1;
+                if (m.profile.name === profiles.C.name) acc.C = (acc.C || 0) + 1;
+                if (m.profile.name === profiles.D.name) acc.D = (acc.D || 0) + 1;
+                return acc;
+            }, { A: 0, B: 0, C: 0, D: 0 });
+
+            const affinity = {
+                inovaTech: (profilesCount.A * 3) + (profilesCount.B * 2) + (profilesCount.C * 1) + (profilesCount.D * 1),
+                conectaSoft: (profilesCount.C * 3) + (profilesCount.B * 2) + (profilesCount.A * 1) + (profilesCount.D * 1),
+                ordoSys: (profilesCount.D * 3) + (profilesCount.B * 2) + (profilesCount.C * 1) + (profilesCount.A * 1)
+            };
+            const sortedAffinities = Object.values(affinity).sort((a, b) => b - a);
+            const chosenAffinity = affinity[companyId];
+            if (chosenAffinity === sortedAffinities[0]) score += 15;
+            else if (chosenAffinity === sortedAffinities[1]) score += 5;
+            else score -= 5;
+            
+            // Hire score
+            finalGroupData.hires.forEach(hire => {
+                const roleData = hireableRoles.find(r => r.name === hire.name);
+                if (roleData.strategicFor === companyId) score += 5;
+                else score += 1;
+            });
+
+            updateGroupData({ hires: finalGroupData.hires, score: Math.min(score, 30) }); // Max score capped
+        };
+
+        // --- PROFESSOR MODE ---
+        window.showProfessorLogin = () => {
+            const pass = prompt("Digite a senha do professor:");
+            if(pass === "mestre123") {
+                const btn = document.getElementById('professor-button');
+                btn.textContent = "Revelar Pontuações";
+                btn.onclick = window.revealScores;
+                btn.style.backgroundColor = '#10B981';
+            } else {
+                alert("Senha incorreta.");
+            }
+        };
+
+        window.revealScores = async () => {
+            if(confirm("Tem certeza que deseja revelar as pontuações para todos os grupos?")) {
+                const gameStateRef = doc(db, `artifacts/${appId}/public/data/gamestate`, 'main');
+                await setDoc(gameStateRef, { scoresVisible: true });
+            }
+        };
+
+        // --- REAL-TIME LISTENERS ---
+        async function setupListeners() {
+            // Listen for changes in my own group's data
+            if (state.groupId) {
+                onSnapshot(doc(db, `artifacts/${appId}/public/data/groups`, state.groupId), (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        state.groupData = data;
+                        
+                        // Sync current test member index if needed
+                        if(data.members && !data.members.some(m => !m.profile)) {
+                            // Test is done
+                        } else if (data.members) {
+                            state.currentMemberIndex = data.members.findIndex(m => !m.profile);
+                            if(state.currentMemberIndex === -1) state.currentMemberIndex = 0; // Should not happen
+                        }
+                        
+                        render();
+                    }
+                });
+            }
+
+            // Listen for changes in ALL groups for the scoreboard
+            onSnapshot(collection(db, `artifacts/${appId}/public/data/groups`), (snapshot) => {
+                state.allGroups = snapshot.docs.map(doc => doc.data());
+                render();
+            });
+
+            // Listen for global game state changes (like score visibility)
+            onSnapshot(doc(db, `artifacts/${appId}/public/data/gamestate`, 'main'), (doc) => {
+                if(doc.exists() && doc.data().scoresVisible) {
+                    state.scoresVisible = true;
+                    render();
+                }
+            });
+        }
+        
+        // --- APP STARTUP ---
+        (async () => {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                console.log("Authenticated user:", auth.currentUser.uid);
+                await setupListeners();
+                render();
+            } catch (error) {
+                console.error("Authentication or Listener setup failed:", error);
+                document.getElementById('app-container').innerHTML = `<div class="text-red-500 text-center">Falha na autenticação. Recarregue a página.</div>`;
+            }
+        })();
+    </script>
+</body>
+</html>
+
+
