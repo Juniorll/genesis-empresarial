@@ -708,43 +708,62 @@
                     const code = joinCodeInput.value.trim().toUpperCase();
                     const userName = playerNameInput.value.trim();
                     const password = playerPasswordInput.value.trim();
-                    if(!code || !userName || !password) return;
+                    if (!code || !userName || !password) return;
 
                     loading.value = true;
                     loadingMessage.value = "Entrando na equipe...";
 
-                    const q = query(collection(db, "apps", appId, "teams"), where("joinCode", "==", code));
-                    const querySnapshot = await getDocs(q);
+                    try {
+                        const q = query(collection(db, "apps", appId, "teams"), where("joinCode", "==", code));
+                        const querySnapshot = await getDocs(q);
 
-                    if (querySnapshot.empty) {
-                        alert("Código de equipe inválido.");
-                        loading.value = false;
-                        return;
-                    }
-                    
-                    const teamDoc = querySnapshot.docs[0];
-                    const teamData = teamDoc.data();
-                    const existingMember = teamData.members.find(m => m.name.toLowerCase() === userName.toLowerCase());
-
-                    if (existingMember) { // Verificando senha para membro existente
-                        if (existingMember.password !== password) {
-                            alert("Senha incorreta para este nome de usuário.");
-                            loading.value = false;
+                        if (querySnapshot.empty) {
+                            alert("Código de equipe inválido.");
                             return;
                         }
-                         if(existingMember.id !== userId.value && !isRejoin) {
-                             alert('Este nome de usuário já está sendo usado por outra pessoa nesta equipe.');
-                             loading.value = false;
-                             return;
-                         }
-                    } else { // Adicionando novo membro
-                        const newMember = { id: userId.value, name: userName, password: password, profile: null };
-                        await updateDoc(teamDoc.ref, { members: arrayUnion(newMember) });
-                    }
 
-                    await syncWithTeam(teamDoc.id);
-                    localStorage.setItem('genesis-empresarial-session', JSON.stringify({ teamId: teamDoc.id, joinCode: code, playerName: userName, playerPassword: password }));
-                    loading.value = false;
+                        const teamDoc = querySnapshot.docs[0];
+                        const teamData = teamDoc.data();
+                        let members = [...(teamData.members || [])];
+                        const memberIndex = members.findIndex(m => m.name.toLowerCase() === userName.toLowerCase());
+
+                        if (memberIndex !== -1) { // Member exists by name
+                            const existingMember = members[memberIndex];
+                            if (existingMember.password !== password) {
+                                alert("Senha incorreta para este nome de usuário.");
+                                return;
+                            }
+                            
+                            if (existingMember.id !== userId.value) {
+                                const oldId = existingMember.id;
+                                members[memberIndex].id = userId.value;
+                                
+                                const updatedAssignedRoles = { ...teamData.assignedRoles };
+                                for (const role in updatedAssignedRoles) {
+                                    if (updatedAssignedRoles[role] === oldId) {
+                                        updatedAssignedRoles[role] = userId.value;
+                                    }
+                                }
+                                await updateDoc(teamDoc.ref, { members: members, assignedRoles: updatedAssignedRoles });
+                            }
+                        } else { // New member
+                            if (teamData.currentStep > 1) {
+                                alert("Não é possível entrar em uma equipe que já iniciou a atividade.");
+                                return;
+                            }
+                            const newMember = { id: userId.value, name: userName, password: password, profile: null };
+                            await updateDoc(teamDoc.ref, { members: arrayUnion(newMember) });
+                        }
+
+                        await syncWithTeam(teamDoc.id);
+                        localStorage.setItem('genesis-empresarial-session', JSON.stringify({ teamId: teamDoc.id, joinCode: code, playerName: userName, playerPassword: password }));
+                    
+                    } catch (error) {
+                        console.error("Erro ao entrar na equipe:", error);
+                        alert("Ocorreu um erro inesperado. Verifique o console para mais detalhes.");
+                    } finally {
+                        loading.value = false;
+                    }
                 };
 
                 const calculateProfile = () => {
