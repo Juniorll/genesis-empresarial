@@ -22,6 +22,7 @@
         .slide-fade-enter-active { transition: all 0.3s ease-out; }
         .slide-fade-leave-active { transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1); }
         .slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0; }
+        .join-code { letter-spacing: 0.25em; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -67,21 +68,50 @@
             <transition name="fade">
                 <div v-if="!loading && connected">
                     
-                    <!-- ETAPA 0: NOME DA EQUIPE -->
+                    <!-- ETAPA 0: ENTRAR/CRIAR EQUIPE -->
                     <section v-if="currentStep === 0" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-4">Bem-vindos, Empreendedores!</h2>
-                        <p class="mb-6 text-gray-600">Para começar a jornada, sua equipe precisa de um nome. Escolham um nome que represente a visão e a energia de vocês.</p>
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <input type="text" v-model="teamNameInput" @keyup.enter="setTeamName" placeholder="Digite o nome da sua equipe aqui" class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <button @click="setTeamName" class="bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!teamNameInput.trim()">Criar Equipe</button>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <!-- Criar Equipe -->
+                            <div>
+                                <h3 class="text-xl font-semibold mb-3">Criar uma Nova Equipe</h3>
+                                <p class="mb-4 text-gray-600 text-sm">Se você é o primeiro do seu grupo, crie a equipe e compartilhe o código com os outros.</p>
+                                <input type="text" v-model="teamNameInput" placeholder="Nome da sua nova equipe" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" v-model="creatorNameInput" placeholder="Seu nome" class="w-full p-3 mt-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                <button @click="createTeam" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!teamNameInput.trim() || !creatorNameInput.trim()">Criar Equipe</button>
+                            </div>
+                             <!-- Entrar na Equipe -->
+                            <div>
+                                <h3 class="text-xl font-semibold mb-3">Entrar em uma Equipe</h3>
+                                <p class="mb-4 text-gray-600 text-sm">Se sua equipe já foi criada, insira o código fornecido pelo seu colega.</p>
+                                <input type="text" v-model="joinCodeInput" @keyup.enter="joinTeam" placeholder="Código da Equipe (Ex: A1B2)" class="w-full p-3 border border-gray-300 rounded-lg uppercase text-center font-mono text-lg">
+                                <button @click="joinTeam" class="mt-3 w-full bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-all disabled:bg-gray-400" :disabled="!joinCodeInput.trim()">Entrar na Equipe</button>
+                            </div>
                         </div>
                     </section>
+                    
+                    <!-- SALA DE ESPERA -->
+                    <section v-if="currentStep === 0.5" class="bg-white p-8 rounded-xl shadow-lg text-center">
+                        <h2 class="text-2xl font-bold mb-2">Equipe: {{ teamName }}</h2>
+                        <p class="mb-4 text-gray-600">Compartilhe o código abaixo com seus colegas para eles entrarem na equipe:</p>
+                        <div class="bg-indigo-100 text-indigo-800 text-4xl font-bold p-4 rounded-lg inline-block mb-6 join-code cursor-pointer" @click="copyJoinCode">
+                            {{ joinCodeDisplay }}
+                        </div>
+                        <p class="font-semibold mb-3">Membros na equipe:</p>
+                        <div class="flex justify-center flex-wrap gap-4 mb-6">
+                            <div v-for="member in teamMembers" :key="member.id" class="bg-gray-200 px-4 py-2 rounded-full text-gray-800">
+                                {{ member.name }}
+                            </div>
+                        </div>
+                        <button @click="startStep1" class="bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Começar Atividade!</button>
+                    </section>
+
 
                     <!-- ETAPA 1: TESTE DE PERFIL -->
                     <section v-if="currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 1: Quem é você no mundo dos negócios?</h2>
                         <p class="mb-6 text-gray-600">Responda às perguntas abaixo para descobrir seu perfil profissional. Seja honesto! Não há respostas certas ou erradas.</p>
-                        <div v-if="!profile" class="space-y-6">
+                        <div v-if="!userProfile" class="space-y-6">
                             <div v-for="(question, qIndex) in questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
                                 <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
                                 <div class="space-y-2">
@@ -94,11 +124,20 @@
                             <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="answers.includes(null)">Revelar meu Perfil</button>
                         </div>
                         <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
-                             <h3 class="text-2xl font-bold text-indigo-800">{{ profile.name }}</h3>
-                             <p class="text-indigo-600 font-semibold mt-1">{{ profile.title }}</p>
-                             <p class="mt-4 text-left">{{ profile.description }}</p>
+                             <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
+                             <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
+                             <p class="mt-4 text-left">{{ userProfile.description }}</p>
                              <p class="mt-4 font-semibold text-left">Lembre-se: Este é um ponto de partida. Grandes profissionais combinam características de múltiplos perfis!</p>
-                             <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Entendido! Próxima Etapa</button>
+                             <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-all">Confirmar e aguardar equipe</button>
+                        </div>
+                        
+                        <div v-if="hasUserConfirmedProfile" class="mt-6 text-center">
+                            <p class="font-semibold">Aguardando todos os membros da equipe preencherem seus perfis...</p>
+                            <ul class="list-none p-0 mt-2 text-sm">
+                                <li v-for="member in teamMembers" :key="member.id" :class="member.profile ? 'text-green-600' : 'text-red-600'">
+                                    {{ member.name }}: {{ member.profile ? 'Pronto ✔' : 'Pendente ⌛' }}
+                                </li>
+                            </ul>
                         </div>
                     </section>
                     
@@ -111,7 +150,7 @@
                             <div v-for="company in companies" :key="company.id" 
                                  class="border-2 rounded-xl p-6 flex flex-col transition-all cursor-pointer"
                                  :class="selectedCompany === company.id ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-200 hover:border-indigo-400'"
-                                 @click="selectedCompany = company.id">
+                                 @click="selectCompany(company.id)">
                                 <h3 class="text-xl font-bold text-gray-900">{{ company.name }}</h3>
                                 <p class="text-indigo-600 font-semibold text-sm mb-3">{{ company.slogan }}</p>
                                 <p class="text-gray-600 flex-grow">{{ company.description }}</p>
@@ -125,10 +164,10 @@
                         <h2 class="text-2xl font-bold mb-2">Etapa 3: Organizando a Liderança</h2>
                         <p class="mb-6 text-gray-600">Toda grande empresa precisa de uma estrutura. Com base nos perfis e habilidades, decidam quem ocupará os cargos de liderança iniciais (C-Level). Cada membro da equipe deve assumir um dos cargos abaixo.</p>
                         <div class="space-y-4">
-                            <div v-for="role in roles" :key="role.id" class="bg-gray-50 p-4 rounded-lg">
+                            <div v-for="role in availableRoles" :key="role.id" class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-bold">{{ role.name }} ({{ role.id }})</h3>
                                 <p class="text-sm text-gray-600 mb-2">{{ role.description }}</p>
-                                <select v-model="assignedRoles[role.id]" class="w-full p-2 border border-gray-300 rounded-lg">
+                                <select v-model="assignedRoles[role.id]" @change="updateRoles" class="w-full p-2 border border-gray-300 rounded-lg">
                                     <option :value="null" disabled>Selecione um membro da equipe</option>
                                     <option v-for="member in teamMembers" :key="member.id" :value="member.id" :disabled="isMemberAssigned(member.id) && assignedRoles[role.id] !== member.id">
                                         {{ member.name }} ({{ member.profile }})
@@ -136,7 +175,7 @@
                                 </select>
                             </div>
                         </div>
-                        <button @click="confirmRoles" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!areAllRolesAssigned()">Confirmar Cargos</button>
+                        <button @click="confirmRoles" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!areAllRolesAssigned">Confirmar Cargos</button>
                     </section>
 
                     <!-- ETAPA 4: CONTRATAÇÃO E ORGANOGRAMA -->
@@ -173,33 +212,28 @@
                     <section v-if="currentStep === 5" class="bg-white p-8 rounded-xl shadow-lg">
                          <h2 class="text-2xl font-bold mb-4 text-center">Estrutura da {{ teamName }}</h2>
                          <div id="organogram-container" class="bg-gray-50 p-6 rounded-lg border border-gray-200 overflow-x-auto">
-                            <div class="text-center mb-8">
+                            <!-- CEO (se existir) -->
+                            <div class="text-center mb-8" v-if="assignedRoles['CEO']">
                                 <div class="inline-block bg-indigo-600 text-white p-4 rounded-lg shadow-lg">
                                     <p class="font-bold text-lg">{{ getRoleHolderName('CEO') }}</p>
                                     <p class="text-sm">CEO (Diretor Executivo)</p>
                                 </div>
                             </div>
-                            <div class="flex justify-center items-start gap-4 md:gap-8">
-                                <!-- Coluna do COO -->
-                                <div class="text-center">
-                                    <div class="inline-block bg-blue-500 text-white p-3 rounded-lg shadow">
-                                        <p class="font-bold">{{ getRoleHolderName('COO') }}</p>
-                                        <p class="text-xs">COO (Diretor de Operações)</p>
+                            <!-- Outros cargos C-Level -->
+                            <div class="flex justify-center items-start gap-4 md:gap-8 flex-wrap">
+                                <div class="text-center" v-for="role in otherRoles" :key="role.id">
+                                     <div class="inline-block text-white p-3 rounded-lg shadow" :class="getRoleColor(role.id)">
+                                        <p class="font-bold">{{ getRoleHolderName(role.id) }}</p>
+                                        <p class="text-xs">{{ role.id }} ({{ role.name.split('(')[0].trim() }})</p>
                                     </div>
-                                    <div v-if="hiredCounts['Gerente de Projetos'] > 0 || hiredCounts['Analista de Qualidade'] > 0" class="mt-4 space-y-3">
-                                        <div v-if="hiredCounts['Gerente de Projetos'] > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Gerente de Projetos ({{ hiredCounts['Gerente de Projetos'] }})</div>
-                                        <div v-if="hiredCounts['Analista de Qualidade'] > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Analista de Qualidade ({{ hiredCounts['Analista de Qualidade'] }})</div>
+                                    <!-- Funcionários subordinados -->
+                                    <div v-if="role.id === 'COO' && (getHireCount('Gerente de Projetos') > 0 || getHireCount('Analista de Qualidade') > 0)" class="mt-4 space-y-3">
+                                        <div v-if="getHireCount('Gerente de Projetos') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Gerente de Projetos ({{ getHireCount('Gerente de Projetos') }})</div>
+                                        <div v-if="getHireCount('Analista de Qualidade') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Analista de Qualidade ({{ getHireCount('Analista de Qualidade') }})</div>
                                     </div>
-                                </div>
-                                <!-- Coluna do CTO -->
-                                <div class="text-center">
-                                    <div class="inline-block bg-teal-500 text-white p-3 rounded-lg shadow">
-                                        <p class="font-bold">{{ getRoleHolderName('CTO') }}</p>
-                                        <p class="text-xs">CTO (Diretor de Tecnologia)</p>
-                                    </div>
-                                     <div v-if="hiredCounts['Desenvolvedor Sênior'] > 0 || hiredCounts['Desenvolvedor Júnior'] > 0" class="mt-4 space-y-3">
-                                        <div v-if="hiredCounts['Desenvolvedor Sênior'] > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Sênior ({{ hiredCounts['Desenvolvedor Sênior'] }})</div>
-                                        <div v-if="hiredCounts['Desenvolvedor Júnior'] > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Júnior ({{ hiredCounts['Desenvolvedor Júnior'] }})</div>
+                                     <div v-if="role.id === 'CTO' && (getHireCount('Desenvolvedor Sênior') > 0 || getHireCount('Desenvolvedor Júnior') > 0)" class="mt-4 space-y-3">
+                                        <div v-if="getHireCount('Desenvolvedor Sênior') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Sênior ({{ getHireCount('Desenvolvedor Sênior') }})</div>
+                                        <div v-if="getHireCount('Desenvolvedor Júnior') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Júnior ({{ getHireCount('Desenvolvedor Júnior') }})</div>
                                     </div>
                                 </div>
                             </div>
@@ -260,7 +294,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- FIREBASE CONFIG (WILL BE PROVIDED BY THE ENVIRONMENT) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'genesis-empresarial-dev';
@@ -299,9 +333,14 @@
                 const connectionMessage = ref('');
                 const currentStep = ref(0);
                 const userId = ref(null);
-                const teamId = ref(null); // teamName em hash ou ID unico
+                const teamId = ref(null);
                 const teamName = ref('');
                 const teamNameInput = ref('');
+                const creatorNameInput = ref('');
+                const joinCodeInput = ref('');
+                const joinCodeDisplay = ref('');
+                let teamListener = null;
+
 
                 // Dados da Atividade
                 const questions = reactive([
@@ -312,7 +351,8 @@
                     { text: "O que é mais importante para o sucesso de uma empresa?", options: [{text: "Processos eficientes e decisões baseadas em dados.", type: "Analista"},{text: "Uma visão de futuro ousada e capacidade de se reinventar.", type: "Inovador"},{text: "Entregar resultados de forma rápida e consistente.", type: "Executor"},{text: "Uma cultura forte e um bom relacionamento com clientes e equipe.", type: "Comunicador"}]}
                 ]);
                 const answers = ref(Array(questions.length).fill(null));
-                const profile = ref(null);
+                const userProfile = ref(null);
+                const hasUserConfirmedProfile = ref(false);
                 const profiles = {
                     Analista: { name: "O Arquiteto Analista", title: "A Mente Estratégica", description: "Você é metódico, detalhista e brilha ao analisar dados para tomar decisões bem-fundamentadas. Sua força está em criar sistemas lógicos, encontrar falhas e garantir a qualidade e a estabilidade. Processos e planejamento são seus melhores amigos." },
                     Inovador: { name: "O Visionário Inovador", title: "A Força Criativa", description: "Você enxerga além do óbvio e adora criar soluções disruptivas. Sua mente está sempre borbulhando com novas ideias e possibilidades. Você não tem medo de arriscar e é apaixonado por construir o futuro, mesmo que o caminho seja incerto." },
@@ -327,12 +367,14 @@
                 ]);
                 const selectedCompany = ref(null);
 
-                const roles = reactive([
+                const allRoles = reactive([
                     {id: 'CEO', name: 'Chief Executive Officer', description: 'O líder principal. Define a visão e a estratégia geral da empresa, sendo o rosto da organização.'},
                     {id: 'CTO', name: 'Chief Technology Officer', description: 'O líder da tecnologia. Supervisiona o desenvolvimento, a infraestrutura e a inovação tecnológica do produto.'},
-                    {id: 'COO', name: 'Chief Operating Officer', description: 'O líder das operações. Garante que os processos do dia a dia da empresa funcionem de forma eficiente e produtiva.'}
+                    {id: 'COO', name: 'Chief Operating Officer', description: 'O líder das operações. Garante que os processos do dia a dia da empresa funcionem de forma eficiente e produtiva.'},
+                    {id: 'CFO', name: 'Chief Financial Officer', description: 'O líder financeiro. Gerencia o capital, o planejamento financeiro e os investimentos da empresa.'},
+                    {id: 'CMO', name: 'Chief Marketing Officer', description: 'O líder de marketing. Supervisiona o branding, a publicidade e as estratégias para alcançar novos clientes.'},
                 ]);
-                const assignedRoles = ref({ CEO: null, CTO: null, COO: null });
+                const assignedRoles = ref({});
                 const teamMembers = ref([]);
 
                 const resourcePoints = ref(100);
@@ -360,6 +402,42 @@
                 const remainingPoints = computed(() => {
                     return resourcePoints.value - Object.values(hiredCounts.value).reduce((total, hire) => total + (hire.count * hire.cost), 0);
                 });
+
+                const availableRoles = computed(() => {
+                    if (teamMembers.value.length === 0) return [];
+                    // Garante que o número de cargos não exceda o total de cargos definidos
+                    const rolesCount = Math.min(teamMembers.value.length, allRoles.length);
+                    return allRoles.slice(0, rolesCount);
+                });
+
+                const otherRoles = computed(() => {
+                    return availableRoles.value.filter(role => role.id !== 'CEO');
+                });
+                
+                const areAllRolesAssigned = computed(() => {
+                    if (availableRoles.value.length === 0) return false;
+                    const assignedMemberIds = Object.values(assignedRoles.value).filter(id => id !== null);
+                    const allRolesFilled = availableRoles.value.every(role => assignedRoles.value[role.id]);
+                    const uniqueAssignedCount = new Set(assignedMemberIds).size;
+                    return allRolesFilled && uniqueAssignedCount === teamMembers.value.length;
+                });
+
+                const areAllMembersReadyForNextStep = computed(() => {
+                    if (currentStep.value === 1) {
+                         return teamMembers.value.length > 0 && teamMembers.value.every(m => m.profile);
+                    }
+                    return false;
+                });
+                
+                watch(areAllMembersReadyForNextStep, (newValue) => {
+                    if(newValue && currentStep.value === 1) {
+                        // Apenas o "líder" (primeiro a entrar) avança a etapa para evitar escritas múltiplas
+                        if(teamMembers.value.length > 0 && userId.value === teamMembers.value[0].id) {
+                           saveState({ currentStep: 2 });
+                        }
+                    }
+                });
+
 
                 // Funções e Métodos
                 const setupFirebase = () => {
@@ -389,39 +467,21 @@
                 };
                 
                 const loadGameState = async () => {
-                    const localData = JSON.parse(localStorage.getItem(`genesis-empresarial-${userId.value}`));
+                    const localData = JSON.parse(localStorage.getItem(`genesis-empresarial-user`));
                     if (localData && localData.teamId) {
-                        teamId.value = localData.teamId;
-                        teamName.value = localData.teamName;
-
-                        const docRef = doc(db, "apps", appId, "teams", teamId.value);
-                        const docSnap = await getDoc(docRef);
-
-                        if (docSnap.exists()) {
-                            const data = docSnap.data();
-                            currentStep.value = data.currentStep || 0;
-                            selectedCompany.value = data.selectedCompany || null;
-                            assignedRoles.value = data.assignedRoles || { CEO: null, CTO: null, COO: null };
-                            teamMembers.value = data.members || [];
-                            hiredCounts.value = data.hiredCounts || {};
-                            // Find current user's profile
-                            const currentUserData = teamMembers.value.find(m => m.id === userId.value);
-                            if (currentUserData && currentUserData.profile) {
-                                profile.value = profiles[currentUserData.profile];
-                            }
-                        } else {
-                            // Discrepancy, reset local state
-                            resetLocalState();
-                        }
+                        await syncWithTeam(localData.teamId);
                     }
                     loading.value = false;
                 };
 
                 const resetLocalState = () => {
-                    localStorage.removeItem(`genesis-empresarial-${userId.value}`);
+                    localStorage.removeItem(`genesis-empresarial-user`);
+                    if(teamListener) teamListener(); // Unsubscribe from previous team listener
                     teamId.value = null;
                     teamName.value = '';
                     currentStep.value = 0;
+                    userProfile.value = null;
+                    hasUserConfirmedProfile.value = false;
                 }
 
                 const setupListeners = () => {
@@ -437,6 +497,38 @@
                         }
                     });
                 };
+                
+                 const syncWithTeam = async (newTeamId) => {
+                    teamId.value = newTeamId;
+                    if(teamListener) teamListener(); // Detach old listener
+
+                    const docRef = doc(db, "apps", appId, "teams", teamId.value);
+                    teamListener = onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            teamName.value = data.name;
+                            currentStep.value = data.currentStep || 0;
+                            selectedCompany.value = data.selectedCompany || null;
+                            assignedRoles.value = data.assignedRoles || {};
+                            teamMembers.value = data.members || [];
+                            hiredCounts.value = data.hiredCounts || {};
+                            joinCodeDisplay.value = data.joinCode;
+
+                            const currentUserData = teamMembers.value.find(m => m.id === userId.value);
+                            if (currentUserData) {
+                                if (currentUserData.profile) {
+                                    userProfile.value = profiles[currentUserData.profile];
+                                    hasUserConfirmedProfile.value = true;
+                                }
+                            }
+                             localStorage.setItem(`genesis-empresarial-user`, JSON.stringify({ teamId: teamId.value }));
+                        } else {
+                            alert("A equipe que você estava parece ter sido deletada.");
+                            resetLocalState();
+                        }
+                    });
+                };
+
 
                 const saveState = async (dataToSave) => {
                     if (!teamId.value) return;
@@ -448,25 +540,77 @@
                     }
                 };
 
-                const setTeamName = async () => {
+                const createTeam = async () => {
                     const name = teamNameInput.value.trim();
-                    if (!name) return;
-                    teamName.value = name;
-                    teamId.value = name.toLowerCase().replace(/\s+/g, '-');
+                    const userName = creatorNameInput.value.trim();
+                    if (!name || !userName) return;
                     
-                    localStorage.setItem(`genesis-empresarial-${userId.value}`, JSON.stringify({ teamId: teamId.value, teamName: teamName.value }));
-
-                    await saveState({
-                        name: teamName.value,
+                    const joinCode = (Math.random().toString(36).substring(2, 6) + Math.random().toString(36).substring(2, 6)).substring(0, 4).toUpperCase();
+                    
+                    const teamData = {
+                        name: name,
                         score: 0,
-                        currentStep: 1,
-                        members: [{ id: userId.value, name: `Membro ${Math.floor(Math.random() * 1000)}` }] // Placeholder name
-                    });
-                    
-                    // Add a way for user to set their name later if needed
-                    teamMembers.value = [{ id: userId.value, name: `Membro ${Math.floor(Math.random() * 1000)}` }];
-                    currentStep.value = 1;
+                        currentStep: 0.5, // Sala de espera
+                        joinCode: joinCode,
+                        members: [{ id: userId.value, name: userName, profile: null }],
+                        assignedRoles: {},
+                        hiredCounts: {},
+                        selectedCompany: null
+                    };
+
+                    try {
+                        const docRef = await addDoc(collection(db, "apps", appId, "teams"), teamData);
+                        await syncWithTeam(docRef.id);
+                    } catch (e) {
+                        console.error("Error creating team: ", e);
+                        alert("Não foi possível criar a equipe. Tente novamente.");
+                    }
                 };
+
+                const joinTeam = async () => {
+                    const code = joinCodeInput.value.trim().toUpperCase();
+                    if(!code) return;
+
+                    const q = query(collection(db, "apps", appId, "teams"), where("joinCode", "==", code));
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        alert("Código de equipe inválido. Verifique e tente novamente.");
+                        return;
+                    }
+                    
+                    const teamDoc = querySnapshot.docs[0];
+                    const existingMembers = teamDoc.data().members || [];
+                    if(existingMembers.some(m => m.id === userId.value)) {
+                        await syncWithTeam(teamDoc.id);
+                        return;
+                    }
+
+                    const userName = prompt("Bem-vindo! Por favor, digite seu nome:", `Membro ${Math.floor(Math.random() * 1000)}`);
+                    if (!userName) return; // User cancelled prompt
+                    const newMember = { id: userId.value, name: userName, profile: null };
+
+                    try {
+                        await updateDoc(teamDoc.ref, {
+                            members: arrayUnion(newMember)
+                        });
+                        await syncWithTeam(teamDoc.id);
+                    } catch(e) {
+                         console.error("Error joining team: ", e);
+                         alert("Não foi possível entrar na equipe. Tente novamente.");
+                    }
+                };
+                
+                const startStep1 = () => {
+                    saveState({ currentStep: 1 });
+                };
+
+                const copyJoinCode = () => {
+                    navigator.clipboard.writeText(joinCodeDisplay.value).then(() => {
+                        alert(`Código "${joinCodeDisplay.value}" copiado!`);
+                    });
+                };
+
 
                 const calculateProfile = () => {
                     const counts = answers.value.reduce((acc, curr) => {
@@ -474,26 +618,26 @@
                         return acc;
                     }, {});
                     const result = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-                    profile.value = profiles[result];
+                    userProfile.value = profiles[result];
                 };
 
                 const confirmProfile = async () => {
-                    const memberIndex = teamMembers.value.findIndex(m => m.id === userId.value);
-                    const profileName = Object.keys(profiles).find(key => profiles[key].name === profile.value.name);
+                    if(!userProfile.value) return;
+                    const profileName = Object.keys(profiles).find(key => profiles[key].name === userProfile.value.name);
                     
-                    if (memberIndex !== -1) {
-                        teamMembers.value[memberIndex].profile = profileName;
-                         // Prompt for user's actual name
-                        const name = prompt("Ótimo! Agora, por favor, digite seu nome:", teamMembers.value[memberIndex].name);
-                        teamMembers.value[memberIndex].name = name || teamMembers.value[memberIndex].name;
-                    }
-                    
-                    await saveState({ members: teamMembers.value, currentStep: 2 });
-                    currentStep.value = 2;
+                    const updatedMembers = teamMembers.value.map(member => {
+                        if (member.id === userId.value) {
+                            return { ...member, profile: profileName };
+                        }
+                        return member;
+                    });
+                    hasUserConfirmedProfile.value = true;
+                    await saveState({ members: updatedMembers });
                 };
 
                 const calculatePoints = () => {
                     let totalScore = 0;
+                    if(!selectedCompany.value) return 0;
                     // Pontos da Empresa
                     const companyProfiles = {
                         'Fintech': ['Analista', 'Analista', 'Executor'],
@@ -510,12 +654,14 @@
                     const roleAffinities = {
                         'CEO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 10, 'Analista': 5 },
                         'CTO': { 'Inovador': 20, 'Analista': 15, 'Executor': 10, 'Comunicador': 5 },
-                        'COO': { 'Executor': 20, 'Analista': 15, 'Comunicador': 10, 'Inovador': 5 }
+                        'COO': { 'Executor': 20, 'Analista': 15, 'Comunicador': 10, 'Inovador': 5 },
+                        'CFO': { 'Analista': 20, 'Executor': 15, 'Comunicador': 5, 'Inovador': 5 },
+                        'CMO': { 'Comunicador': 20, 'Inovador': 15, 'Executor': 5, 'Analista': 5 }
                     };
                     for (const roleId in assignedRoles.value) {
                         const memberId = assignedRoles.value[roleId];
                         const member = teamMembers.value.find(m => m.id === memberId);
-                        if (member) {
+                        if (member && member.profile && roleAffinities[roleId]) {
                             totalScore += roleAffinities[roleId][member.profile] || 0;
                         }
                     }
@@ -527,7 +673,7 @@
                        'Logtech': { 'Gerente de Projetos': 20, 'Desenvolvedor Sênior': 15, 'Analista de Qualidade': 10, 'Desenvolvedor Júnior': 5 }
                     };
                     for(const hireRole in hiredCounts.value) {
-                        const count = hiredCounts.value[hireRole].count;
+                        const count = hiredCounts.value[hireRole]?.count || 0;
                         if (count > 0) {
                             totalScore += (hirePriorities[selectedCompany.value][hireRole] || 0) * count;
                         }
@@ -535,25 +681,25 @@
 
                     return totalScore;
                 };
+                
+                const selectCompany = (companyId) => {
+                    selectedCompany.value = companyId;
+                };
 
                 const confirmCompanyChoice = async () => {
                     await saveState({ selectedCompany: selectedCompany.value, currentStep: 3 });
-                    currentStep.value = 3;
                 };
 
                 const isMemberAssigned = (memberId) => {
                     return Object.values(assignedRoles.value).includes(memberId);
                 };
-
-                const areAllRolesAssigned = () => {
-                    const assignedValues = Object.values(assignedRoles.value);
-                    const uniqueValues = new Set(assignedValues);
-                    return assignedValues.every(v => v !== null) && uniqueValues.size === teamMembers.value.length && teamMembers.value.length >= 3;
-                };
                 
+                const updateRoles = () => {
+                    saveState({ assignedRoles: assignedRoles.value });
+                };
+
                 const confirmRoles = async () => {
-                    await saveState({ assignedRoles: assignedRoles.value, currentStep: 4 });
-                    currentStep.value = 4;
+                    await saveState({ currentStep: 4 });
                 };
 
                 const getSelectedCompanyName = () => companies.find(c => c.id === selectedCompany.value)?.name || 'sua empresa';
@@ -577,21 +723,30 @@
                     if (newCount >= 0) {
                         hiredCounts.value[hire.role].count = newCount;
                     }
+                    saveState({ hiredCounts: hiredCounts.value }); // Salva em tempo real
                 };
 
                 const confirmHires = async () => {
                     const finalScore = calculatePoints();
                     await saveState({
-                        hiredCounts: hiredCounts.value,
                         currentStep: 5,
                         score: finalScore
                     });
-                    currentStep.value = 5;
                 };
                 
                 const getRoleHolderName = (roleId) => {
                     const memberId = assignedRoles.value[roleId];
                     return teamMembers.value.find(m => m.id === memberId)?.name || 'Não definido';
+                }
+
+                const getRoleColor = (roleId) => {
+                    const colors = {
+                        'CTO': 'bg-teal-500',
+                        'COO': 'bg-blue-500',
+                        'CFO': 'bg-green-500',
+                        'CMO': 'bg-purple-500',
+                    };
+                    return colors[roleId] || 'bg-gray-500';
                 }
 
                 const downloadOrganogram = () => {
@@ -611,12 +766,10 @@
                 const enterProfessorMode = () => {
                     if (professorPassword.value === "mestre") {
                         isProfessor.value = true;
-                        showProfessorModal.value = false;
-                        professorPassword.value = '';
                     } else {
                         alert("Senha incorreta.");
-                        professorPassword.value = '';
                     }
+                     professorPassword.value = '';
                 };
 
                 const logoutProfessor = () => {
@@ -639,13 +792,13 @@
                 });
 
                 return {
-                    loading, loadingMessage, connected, connectionMessage, currentStep, teamName, teamNameInput,
-                    questions, answers, profile, calculateProfile, confirmProfile,
-                    companies, selectedCompany, confirmCompanyChoice,
-                    roles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, confirmRoles,
+                    loading, loadingMessage, connected, connectionMessage, currentStep, teamName, teamNameInput, creatorNameInput, joinCodeInput, joinCodeDisplay,
+                    questions, answers, userProfile, hasUserConfirmedProfile, calculateProfile, confirmProfile,
+                    companies, selectedCompany, selectCompany, confirmCompanyChoice,
+                    availableRoles, otherRoles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, updateRoles, confirmRoles,
                     resourcePoints, availableHires, hiredCounts, remainingPoints, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount, confirmHires,
-                    getRoleHolderName, downloadOrganogram,
-                    setTeamName,
+                    getRoleHolderName, downloadOrganogram, getRoleColor,
+                    createTeam, joinTeam, copyJoinCode, startStep1,
                     showScoreboard, sortedTeams, teamId, scoresVisible,
                     showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility
                 }
