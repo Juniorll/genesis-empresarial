@@ -33,7 +33,7 @@
         <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">🚀 Gênesis Empresarial</h1>
-                <p class="text-gray-600" v-if="teamName">Equipe: <span class="font-semibold">{{ teamName }}</span></p>
+                <p class="text-gray-600" v-if="teamName">Equipe: <span class="font-semibold">{{ teamName }}</span> <span v-if="isCEO" class="text-indigo-600 font-bold">(Você é o CEO)</span></p>
             </div>
             <div class="flex items-center space-x-4">
                 <button @click="showScoreboard = true" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition-all">
@@ -147,19 +147,34 @@
                     <!-- ETAPA 2: ESCOLHA DA EMPRESA -->
                     <section v-if="currentStep === 2 && currentUserProfileCompleted" class="bg-white p-8 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold mb-2">Etapa 2: A Grande Decisão</h2>
-                        <p class="mb-2 text-gray-600">Sua equipe agora tem uma missão: escolher uma das três oportunidades de negócio abaixo. Leiam com atenção, discutam e considerem os perfis de todos os membros da equipe.</p>
-                        <p class="mb-6 text-gray-500 text-sm">A escolha certa pode impulsionar o sucesso de vocês desde o primeiro dia.</p>
+                        <p class="mb-2 text-gray-600">Sua equipe agora tem uma missão: escolher um dos três segmentos de negócio abaixo. Leiam com atenção, discutam e considerem os perfis de todos os membros da equipe.</p>
+                        
+                        <div v-if="!isCEO" class="text-center p-4 bg-blue-50 text-blue-800 rounded-lg my-4">
+                            <p v-if="!userSuggestion.company">Discuta com sua equipe e envie sua sugestão de segmento para o CEO.</p>
+                            <p v-else class="font-semibold">Sugestão enviada! Aguardando a decisão final do CEO.</p>
+                        </div>
+                         <div v-else class="text-center p-4 bg-indigo-50 text-indigo-800 rounded-lg my-4">
+                            <p>Como CEO, analise as sugestões da sua equipe e tome a decisão final sobre o rumo da empresa.</p>
+                        </div>
+
                         <div class="grid md:grid-cols-3 gap-6">
                             <div v-for="company in companies" :key="company.id" 
                                  class="border-2 rounded-xl p-6 flex flex-col transition-all cursor-pointer"
-                                 :class="selectedCompany === company.id ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-200 hover:border-indigo-400'"
-                                 @click="selectCompany(company.id)">
+                                 :class="selectedCompanyForSuggestion === company.id ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-200 hover:border-indigo-400'"
+                                 @click="selectCompanyForSuggestion = company.id">
                                 <h3 class="text-xl font-bold text-gray-900">{{ company.name }}</h3>
-                                <p class="text-indigo-600 font-semibold text-sm mb-3">{{ company.slogan }}</p>
+                                <div v-if="isCEO && getSuggestionsFor('company', company.id).length > 0" class="text-xs text-gray-500 mt-1">
+                                    Sugestões: {{ getSuggestionsFor('company', company.id).join(', ') }}
+                                </div>
+                                <p class="text-indigo-600 font-semibold text-sm my-3">{{ company.slogan }}</p>
                                 <p class="text-gray-600 flex-grow">{{ company.description }}</p>
                             </div>
                         </div>
-                         <button @click="confirmCompanyChoice" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!selectedCompany">Confirmar Escolha da Empresa</button>
+                         
+                         <button v-if="isCEO" @click="confirmCompanyChoice" class="mt-8 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="!selectedCompanyForSuggestion">Confirmar Escolha (CEO)</button>
+                         <button v-else @click="submitCompanySuggestion" class="mt-8 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="!selectedCompanyForSuggestion || userSuggestion.company">
+                             {{ userSuggestion.company ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
+                         </button>
                     </section>
 
                     <!-- ETAPA 3: DEFINIÇÃO DE CARGOS -->
@@ -188,8 +203,19 @@
                         
                         <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6">
                             <h3 class="font-bold text-amber-800">Análise de Mercado para: {{ getSelectedCompanyName() }}</h3>
-                            <p class="text-amber-700 text-sm">{{ getCompanyMarketInfo() }}</p>
+                            <p class="text-amber-700 text-sm" v-html="getCompanyMarketInfo()"></p>
                         </div>
+                        
+                        <div v-if="isCEO" class="my-4">
+                            <h3 class="font-semibold text-lg mb-2">Sugestões de Contratação da Equipe:</h3>
+                            <div v-if="Object.keys(suggestions.hires || {}).length > 0" class="space-y-2">
+                               <div v-for="(suggestion, memberId) in suggestions.hires" :key="memberId" class="bg-gray-100 p-3 rounded-lg text-sm">
+                                   <p><span class="font-bold">{{ suggestion.memberName }}:</span> Sugeriu {{ Object.values(suggestion.hires).reduce((acc,h) => acc + h.count, 0) }} contratações, com um custo de <span class="font-semibold">{{ formatCurrency(suggestion.totalCost) }}</span>.</p>
+                               </div>
+                            </div>
+                            <p v-else class="text-gray-500">Aguardando sugestões da equipe...</p>
+                        </div>
+
 
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div v-for="hire in availableHires" :key="hire.role" class="bg-gray-50 p-4 rounded-lg border">
@@ -207,7 +233,12 @@
                         <div class="mt-8 pt-4 border-t">
                             <p class="text-xl font-bold text-right">Saldo Restante do Orçamento: <span :class="saldoRestanteMensal < 0 ? 'text-red-500' : 'text-green-600'">{{ formatCurrency(saldoRestanteMensal) }}</span></p>
                              <p v-if="saldoRestanteMensal < 0" class="text-red-500 text-right font-semibold">Atenção: A folha de pagamento excedeu o orçamento!</p>
-                            <button @click="confirmHires" class="mt-4 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="saldoRestanteMensal < 0">Finalizar Contratações e Gerar Organograma</button>
+                             
+                            <button v-if="isCEO" @click="confirmHires" class="mt-4 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-all disabled:bg-indigo-300" :disabled="saldoRestanteMensal < 0">Finalizar Contratações (CEO)</button>
+                             <button v-else @click="submitHiresSuggestion" class="mt-4 w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all disabled:bg-blue-300" :disabled="saldoRestanteMensal < 0 || userSuggestion.hires">
+                                 {{ userSuggestion.hires ? 'Sugestão Enviada' : 'Enviar Sugestão para o CEO' }}
+                             </button>
+
                         </div>
                     </section>
 
@@ -230,21 +261,10 @@
                                         <p class="text-xs">{{ role.id }} ({{ role.name.split('(')[0].trim() }})</p>
                                     </div>
                                     <!-- Funcionários subordinados -->
-                                    <div v-if="role.id === 'COO'" class="mt-4 space-y-2">
-                                        <div v-if="getHireCount('Gerente de Projetos') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Gerente de Projetos ({{ getHireCount('Gerente de Projetos') }})</div>
-                                        <div v-if="getHireCount('Especialista de Suporte') > 0" class="ml-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Suporte ({{ getHireCount('Especialista de Suporte') }})</div>
-                                    </div>
-                                     <div v-if="role.id === 'CTO'" class="mt-4 space-y-2 text-left">
-                                        <div v-if="getHireCount('Desenvolvedor Sênior') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Sênior ({{ getHireCount('Desenvolvedor Sênior') }})</div>
-                                        <div v-if="getHireCount('Desenvolvedor Júnior') > 0" class="ml-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Dev Júnior ({{ getHireCount('Desenvolvedor Júnior') }})</div>
-                                        <div v-if="getHireCount('Engenheiro de DevOps') > 0" class="mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">DevOps ({{ getHireCount('Engenheiro de DevOps') }})</div>
-                                        <div v-if="getHireCount('Analista de Qualidade (QA)') > 0" class="ml-2 mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">QA ({{ getHireCount('Analista de Qualidade (QA)') }})</div>
-                                        <div v-if="getHireCount('Cientista de Dados') > 0" class="mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Dados ({{ getHireCount('Cientista de Dados') }})</div>
-                                        <div v-if="getHireCount('Designer UX/UI') > 0" class="ml-2 mt-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">UX/UI ({{ getHireCount('Designer UX/UI') }})</div>
-                                    </div>
-                                    <div v-if="role.id === 'CMO'" class="mt-4 space-y-2">
-                                        <div v-if="getHireCount('Social Media') > 0" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">Social Media ({{ getHireCount('Social Media') }})</div>
-                                        <div v-if="getHireCount('Vendedor (SDR)') > 0" class="ml-2 inline-block bg-gray-200 p-2 rounded-lg text-sm">Vendedor (SDR) ({{ getHireCount('Vendedor (SDR)') }})</div>
+                                    <div class="mt-4 space-y-2 flex flex-col items-center">
+                                        <div v-for="hire in getHiresForRole(role.id)" :key="hire.role" class="inline-block bg-gray-200 p-2 rounded-lg text-sm">
+                                            {{ hire.role }} ({{ getHireCount(hire.role) }})
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -383,8 +403,8 @@
                     { id: 'Edtech', name: 'Segmento: Edtech', slogan: 'Aprender nunca foi tão divertido.', description: 'Uma plataforma de aprendizado adaptativo baseada em gamificação, voltada para o ensino fundamental. O objetivo é criar uma jornada de estudos personalizada que se ajusta ao ritmo de cada aluno. O sucesso depende do alto engajamento dos estudantes, da aprovação dos pais e educadores, e de um conteúdo criativo que torne o aprendizado viciante.'},
                     { id: 'Logtech', name: 'Segmento: Logtech', slogan: 'Sua entrega, no tempo certo.', description: 'Uma solução SaaS (Software as a Service) para otimizar a logística de última milha (last-mile delivery) para e-commerces locais. A proposta de valor é reduzir custos de entrega e aumentar a eficiência operacional dos clientes. O mercado valoriza resultados rápidos, um sistema estável que não falhe em picos de demanda (como Black Friday) e fácil integração com plataformas existentes.'}
                 ]);
-                const selectedCompany = ref(null);
-
+                const selectedCompanyForSuggestion = ref(null);
+                
                 const allRoles = reactive([
                     {id: 'CEO', name: 'Chief Executive Officer', description: 'O líder principal. Define a visão e a estratégia geral da empresa, sendo o rosto da organização.'},
                     {id: 'CTO', name: 'Chief Technology Officer', description: 'O líder da tecnologia. Supervisiona o desenvolvimento, a infraestrutura e a inovação tecnológica do produto.'},
@@ -397,18 +417,21 @@
 
                 const orcamentoInicial = ref(25000);
                 const availableHires = reactive([
-                    { role: 'Desenvolvedor Sênior', description: 'Acelera o desenvolvimento de funcionalidades complexas.', salario: 12000 },
-                    { role: 'Desenvolvedor Júnior', description: 'Dá suporte ao time de tecnologia e aprende rápido.', salario: 4000 },
-                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos de entrega.', salario: 11000 },
-                    { role: 'Analista de Qualidade (QA)', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', salario: 5000 },
-                    { role: 'Designer UX/UI', description: 'Cria a experiência do usuário e o design das telas do aplicativo.', salario: 7000 },
-                    { role: 'Engenheiro de DevOps', description: 'Cuida da infraestrutura na nuvem e da automação dos deploys.', salario: 13000 },
-                    { role: 'Cientista de Dados', description: 'Analisa os dados dos usuários para extrair insights e guiar decisões.', salario: 10000 },
-                    { role: 'Social Media', description: 'Gerencia as redes sociais para engajar a comunidade e atrair usuários.', salario: 4500 },
-                    { role: 'Especialista de Suporte', description: 'Atende os clientes, resolve problemas e coleta feedbacks.', salario: 2500 },
-                    { role: 'Vendedor (SDR)', description: 'Busca ativamente por novos clientes e realiza as primeiras abordagens de venda.', salario: 3500 },
+                    { role: 'Desenvolvedor Sênior', description: 'Acelera o desenvolvimento de funcionalidades complexas.', salario: 12000, area: 'CTO' },
+                    { role: 'Desenvolvedor Júnior', description: 'Dá suporte ao time de tecnologia e aprende rápido.', salario: 4000, area: 'CTO' },
+                    { role: 'Gerente de Projetos', description: 'Organiza as tarefas e garante os prazos de entrega.', salario: 11000, area: 'COO' },
+                    { role: 'Analista de Qualidade (QA)', description: 'Testa o produto para encontrar bugs e garantir a qualidade.', salario: 5000, area: 'CTO' },
+                    { role: 'Designer UX/UI', description: 'Cria a experiência do usuário e o design das telas do aplicativo.', salario: 7000, area: 'CTO' },
+                    { role: 'Engenheiro de DevOps', description: 'Cuida da infraestrutura na nuvem e da automação dos deploys.', salario: 13000, area: 'CTO' },
+                    { role: 'Cientista de Dados', description: 'Analisa os dados dos usuários para extrair insights e guiar decisões.', salario: 10000, area: 'CTO' },
+                    { role: 'Social Media', description: 'Gerencia as redes sociais para engajar a comunidade e atrair usuários.', salario: 4500, area: 'CMO' },
+                    { role: 'Especialista de Suporte', description: 'Atende os clientes, resolve problemas e coleta feedbacks.', salario: 2500, area: 'COO' },
+                    { role: 'Vendedor (SDR)', description: 'Busca ativamente por novos clientes e realiza as primeiras abordagens de venda.', salario: 3500, area: 'CMO' },
                 ]);
                 const hiredCounts = ref({});
+                const suggestions = ref({});
+                const userSuggestion = ref({});
+
 
                 // Estado do Placar e Professor
                 const showScoreboard = ref(false);
@@ -419,6 +442,10 @@
                 const professorPassword = ref('');
                 
                 // Propriedades Computadas
+                const isCEO = computed(() => {
+                    return userId.value === assignedRoles.value['CEO'];
+                });
+
                 const sortedTeams = computed(() => {
                     return [...allTeams.value].sort((a, b) => (b.score || 0) - (a.score || 0));
                 });
@@ -515,8 +542,10 @@
                     answers.value = Array(questions.length).fill(null);
                     assignedRoles.value = {};
                     hiredCounts.value = {};
-                    selectedCompany.value = null;
+                    selectedCompanyForSuggestion.value = null;
                     teamMembers.value = [];
+                    suggestions.value = {};
+                    userSuggestion.value = {};
                 }
 
                 const setupListeners = () => {
@@ -543,11 +572,23 @@
                             const data = docSnap.data();
                             teamName.value = data.name;
                             currentStep.value = data.currentStep || 0;
-                            selectedCompany.value = data.selectedCompany || null;
+                            
+                            // A decisão final do CEO prevalece sobre a sugestão local
+                            selectedCompanyForSuggestion.value = data.selectedCompany || selectedCompanyForSuggestion.value;
+                            hiredCounts.value = data.hiredCounts || {};
+
                             assignedRoles.value = data.assignedRoles || {};
                             teamMembers.value = data.members || [];
-                            hiredCounts.value = data.hiredCounts || {};
+                            suggestions.value = data.suggestions || {};
                             joinCodeDisplay.value = data.joinCode;
+                            
+                            // Atualiza o estado da sugestão do usuário
+                            if(suggestions.value.company && suggestions.value.company[userId.value]){
+                                userSuggestion.value.company = true;
+                            }
+                             if(suggestions.value.hires && suggestions.value.hires[userId.value]){
+                                userSuggestion.value.hires = true;
+                            }
 
                             const currentUserData = teamMembers.value.find(m => m.id === userId.value);
                             if (currentUserData && currentUserData.profile) {
@@ -565,11 +606,15 @@
                 };
 
 
-                const saveState = async (dataToSave) => {
+                const saveState = async (dataToSave, merge = true) => {
                     if (!teamId.value) return;
                     try {
                         const docRef = doc(db, "apps", appId, "teams", teamId.value);
-                        await setDoc(docRef, dataToSave, { merge: true });
+                        if (merge) {
+                            await setDoc(docRef, dataToSave, { merge: true });
+                        } else {
+                            await setDoc(docRef, dataToSave);
+                        }
                     } catch (error) {
                         console.error("Error saving state:", error);
                     }
@@ -590,7 +635,8 @@
                         members: [{ id: userId.value, name: userName, profile: null }],
                         assignedRoles: {},
                         hiredCounts: {},
-                        selectedCompany: null
+                        selectedCompany: null,
+                        suggestions: { company: {}, hires: {} }
                     };
 
                     try {
@@ -670,7 +716,8 @@
 
                 const calculatePoints = () => {
                     let totalScore = 0;
-                    if(!selectedCompany.value) return 0;
+                    const selectedCompanyId = selectedCompanyForSuggestion.value;
+                    if(!selectedCompanyId) return 0;
                     
                     const companyProfiles = {
                         'Fintech': ['Analista', 'Analista', 'Executor'],
@@ -678,7 +725,7 @@
                         'Logtech': ['Executor', 'Executor', 'Analista']
                     };
                     const teamProfiles = teamMembers.value.map(m => m.profile);
-                    const targetProfiles = companyProfiles[selectedCompany.value];
+                    const targetProfiles = companyProfiles[selectedCompanyId];
                     totalScore += teamProfiles.reduce((score, profile) => {
                         return targetProfiles.includes(profile) ? score + 15 : score + 5;
                     }, 0);
@@ -699,39 +746,43 @@
                     }
 
                     const hirePriorities = {
-                       'Fintech': { 
-                           'Desenvolvedor Sênior': 20, 'Analista de Qualidade (QA)': 20, 'Cientista de Dados': 15, 'Engenheiro de DevOps': 10, 
-                           'Designer UX/UI': 10, 'Desenvolvedor Júnior': 5, 'Especialista de Suporte': 5, 
-                           'Gerente de Projetos': 0, 'Social Media': 0, 'Vendedor (SDR)': 0 
-                       },
-                       'Edtech': { 
-                           'Designer UX/UI': 20, 'Desenvolvedor Sênior': 15, 'Social Media': 15, 'Especialista de Suporte': 15,
-                           'Desenvolvedor Júnior': 10, 'Analista de Qualidade (QA)': 5, 'Cientista de Dados': 5,
-                           'Gerente de Projetos': 0, 'Engenheiro de DevOps': 0, 'Vendedor (SDR)': 0
-                       },
-                       'Logtech': { 
-                           'Gerente de Projetos': 20, 'Engenheiro de DevOps': 20, 'Vendedor (SDR)': 15, 'Desenvolvedor Sênior': 10, 
-                           'Especialista de Suporte': 10, 'Analista de Qualidade (QA)': 5, 'Desenvolvedor Júnior': 5,
-                           'Cientista de Dados': 0, 'Designer UX/UI': 0, 'Social Media': 0
-                       }
+                       'Fintech': { 'Desenvolvedor Sênior': 20, 'Analista de Qualidade (QA)': 20, 'Cientista de Dados': 15, 'Engenheiro de DevOps': 10, 'Designer UX/UI': 10, 'Desenvolvedor Júnior': 5, 'Especialista de Suporte': 5, 'Gerente de Projetos': 0, 'Social Media': 0, 'Vendedor (SDR)': 0 },
+                       'Edtech': { 'Designer UX/UI': 20, 'Desenvolvedor Sênior': 15, 'Social Media': 15, 'Especialista de Suporte': 15, 'Desenvolvedor Júnior': 10, 'Analista de Qualidade (QA)': 5, 'Cientista de Dados': 5, 'Gerente de Projetos': 0, 'Engenheiro de DevOps': 0, 'Vendedor (SDR)': 0},
+                       'Logtech': { 'Gerente de Projetos': 20, 'Engenheiro de DevOps': 20, 'Vendedor (SDR)': 15, 'Desenvolvedor Sênior': 10, 'Especialista de Suporte': 10, 'Analista de Qualidade (QA)': 5, 'Desenvolvedor Júnior': 5, 'Cientista de Dados': 0, 'Designer UX/UI': 0, 'Social Media': 0 }
                     };
 
                     for(const hireRole in hiredCounts.value) {
                         const count = hiredCounts.value[hireRole]?.count || 0;
-                        if (count > 0 && hirePriorities[selectedCompany.value]) {
-                            totalScore += (hirePriorities[selectedCompany.value][hireRole] || 0) * count;
+                        if (count > 0 && hirePriorities[selectedCompanyId]) {
+                            totalScore += (hirePriorities[selectedCompanyId][hireRole] || 0) * count;
                         }
                     }
 
                     return totalScore;
                 };
                 
-                const selectCompany = (companyId) => {
-                    selectedCompany.value = companyId;
+                const submitCompanySuggestion = () => {
+                    const suggestion = selectedCompanyForSuggestion.value;
+                    if(!suggestion) return;
+                    
+                    const currentUser = teamMembers.value.find(m => m.id === userId.value);
+                    const updatePath = `suggestions.company.${userId.value}`;
+                    saveState({ [updatePath]: { name: currentUser.name, suggestion: suggestion } });
+                    userSuggestion.value.company = true;
+                };
+
+                const getSuggestionsFor = (type, choice) => {
+                    if (!suggestions.value || !suggestions.value[type]) return [];
+                    return Object.values(suggestions.value[type])
+                        .filter(s => s.suggestion === choice)
+                        .map(s => s.name);
                 };
 
                 const confirmCompanyChoice = async () => {
-                    await saveState({ selectedCompany: selectedCompany.value, currentStep: 3 });
+                    await saveState({ 
+                        selectedCompany: selectedCompanyForSuggestion.value, 
+                        currentStep: 3 
+                    });
                 };
 
                 const isMemberAssigned = (memberId) => {
@@ -746,15 +797,15 @@
                     await saveState({ currentStep: 4 });
                 };
 
-                const getSelectedCompanyName = () => companies.find(c => c.id === selectedCompany.value)?.name || 'sua empresa';
+                const getSelectedCompanyName = () => companies.find(c => c.id === selectedCompanyForSuggestion.value)?.name || 'sua empresa';
 
                 const getCompanyMarketInfo = () => {
                     const infos = {
-                        'Fintech': 'O mercado de Fintech é baseado em CONFIANÇA. Seus clientes confiam em você com o dinheiro deles. Falhas de segurança ou bugs que causem perdas financeiras são fatais. Além disso, a competição é acirrada. Para se destacar, você precisa entender o comportamento financeiro dos seus usuários para oferecer produtos personalizados. Pense em: Qualidade impecável, análise de dados e uma base de engenharia robusta.',
-                        'Edtech': 'O desafio da Edtech é a RETENÇÃO. É fácil baixar um app educativo, mas difícil manter o aluno engajado. Sua plataforma precisa ser visualmente atraente, intuitiva e, acima de tudo, divertida. A criação de uma comunidade forte nas redes sociais e um suporte atencioso aos pais e alunos pode ser um grande diferencial. Pense em: Experiência do usuário (UX), engajamento comunitário e suporte ao cliente.',
-                        'Logtech': 'O mundo da Logtech é sobre EFICIÊNCIA. Seus clientes são outras empresas (B2B) que querem economizar tempo e dinheiro. Eles não se importam com um design super inovador, mas sim com um sistema que seja estável, rápido e que entregue o resultado prometido. Para conseguir esses clientes, é preciso uma abordagem de vendas direta e proativa. Pense em: Estabilidade da infraestrutura, gestão de projetos e vendas diretas.'
+                        'Fintech': 'O mercado de Fintech é baseado em <strong>CONFIANÇA</strong>. Seus clientes confiam em você com o dinheiro deles. Falhas de segurança ou bugs que causem perdas financeiras são fatais. Além disso, a competição é acirrada. Para se destacar, você precisa entender o comportamento financeiro dos seus usuários para oferecer produtos personalizados. Pense em: Qualidade impecável, análise de dados e uma base de engenharia robusta.',
+                        'Edtech': 'O desafio da Edtech é a <strong>RETENÇÃO</strong>. É fácil baixar um app educativo, mas difícil manter o aluno engajado. Sua plataforma precisa ser visualmente atraente, intuitiva e, acima de tudo, divertida. A criação de uma comunidade forte nas redes sociais e um suporte atencioso aos pais e alunos pode ser um grande diferencial. Pense em: Experiência do usuário (UX), engajamento comunitário e suporte ao cliente.',
+                        'Logtech': 'O mundo da Logtech é sobre <strong>EFICIÊNCIA</strong>. Seus clientes são outras empresas (B2B) que querem economizar tempo e dinheiro. Eles não se importam com um design super inovador, mas sim com um sistema que seja estável, rápido e que entregue o resultado prometido. Para conseguir esses clientes, é preciso uma abordagem de vendas direta e proativa. Pense em: Estabilidade da infraestrutura, gestão de projetos e vendas diretas.'
                     };
-                    return infos[selectedCompany.value] || '';
+                    return infos[selectedCompanyForSuggestion.value] || '';
                 }
 
                 const getHireCount = (role) => hiredCounts.value[role]?.count || 0;
@@ -767,13 +818,25 @@
                     if (newCount >= 0) {
                         hiredCounts.value[hire.role].count = newCount;
                     }
-                    saveState({ hiredCounts: hiredCounts.value });
+                };
+
+                const submitHiresSuggestion = () => {
+                    if (saldoRestanteMensal.value < 0) return;
+                    const currentUser = teamMembers.value.find(m => m.id === userId.value);
+                    const updatePath = `suggestions.hires.${userId.value}`;
+                    saveState({ [updatePath]: { 
+                        memberName: currentUser.name,
+                        hires: hiredCounts.value,
+                        totalCost: orcamentoInicial.value - saldoRestanteMensal.value
+                    } });
+                    userSuggestion.value.hires = true;
                 };
 
                 const confirmHires = async () => {
                     const finalScore = calculatePoints();
                     await saveState({
                         currentStep: 5,
+                        hiredCounts: hiredCounts.value, // Salva a decisão final do CEO
                         score: finalScore
                     });
                 };
@@ -791,6 +854,10 @@
                         'CMO': 'bg-purple-500',
                     };
                     return colors[roleId] || 'bg-gray-500';
+                }
+                
+                const getHiresForRole = (roleId) => {
+                    return availableHires.filter(h => h.area === roleId && getHireCount(h.role) > 0);
                 }
 
                 const downloadOrganogram = () => {
@@ -871,14 +938,16 @@
                 return {
                     loading, loadingMessage, connected, connectionMessage, currentStep, teamName, teamNameInput, creatorNameInput, joinCodeInput, joinCodeDisplay,
                     questions, answers, userProfile,
-                    companies, selectedCompany, selectCompany, confirmCompanyChoice,
-                    availableRoles, otherRoles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, updateRoles, confirmRoles,
-                    orcamentoInicial, availableHires, hiredCounts, saldoRestanteMensal, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount, confirmHires,
-                    getRoleHolderName, downloadOrganogram, getRoleColor,
+                    companies, selectedCompanyForSuggestion,
+                    allRoles, availableRoles, otherRoles, assignedRoles, teamMembers, isMemberAssigned, areAllRolesAssigned, updateRoles, confirmRoles,
+                    orcamentoInicial, availableHires, hiredCounts, saldoRestanteMensal, getSelectedCompanyName, getCompanyMarketInfo, getHireCount, adjustHireCount,
+                    getRoleHolderName, downloadOrganogram, getRoleColor, getHiresForRole,
                     createTeam, joinTeam, copyJoinCode, startStep1,
                     showScoreboard, sortedTeams, teamId, scoresVisible,
                     showProfessorModal, isProfessor, professorPassword, enterProfessorMode, logoutProfessor, toggleScoresVisibility, confirmResetGame,
-                    currentUserProfileCompleted, calculateProfile, confirmProfile, formatCurrency
+                    currentUserProfileCompleted, calculateProfile, confirmProfile, formatCurrency,
+                    isCEO, submitCompanySuggestion, confirmCompanyChoice, getSuggestionsFor, suggestions, userSuggestion,
+                    submitHiresSuggestion, confirmHires
                 }
             }
         }).mount('#app')
