@@ -1485,7 +1485,8 @@
                         act2_mvp: { features: {}, architecture: {}, ceoDecision: null },
                         act2_crisis: { currentIndex: 0, solved: {} },
                         act2_launch: {},
-                        act2_metrics: { quality: 50, satisfaction: 50, reputation: 50 }
+                        act2_metrics: { quality: 50, satisfaction: 50, reputation: 50 },
+                        act2_financials: { expenses: 0, revenue: 0, profit: 0 }
                      });
                 };
             } else {
@@ -1605,65 +1606,155 @@
 
         function renderMvpCeoView(teamData) {
             const view = document.getElementById('mvp-ceo-view');
-            const cpoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CPO');
-            const ctoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CTO');
-            const cpoChoice = teamData.act2_mvp.features[cpoId];
-            const ctoChoice = teamData.act2_mvp.architecture[ctoId];
-            
-            if (teamData.act2_mvp.ceoDecision) {
-                 view.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-center">Plano Aprovado!</h3><p class="text-center">A equipe já pode ver o plano de voo. Preparando a próxima etapa...</p>`;
-                 if (currentUser.uid === teamData.creatorId) {
-                    setTimeout(async () => { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' }); }, 4000);
-                 }
-                 return;
-            }
 
-            if (!cpoChoice || !ctoChoice) {
-                view.innerHTML = `<p class="text-center text-xl">Aguardando recomendações do CPO e CTO para tomar a decisão final...</p>`;
+            if (teamData.act2_mvp.ceoDecision) {
+                view.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-center">Plano Aprovado!</h3><p class="text-center">A equipe já pode ver o plano de voo. Preparando a próxima etapa...</p>`;
+                if (currentUser.uid === teamData.creatorId) {
+                    setTimeout(async () => { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' }); }, 4000);
+                }
                 return;
             }
-            
-            const chosenArch = techArchitectures[ctoChoice];
-            let ceoHtml = `<h3 class="text-xl font-semibold mb-4">Sua Missão (CEO): Aprovar o plano do MVP.</h3>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-gray-700 p-4 rounded-lg">
-                        <h4 class="font-bold mb-2">Recomendação do CPO:</h4>
-                        <ul class="list-disc list-inside text-gray-300">
-                            ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
-                        </ul>
-                    </div>
-                     <div class="bg-gray-700 p-4 rounded-lg">
-                        <h4 class="font-bold mb-2">Recomendação do CTO:</h4>
-                        <p class="text-lg font-semibold">${chosenArch.title}</p>
-                        <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>
-                    </div>
-                </div>
-                <button id="approve-mvp-plan" class="mt-6 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg">Aprovar Plano e Iniciar Desenvolvimento</button>
-            `;
+
+            const cpoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CPO');
+            const ctoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CTO');
+
+            // O CEO toma a decisão se o cargo estiver ausente. A decisão é armazenada sob o ID do CEO.
+            const cpoForChoice = cpoId || currentUser.uid;
+            const ctoForChoice = ctoId || currentUser.uid;
+
+            const cpoChoice = teamData.act2_mvp.features[cpoForChoice];
+            const ctoChoice = teamData.act2_mvp.architecture[ctoForChoice];
+
+            // Render UI
+            let ceoHtml = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (CEO): Definir e Aprovar o plano do MVP.</h3>
+                         <div class="grid md:grid-cols-2 gap-6">`;
+
+            // Seção CPO
+            ceoHtml += `<div class="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-2">`;
+            if (cpoId) {
+                ceoHtml += `<h4 class="font-bold">Recomendação do CPO (${teamData.players[cpoId].name}):</h4>`;
+                if (cpoChoice) {
+                     ceoHtml += `<ul class="list-disc list-inside text-gray-300 text-sm">
+                                ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
+                            </ul>`;
+                } else {
+                    ceoHtml += `<p class="text-center text-yellow-400 animate-pulse">Aguardando recomendação...</p>`;
+                }
+            } else {
+                // CEO atua como CPO
+                ceoHtml += `<h4 class="font-bold">Sua Missão (como CPO): Selecione as 4 features essenciais.</h4>`;
+                if (cpoChoice) {
+                    ceoHtml += `<ul class="list-disc list-inside text-gray-300 text-sm">
+                                ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
+                            </ul><p class="text-xs text-green-400">Seleção confirmada.</p>`;
+                } else {
+                    let featuresHtml = `<div class="grid grid-cols-1 gap-2 mt-2 max-h-60 overflow-y-auto pr-2" id="feature-selection-grid">`;
+                    mvpFeatures.forEach(f => {
+                        featuresHtml += `
+                            <div id="feature-${f.id}" class="feature-card cursor-pointer p-2 bg-gray-700 rounded-lg border-2 border-gray-600 hover:border-indigo-500 transition" onclick="toggleFeatureSelection('${f.id}')">
+                                <h5 class="font-bold text-sm">${f.title}</h5>
+                                <div class="text-xs mt-1 flex justify-between">
+                                    <span>Impacto: <span class="text-green-400">${f.impact}/10</span></span>
+                                    <span>Complex.: <span class="text-red-400">${f.complexity}/10</span></span>
+                                </div>
+                            </div>`;
+                    });
+                    featuresHtml += `</div><button id="submit-features" disabled class="mt-2 w-full text-sm bg-indigo-600 text-white font-bold py-2 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed">Confirmar Features (0/4)</button>`;
+                    ceoHtml += featuresHtml;
+                }
+            }
+            ceoHtml += `</div>`;
+
+            // Seção CTO
+            ceoHtml += `<div class="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-2">`;
+             if (ctoId) {
+                ceoHtml += `<h4 class="font-bold">Recomendação do CTO (${teamData.players[ctoId].name}):</h4>`;
+                if (ctoChoice) {
+                    const chosenArch = techArchitectures[ctoChoice];
+                    ceoHtml += `<p class="text-lg font-semibold">${chosenArch.title}</p>
+                                <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>`;
+                } else {
+                    ceoHtml += `<p class="text-center text-yellow-400 animate-pulse">Aguardando recomendação...</p>`;
+                }
+            } else {
+                // CEO atua como CTO
+                ceoHtml += `<h4 class="font-bold">Sua Missão (como CTO): Escolha a arquitetura.</h4>`;
+                if (ctoChoice) {
+                    const chosenArch = techArchitectures[ctoChoice];
+                    ceoHtml += `<p class="text-lg font-semibold">${chosenArch.title}</p>
+                                <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>
+                                <p class="text-xs text-green-400">Seleção confirmada.</p>`;
+                } else {
+                    let archHtml = `<div class="space-y-2 mt-2">`;
+                    for (const key in techArchitectures) {
+                        const arch = techArchitectures[key];
+                        archHtml += `
+                            <label class="block p-2 bg-gray-700 rounded-lg border-2 border-gray-600 hover:border-indigo-500 transition cursor-pointer">
+                                <input type="radio" name="architecture" value="${key}" class="mr-2">
+                                <span class="font-bold text-sm">${arch.title}</span>
+                                <p class="text-xs text-gray-400">${arch.desc}</p>
+                            </label>`;
+                    }
+                    archHtml += `</div><button id="submit-architecture" class="mt-2 w-full text-sm bg-indigo-600 text-white font-bold py-2 rounded-lg">Confirmar Arquitetura</button>`;
+                    ceoHtml += archHtml;
+                }
+            }
+            ceoHtml += `</div></div>`; // Fecha grid e seção
+
+            // Botão Final
+            ceoHtml += `<div class="mt-6"><button id="approve-mvp-plan" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Aprovar Plano e Iniciar Desenvolvimento</button></div>`;
             view.innerHTML = ceoHtml;
 
-            document.getElementById('approve-mvp-plan').onclick = async () => {
-                const teamBudget = teamData.budget;
-                const expenses = chosenArch.cost;
-                const newBudget = teamBudget - expenses;
+            // --- Adiciona event listeners e lógica ---
+            // Se o CEO precisa atuar como CPO
+            if (!cpoId && !cpoChoice) {
+                 document.getElementById('submit-features').onclick = async () => {
+                    const selected = Array.from(document.querySelectorAll('.feature-card.selected')).map(el => el.id.replace('feature-', ''));
+                    // A decisão é armazenada sob o ID do CEO
+                    await updateDoc(doc(db, 'teams', currentTeamId), { [`act2_mvp.features.${currentUser.uid}`]: selected });
+                };
+            }
+            // Se o CEO precisa atuar como CTO
+            if (!ctoId && !ctoChoice) {
+                document.getElementById('submit-architecture').onclick = async () => {
+                    const selectedArch = document.querySelector('input[name="architecture"]:checked');
+                    if (!selectedArch) return alert("Selecione uma arquitetura.");
+                    // A decisão é armazenada sob o ID do CEO
+                    await updateDoc(doc(db, 'teams', currentTeamId), { [`act2_mvp.architecture.${currentUser.uid}`]: selectedArch.value });
+                };
+            }
 
-                let score = chosenArch.points;
-                let featureImpactScore = 0;
-                cpoChoice.forEach(fId => { featureImpactScore += mvpFeatures.find(f => f.id === fId).impact * 10; });
-                score += featureImpactScore;
-                
-                const metrics = teamData.act2_metrics;
-                metrics.quality += chosenArch.qualityImpact;
-                metrics.reputation += chosenArch.reputationImpact;
+            const approveBtn = document.getElementById('approve-mvp-plan');
+            if (!cpoChoice || !ctoChoice) {
+                approveBtn.disabled = true;
+            } else {
+                approveBtn.onclick = async () => {
+                    const finalCpoChoice = cpoChoice;
+                    const finalCtoChoice = ctoChoice;
+                    
+                    const chosenArch = techArchitectures[finalCtoChoice];
+                    const teamBudget = teamData.budget;
+                    const expenses = chosenArch.cost;
+                    const newBudget = teamBudget - expenses;
 
-                await updateDoc(doc(db, 'teams', currentTeamId), {
-                    'act2_mvp.ceoDecision': { features: cpoChoice, architecture: ctoChoice },
-                    budget: newBudget,
-                    score: teamData.score + score,
-                    act2_metrics: metrics,
-                    act2_financials: { expenses: expenses }
-                });
-            };
+                    let score = chosenArch.points;
+                    let featureImpactScore = 0;
+                    finalCpoChoice.forEach(fId => { featureImpactScore += mvpFeatures.find(f => f.id === fId).impact * 10; });
+                    score += featureImpactScore;
+                    
+                    const metrics = teamData.act2_metrics;
+                    metrics.quality += chosenArch.qualityImpact;
+                    metrics.reputation += chosenArch.reputationImpact;
+
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'act2_mvp.ceoDecision': { features: finalCpoChoice, architecture: finalCtoChoice },
+                        budget: newBudget,
+                        score: (teamData.score || 0) + score,
+                        act2_metrics: metrics,
+                        'act2_financials.expenses': (teamData.act2_financials.expenses || 0) + expenses
+                    });
+                };
+            }
         }
         
         function renderMvpMemberView(teamData) {
@@ -2024,4 +2115,5 @@
     </script>
 </body>
 </html>
+
 
