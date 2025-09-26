@@ -1,444 +1,1526 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gênesis Empresarial - ATO 1</title>
+    <title>Gênesis Empresarial - Ato 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .transition-all { transition: all 0.3s ease-in-out; }
-        .modal-bg { background-color: rgba(0,0,0,0.5); }
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
-        .satisfaction-rating input[type="radio"]:checked+label { transform: scale(1.15); border-color: #4f46e5; }
-        [v-cloak] { display: none; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .screen { display: none; }
+        .active-screen { display: block; }
+        .brand-gradient {
+            background: linear-gradient(to right, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
 
-    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8" v-cloak>
+    <!-- Container Principal do Jogo -->
+    <div id="app-container" class="w-full max-w-5xl mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-700">
+
+        <!-- Tela de Carregamento Inicial -->
+        <div id="loading-screen" class="screen active-screen text-center">
+            <h1 class="text-4xl font-bold brand-gradient mb-4">Gênesis Empresarial</h1>
+            <p class="text-gray-400 mb-6">Carregando o futuro do seu negócio...</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
+        </div>
+
+        <!-- Tela de Login / Definição de Nome -->
+        <div id="login-screen" class="screen">
+            <h1 class="text-4xl font-bold brand-gradient mb-2 text-center">Bem-vindo(a)!</h1>
+            <p class="text-gray-400 mb-8 text-center">Para começar, digite seu nome.</p>
+            <div class="max-w-md mx-auto">
+                <input type="text" id="player-name-input" placeholder="Seu nome de jogador" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4">
+                <button id="login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Entrar no Jogo</button>
+            </div>
+        </div>
+
+        <!-- Tela de Seleção de Equipe -->
+        <div id="team-select-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-6">Olá, <span id="player-name-display"></span>!</h2>
+            <p class="text-gray-400 mb-8 text-center">O que você gostaria de fazer?</p>
+            <div class="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <!-- Card para Criar Equipe -->
+                <div class="bg-gray-700 p-6 rounded-lg border border-gray-600">
+                    <h3 class="text-xl font-semibold mb-3">Criar uma Nova Equipe</h3>
+                    <p class="text-gray-400 mb-4">Inicie uma nova jornada e convide seus colegas para se juntarem a você.</p>
+                    <button id="create-team-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Criar Equipe</button>
+                </div>
+                <!-- Card para Entrar em Equipe -->
+                <div class="bg-gray-700 p-6 rounded-lg border border-gray-600">
+                    <h3 class="text-xl font-semibold mb-3">Entrar em uma Equipe</h3>
+                    <p class="text-gray-400 mb-4">Já tem uma equipe? Insira o código para participar.</p>
+                    <input type="text" id="join-team-id-input" placeholder="Código da Equipe" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-3 py-2 text-white placeholder-gray-400 mb-3">
+                    <button id="join-team-button" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Entrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Lobby (Aguardando Jogadores) -->
+        <div id="lobby-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-4">Lobby da Equipe</h2>
+            <p class="text-center text-gray-400 mb-6">Compartilhe o código abaixo com seus colegas para que eles possam entrar.</p>
+            <div class="text-center mb-8">
+                <p class="text-lg text-gray-300">Código da Equipe:</p>
+                <div class="bg-gray-900 rounded-lg p-3 inline-block mt-2">
+                    <span id="team-id-display" class="text-3xl font-bold tracking-widest text-indigo-400"></span>
+                    <button id="copy-team-id-button" class="ml-4 text-gray-400 hover:text-white" title="Copiar código">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    </button>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-4 text-center">Membros na Equipe:</h3>
+            <div id="player-list-lobby" class="max-w-md mx-auto bg-gray-700 p-4 rounded-lg min-h-[100px]">
+                <!-- Lista de jogadores será inserida aqui -->
+            </div>
+            <div id="start-game-container" class="text-center mt-8">
+                <!-- Botão de Iniciar Jogo (só para o criador) -->
+            </div>
+        </div>
+
+        <!-- Tela do Quiz de Perfil -->
+        <div id="quiz-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">ATO 1: Quem é você no time?</h2>
+            <p class="text-center text-gray-400 mb-8">Responda às perguntas para descobrir seu perfil profissional.</p>
+            <div id="quiz-content" class="max-w-3xl mx-auto">
+                <div class="bg-gray-700 p-6 rounded-lg">
+                    <p class="text-lg font-semibold mb-1">Pergunta <span id="question-number"></span> de 10</p>
+                    <p id="question-text" class="text-xl mb-6"></p>
+                    <div id="options-container" class="space-y-3">
+                        <!-- Opções serão inseridas aqui -->
+                    </div>
+                </div>
+            </div>
+             <div id="quiz-waiting" class="text-center hidden">
+                <p class="text-xl mb-4">Ótimo trabalho! Aguardando os outros membros da equipe finalizarem o teste...</p>
+                <div class="animate-pulse text-gray-400">Aguardando...</div>
+            </div>
+        </div>
         
-        <header class="flex flex-wrap justify-between items-center mb-6 pb-4 border-b border-gray-300 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">🚀 Gênesis Empresarial</h1>
-                <p class="text-gray-600" v-if="teamName">Equipe: <span class="font-semibold">{{ teamName }}</span> <span v-if="isCEO" class="text-indigo-600 font-bold">(Você é o CEO)</span></p>
-            </div>
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                <button v-if="playerAuthenticated" @click="logout" title="Sair da sessão" class="bg-red-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-red-600">Sair</button>
-                <button @click="showScoreboard = true" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-indigo-700">🏆 Placar</button>
-                <button @click="showProfessorModal = true" class="bg-gray-700 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-800">🧑‍🏫</button>
-            </div>
-        </header>
-
-        <main>
-            <transition name="fade">
-                <div v-if="loading" class="text-center py-20">
-                    <svg class="animate-spin h-10 w-10 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <p class="mt-4 text-lg font-semibold">{{ loadingMessage }}</p>
+        <!-- Tela de Resultado do Perfil -->
+        <div id="profile-results-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-6">Perfis da Equipe</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Card do seu perfil -->
+                <div id="my-profile-container">
+                    <h3 class="text-xl font-semibold mb-4 text-indigo-400">Seu Perfil:</h3>
+                    <!-- Conteúdo do perfil pessoal aqui -->
                 </div>
-            </transition>
-
-            <transition name="fade">
-                <div v-if="!loading">
-                     <section v-if="!playerAuthenticated" class="bg-white p-8 rounded-xl shadow-lg max-w-lg mx-auto">
-                        <h2 class="text-2xl font-bold mb-4">Acesso à Plataforma</h2>
-                        <p class="mb-4 text-gray-600 text-sm">Crie seu login para começar ou para continuar de onde parou. Use o mesmo nome e senha para voltar à sua equipe.</p>
-                        <input type="text" v-model="playerNameInput" placeholder="Seu nome" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                        <input type="password" v-model="playerPasswordInput" placeholder="Sua senha" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                        <button @click="accessPlatform" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow" :disabled="!playerNameInput.trim() || !playerPasswordInput.trim()">Acessar</button>
-                    </section>
-
-                    <section v-if="playerAuthenticated && !teamId" class="bg-white p-8 rounded-xl shadow-lg">
-                         <h2 class="text-2xl font-bold mb-4">Bem-vindo(a), {{ playerNameInput }}!</h2>
-                        <div class="grid md:grid-cols-2 gap-8">
-                            <div>
-                                <h3 class="text-xl font-semibold mb-3">Criar uma Nova Equipe</h3>
-                                <p class="mb-4 text-gray-600 text-sm">Se você é o primeiro do seu grupo, crie a equipe e compartilhe o código com os outros.</p>
-                                <input type="text" v-model="teamNameInput" placeholder="Nome da sua nova equipe" class="w-full p-3 border border-gray-300 rounded-lg">
-                                <button @click="createTeam" class="mt-3 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow" :disabled="!teamNameInput.trim()">Criar Equipe</button>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-3">Entrar em uma Equipe</h3>
-                                <p class="mb-4 text-gray-600 text-sm">Se sua equipe já foi criada, insira o código fornecido pelo seu colega.</p>
-                                <input type="text" v-model="joinCodeInput" @keyup.enter="joinTeam()" placeholder="Código da Equipe" class="w-full p-3 mb-3 border border-gray-300 rounded-lg uppercase text-center font-mono text-lg">
-                                <button @click="joinTeam()" class="mt-3 w-full bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow" :disabled="!joinCodeInput.trim()">Entrar na Equipe</button>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <div v-if="isLoggedIn">
-                        <!-- ETAPA 1: TESTE DE PERFIL -->
-                        <section v-if="currentStep === 1" class="bg-white p-8 rounded-xl shadow-lg">
-                           <div v-if="!currentUserProfileCompleted">
-                                <h2 class="text-2xl font-bold mb-2">ATO 1 - Etapa 1: Autoconhecimento</h2>
-                                <div v-if="!userProfile">
-                                    <p class="mb-6 text-gray-600">Responda às 10 perguntas abaixo para descobrir seu perfil profissional. Seja honesto!</p>
-                                    <div class="space-y-6">
-                                        <div v-for="(question, qIndex) in staticData.questions" :key="qIndex" class="p-4 border border-gray-200 rounded-lg">
-                                            <p class="font-semibold mb-3">{{ qIndex + 1 }}. {{ question.text }}</p>
-                                            <div class="space-y-2">
-                                                <label v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                                    <input type="radio" :name="'question-' + qIndex" :value="option.type" v-model="answers[qIndex]" class="h-4 w-4 text-indigo-600 border-gray-300">
-                                                    <span class="ml-3 text-gray-700">{{ option.text }}</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <button @click="calculateProfile" class="w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow" :disabled="answers.includes(undefined) || answers.length < staticData.questions.length">Revelar meu Perfil</button>
-                                    </div>
-                                </div>
-                                <div v-else class="text-center bg-indigo-50 p-8 rounded-lg">
-                                    <h3 class="text-2xl font-bold text-indigo-800">{{ userProfile.name }}</h3>
-                                    <p class="text-indigo-600 font-semibold mt-1">{{ userProfile.title }}</p>
-                                    <p class="mt-4 text-left">{{ userProfile.description }}</p>
-                                    <button @click="confirmProfile" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow">Confirmar Perfil</button>
-                                </div>
-                            </div>
-                            <div v-else class="text-center">
-                                <h2 class="text-2xl font-bold mb-2">Aguardando a Equipe</h2>
-                                <p class="mb-4 text-gray-600">Compartilhe o código da equipe: <strong class="text-indigo-700 p-2 bg-indigo-100 rounded-md">{{ joinCodeDisplay }}</strong></p>
-                                <p class="font-semibold mb-3">Analise os perfis da sua equipe à medida que eles são definidos.</p>
-                                <div class="max-w-3xl mx-auto grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                                    <div v-for="member in teamMembers" :key="member.id" class="p-4 rounded-lg" :class="member.profile ? 'bg-white shadow' : 'bg-gray-200'">
-                                        <h3 class="font-bold text-lg">{{ member.name }}</h3>
-                                        <div v-if="member.profile">
-                                            <p class="font-semibold text-indigo-600">{{ staticData.profiles[member.profile].title }}</p>
-                                            <p class="text-xs text-gray-600 mt-2">{{ staticData.profiles[member.profile].description }}</p>
-                                        </div>
-                                        <p v-else class="text-gray-500">Aguardando definição do perfil...</p>
-                                    </div>
-                                </div>
-                                <button v-if="isTeamCreator" @click="advanceToCompanyVoting" class="mt-6 bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow" :disabled="!allMembersHaveProfile">Todos estão prontos! Próxima Etapa</button>
-                                 <p v-else class="mt-6 text-gray-600">Aguardando o criador da equipe avançar para a próxima etapa...</p>
-                            </div>
-                        </section>
-
-                        <section v-if="currentStep === 2" class="bg-white p-8 rounded-xl shadow-lg">
-                             <h2 class="text-2xl font-bold mb-2">ATO 1 - Etapa 2: A Oportunidade de Mercado</h2>
-                             <p class="mb-2 text-gray-600">Sua equipe deve decidir em qual segmento de tecnologia irá atuar. Leiam as opções, discutam em grupo e votem. A opção com mais votos será a escolhida.</p>
-                             <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Atenção:</strong> Se houver empate na votação, vocês precisarão votar novamente, e a equipe perderá pontos por falta de consenso.</p>
-
-                            <div v-if="!userVotedFor('company')">
-                                <div class="grid lg:grid-cols-2 gap-4">
-                                    <label v-for="company in staticData.companies" :key="company.id" class="flex p-4 rounded-lg border-2 cursor-pointer transition-all" :class="userVote.company === company.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
-                                        <input type="radio" :name="'company-vote'" :value="company.id" v-model="userVote.company" class="h-5 w-5 text-indigo-600 mt-1">
-                                        <div class="ml-4">
-                                            <h3 class="font-bold text-lg">{{ company.name }}</h3>
-                                            <p class="text-sm font-semibold text-gray-600">{{ company.slogan }}</p>
-                                            <p class="text-xs text-gray-500 mt-2">{{ company.description }}</p>
-                                        </div>
-                                    </label>
-                                </div>
-                                <button @click="submitVote('company')" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow" :disabled="!userVote.company">Confirmar Voto</button>
-                            </div>
-                             <div v-else class="text-center">
-                                <h3 class="text-xl font-bold">Voto Confirmado!</h3>
-                                <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
-                            </div>
-                        </section>
-
-                        <section v-if="currentStep === 3" class="bg-white p-8 rounded-xl shadow-lg">
-                            <h2 class="text-2xl font-bold mb-2">ATO 1 - Etapa 3: Eleição do CEO</h2>
-                            <p class="mb-2 text-gray-600">Com o segmento de mercado definido, é hora de eleger o(a) líder que guiará a visão da empresa. A votação é secreta. Vote em quem você acredita que tem o melhor perfil para ser o CEO.</p>
-                             <p class="text-sm text-amber-800 bg-amber-100 p-3 rounded-lg mb-6"><strong>Atenção:</strong> Escolhas unânimes recebem mais pontos. Divergências e a necessidade de re-votação por falta de maioria resultarão em perda de pontos.</p>
-
-                            <div v-if="!userVotedFor('ceo')">
-                                <div class="grid md:grid-cols-2 gap-4">
-                                    <label v-for="member in teamMembers" :key="member.id" class="flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all" :class="userVote.ceo === member.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'">
-                                        <input type="radio" :name="'ceo-vote'" :value="member.id" v-model="userVote.ceo" class="h-5 w-5 text-indigo-600">
-                                        <div class="ml-4">
-                                            <p class="font-bold text-lg">{{ member.name }}</p>
-                                            <p class="text-sm text-gray-600">{{ staticData.profiles[member.profile]?.name }}</p>
-                                        </div>
-                                    </label>
-                                </div>
-                                <button @click="submitVote('ceo')" class="mt-6 w-full bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow" :disabled="!userVote.ceo">Confirmar Voto</button>
-                            </div>
-                            <div v-else class="text-center">
-                                <h3 class="text-xl font-bold">Voto Confirmado!</h3>
-                                <p class="mt-2">Aguardando os outros membros da equipe votarem...</p>
-                            </div>
-                        </section>
-                        
-                        <section v-if="currentStep === 3.5" class="bg-white p-8 rounded-xl shadow-lg text-center">
-                             <h2 class="text-2xl font-bold mb-2">CEO Eleito!</h2>
-                             <p class="text-lg mb-6">O(A) novo(a) CEO da equipe é: <strong class="text-indigo-600">{{ getCeoName() }}</strong></p>
-                             <div v-if="!isCEO">
-                                <h3 class="font-semibold mb-3">Qual seu nível de satisfação com esta escolha?</h3>
-                                 <div v-if="!userHasRated('ceo')">
-                                    <div class="flex justify-center space-x-2 satisfaction-rating">
-                                        <input type="radio" id="s1" class="hidden" v-model="userSatisfactionInput.ceo" value="1"><label for="s1" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😡</label>
-                                        <input type="radio" id="s2" class="hidden" v-model="userSatisfactionInput.ceo" value="2"><label for="s2" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😕</label>
-                                        <input type="radio" id="s3" class="hidden" v-model="userSatisfactionInput.ceo" value="3"><label for="s3" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😐</label>
-                                        <input type="radio" id="s4" class="hidden" v-model="userSatisfactionInput.ceo" value="4"><label for="s4" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">😊</label>
-                                        <input type="radio" id="s5" class="hidden" v-model="userSatisfactionInput.ceo" value="5"><label for="s5" class="text-3xl cursor-pointer p-2 rounded-full transition-all border-2 border-transparent">🤩</label>
-                                    </div>
-                                    <button @click="submitSatisfaction('ceo')" class="mt-6 bg-indigo-600 text-white font-semibold px-8 py-3 rounded-lg shadow" :disabled="!userSatisfactionInput.ceo">Enviar Avaliação</button>
-                                </div>
-                                <p v-else class="text-gray-600 font-semibold">Sua avaliação foi registrada. Aguardando os outros membros...</p>
-                             </div>
-                             <div v-else>
-                                <p class="text-gray-600">Aguarde enquanto sua equipe avalia o resultado da eleição...</p>
-                                <div v-if="teamSatisfaction.ceo" class="mt-4">
-                                    <p class="font-bold">Média de Satisfação da Equipe: <span class="text-2xl" :class="getTeamSatisfactionEmoji('ceo').color">{{ getTeamSatisfactionEmoji('ceo').emoji }}</span></p>
-                                </div>
-                             </div>
-                        </section>
+                <!-- Card dos outros membros -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-pink-400">Perfis dos Colegas:</h3>
+                    <div id="team-profiles-container" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        <!-- Conteúdo dos perfis da equipe aqui -->
                     </div>
                 </div>
-            </transition>
-        </main>
+            </div>
+            <div id="profile-waiting-container" class="text-center mt-8">
+                 <p class="text-lg text-gray-400">Aguardando o líder da equipe iniciar a próxima etapa...</p>
+            </div>
+            <div id="profile-continue-container" class="text-center mt-8">
+                <!-- Botão para o criador da equipe -->
+            </div>
+        </div>
+
+        <!-- Tela de Votação do Segmento de Empresa -->
+        <div id="segment-vote-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 2: O Mercado de Atuação</h2>
+            <p class="text-center text-gray-400 mb-8">A equipe deve escolher um segmento de tecnologia para a nova empresa. Leiam com atenção e votem!</p>
+            <div id="segment-options-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Opções de segmento serão inseridas aqui -->
+            </div>
+            <div id="segment-vote-status" class="mt-6 text-center">
+                <p class="text-lg">Aguardando votos de: <span id="segment-waiting-for-players"></span></p>
+            </div>
+            <div id="segment-vote-result" class="mt-6 text-center hidden"></div>
+        </div>
         
-        <transition name="fade">
-            <div v-if="showScoreboard" class="fixed inset-0 z-10 flex items-center justify-center modal-bg" @click="showScoreboard = false">
-                 <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-2xl" @click.stop>
-                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold">🏆 Placar em Tempo Real</h2>
-                        <button @click="showScoreboard = false" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
-                    </div>
-                    <div class="space-y-4">
-                        <div v-for="team in sortedTeams" :key="team.id" class="flex items-center justify-between p-4 rounded-lg" :class="team.id === teamId ? 'bg-indigo-100' : 'bg-gray-100'">
-                            <span class="font-bold text-lg">{{ team.name }}</span>
-                            <span class="font-bold text-xl text-indigo-600">{{ scoresVisible ? team.score : '???' }}</span>
-                        </div>
-                         <div v-if="!scoresVisible" class="text-center text-gray-500 pt-4">As pontuações serão reveladas pelo professor...</div>
-                    </div>
-                </div>
+        <!-- Tela de Eleição do CEO -->
+        <div id="ceo-election-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 3: Liderança</h2>
+            <p class="text-center text-gray-400 mb-8">É hora de eleger o CEO da empresa. A votação é secreta. Escolha quem você acredita ser o mais preparado para liderar.</p>
+            <div id="ceo-options-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
+                <!-- Opções de CEO serão inseridas aqui -->
             </div>
-        </transition>
+             <div id="ceo-vote-status" class="mt-6 text-center">
+                <p class="text-lg">Aguardando votos de: <span id="ceo-waiting-for-players"></span></p>
+            </div>
+            <div id="ceo-vote-result" class="mt-6 text-center hidden"></div>
+        </div>
 
-        <transition name="fade">
-            <div v-if="showProfessorModal" class="fixed inset-0 z-20 flex items-center justify-center modal-bg" @click="showProfessorModal = false">
-                <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm" @click.stop>
-                     <h2 class="text-2xl font-bold text-center mb-4">Modo Professor</h2>
-                    <div v-if="!isProfessor">
-                        <label for="prof-pass" class="block font-semibold mb-2">Senha:</label>
-                        <input type="password" id="prof-pass" v-model="professorPassword" @keyup.enter="enterProfessorMode" class="w-full p-2 border border-gray-300 rounded-lg mb-4">
-                        <button @click="enterProfessorMode" class="w-full bg-gray-700 text-white font-semibold py-2 rounded-lg hover:bg-gray-800">Entrar</button>
-                    </div>
-                    <div v-else class="text-center space-y-4">
-                        <p class="text-green-600 font-semibold">Autenticado com sucesso!</p>
-                        <button @click="toggleScoresVisibility" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg">{{ scoresVisible ? 'Ocultar Pontuações' : 'Revelar Pontuações' }}</button>
-                         <button @click="confirmResetGame" class="w-full bg-red-600 text-white font-semibold py-2 rounded-lg">Zerar Jogo</button>
-                        <button @click="logoutProfessor" class="w-full text-sm text-gray-600 hover:underline">Sair do Modo Professor</button>
+        <!-- Tela de Satisfação com o CEO -->
+        <div id="ceo-satisfaction-screen" class="screen">
+             <h2 class="text-3xl font-bold text-center mb-2">Resultado da Eleição</h2>
+             <p class="text-center text-gray-400 mb-8">O CEO foi eleito! Agora, indique seu nível de satisfação com o resultado (1 = Muito Insatisfeito, 5 = Muito Satisfeito).</p>
+             <div class="max-w-lg mx-auto bg-gray-700 p-6 rounded-lg text-center">
+                <p class="text-xl mb-4">O novo CEO da empresa é: <span id="elected-ceo-name" class="font-bold text-indigo-400"></span></p>
+                <div id="ceo-satisfaction-input-container">
+                    <p class="mb-4">Qual seu nível de satisfação?</p>
+                    <div class="flex justify-center space-x-2">
+                        <button onclick="submitSatisfaction('ceo', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                        <button onclick="submitSatisfaction('ceo', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                        <button onclick="submitSatisfaction('ceo', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                        <button onclick="submitSatisfaction('ceo', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                        <button onclick="submitSatisfaction('ceo', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
                     </div>
                 </div>
+                <div id="ceo-satisfaction-waiting" class="hidden">
+                    <p class="text-lg">Aguardando os outros membros avaliarem...</p>
+                </div>
+             </div>
+        </div>
+        
+        <!-- Tela de Atribuição de Cargos (Visão do CEO) -->
+        <div id="role-assignment-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 4: Montando a Diretoria</h2>
+            <p class="text-center text-gray-400 mb-8">CEO, sua primeira missão é definir os cargos dos diretores. Analise o perfil de cada um e atribua as funções.</p>
+            <div id="role-assignment-ceo-view" class="max-w-4xl mx-auto">
+                <!-- Tabela de atribuição de cargos -->
+                <div class="space-y-4" id="role-assignment-list"></div>
+                <button id="confirm-roles-button" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">Confirmar Diretoria</button>
             </div>
-        </transition>
+            <div id="role-assignment-member-view" class="max-w-lg mx-auto text-center hidden">
+                <p class="text-xl mb-4">Aguardando o CEO definir os cargos da diretoria...</p>
+                 <div class="animate-pulse text-gray-400">Aguardando...</div>
+            </div>
+        </div>
+
+        <!-- Tela de Visualização de Cargo e Satisfação -->
+        <div id="role-satisfaction-screen" class="screen">
+             <h2 class="text-3xl font-bold text-center mb-2">Diretoria Definida!</h2>
+             <p class="text-center text-gray-400 mb-8">Confira seu novo cargo e o de seus colegas. Depois, avalie sua satisfação com a escolha do CEO.</p>
+             <div class="max-w-2xl mx-auto bg-gray-700 p-6 rounded-lg">
+                <div id="assigned-roles-list" class="space-y-3 mb-6">
+                    <!-- Lista de cargos atribuídos -->
+                </div>
+                <div id="my-assigned-role" class="text-center p-4 bg-gray-800 rounded-lg mb-6">
+                    <!-- Meu cargo -->
+                </div>
+                <div id="role-satisfaction-input-container">
+                    <p class="text-center mb-4">Qual seu nível de satisfação com seu cargo?</p>
+                    <div class="flex justify-center space-x-2">
+                        <button onclick="submitSatisfaction('role', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                        <button onclick="submitSatisfaction('role', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                        <button onclick="submitSatisfaction('role', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                        <button onclick="submitSatisfaction('role', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                        <button onclick="submitSatisfaction('role', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                    </div>
+                </div>
+                 <div id="role-satisfaction-waiting" class="hidden text-center">
+                    <p class="text-lg">Aguardando os outros membros avaliarem...</p>
+                </div>
+             </div>
+        </div>
+
+        <!-- Tela de Contratação Inicial -->
+        <div id="hiring-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 5: Expansão Inicial</h2>
+            <p class="text-center text-gray-400 mb-8">Cada diretor deve solicitar as contratações que julga essenciais para sua área. O CEO tomará a decisão final com base no orçamento.</p>
+            
+            <!-- Visão dos Diretores -->
+            <div id="hiring-director-view">
+                <div class="bg-gray-700 p-6 rounded-lg max-w-3xl mx-auto">
+                    <h3 class="text-xl font-semibold mb-2">Sua Área: <span id="director-role-title" class="text-indigo-400"></span></h3>
+                    <p class="text-gray-400 mb-4" id="director-needs-description"></p>
+                    <div id="hiring-positions-list" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto pr-2">
+                        <!-- Lista de cargos para contratar -->
+                    </div>
+                    <button id="submit-hiring-requests-button" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">Enviar Solicitações</button>
+                </div>
+                 <div id="hiring-director-waiting" class="text-center hidden">
+                    <p class="text-lg">Solicitações enviadas! Aguardando os demais diretores e a decisão final do CEO...</p>
+                </div>
+            </div>
+
+            <!-- Visão do CEO -->
+            <div id="hiring-ceo-view" class="hidden">
+                 <div class="bg-gray-700 p-6 rounded-lg max-w-4xl mx-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
+                        <div class="text-right">
+                            <p class="text-gray-400 text-sm">Orçamento Disponível</p>
+                            <p class="text-2xl font-bold text-green-400" id="budget-display"></p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-6">Analise as solicitações dos diretores e aprove as contratações que cabem no orçamento e são estratégicas para a empresa.</p>
+                    <div id="ceo-hiring-approval-list" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        <!-- Lista de solicitações para aprovação do CEO -->
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-600 flex justify-between items-center">
+                         <p>Custo Total: <span id="total-cost-display" class="font-bold">R$ 0,00</span></p>
+                         <button id="finalize-hiring-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Finalizar Contratações</button>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Tela do Organograma e Satisfação Final -->
+        <div id="org-chart-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">Estrutura da Empresa</h2>
+            <p class="text-center text-gray-400 mb-8">Este é o organograma inicial da nossa empresa. Abaixo, avalie pela última vez as decisões do CEO.</p>
+            <div class="max-w-4xl mx-auto bg-gray-700 p-6 rounded-lg">
+                <div id="org-chart-container" class="space-y-4 text-center">
+                    <!-- O organograma será renderizado aqui -->
+                </div>
+            </div>
+             <div id="final-satisfaction-container" class="max-w-lg mx-auto bg-gray-700 p-6 rounded-lg mt-8">
+                <div id="final-satisfaction-input-container">
+                    <p class="text-center mb-4">Qual seu nível de satisfação com as contratações e a estrutura final?</p>
+                    <div class="flex justify-center space-x-2">
+                         <button onclick="submitSatisfaction('final', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                         <button onclick="submitSatisfaction('final', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                         <button onclick="submitSatisfaction('final', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                         <button onclick="submitSatisfaction('final', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                         <button onclick="submitSatisfaction('final', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                    </div>
+                </div>
+                 <div id="final-satisfaction-waiting" class="hidden text-center">
+                    <p class="text-lg">Aguardando os outros membros avaliarem...</p>
+                </div>
+             </div>
+        </div>
+        
+        <!-- Tela de Relatório Final do Ato 1 -->
+        <div id="final-report-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">Fim do Ato 1</h2>
+            <p class="text-center text-gray-400 mb-8">Confira o desempenho da sua equipe nesta primeira fase.</p>
+            <div class="max-w-3xl mx-auto bg-gray-700 p-6 rounded-lg">
+                <div class="text-center mb-6">
+                    <p class="text-lg text-gray-300">Pontuação Final da Equipe</p>
+                    <p class="text-6xl font-bold text-indigo-400" id="final-score-display"></p>
+                    <p class="text-gray-400">de <span id="max-score-display"></span> pontos possíveis</p>
+                </div>
+                 <div id="ceo-satisfaction-report" class="text-center mb-8 p-4 bg-gray-800 rounded-lg">
+                    <p class="text-lg text-gray-300">Satisfação Média com o CEO</p>
+                    <p class="text-4xl font-bold text-pink-400" id="ceo-final-satisfaction-avg"></p>
+                 </div>
+                <h3 class="text-xl font-semibold mb-4">Análise de Desempenho:</h3>
+                <div id="score-losses-container" class="space-y-3">
+                    <!-- Detalhes das perdas de pontos -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controles do Professor -->
+        <div id="professor-controls-container" class="absolute bottom-4 right-4">
+             <button id="toggle-professor-controls" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+             </button>
+             <div id="professor-panel" class="hidden absolute bottom-14 right-0 bg-gray-800 border border-gray-600 p-4 rounded-lg w-64 shadow-lg">
+                 <h4 class="font-bold mb-2">Painel do Professor</h4>
+                 <div id="prof-password-section">
+                    <input type="password" id="prof-password-input" placeholder="Senha" class="w-full bg-gray-700 text-white p-2 rounded mb-2">
+                    <button id="prof-login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded">Acessar</button>
+                 </div>
+                 <div id="prof-actions-section" class="hidden space-y-2">
+                    <button id="prof-toggle-score" class="w-full bg-gray-600 hover:bg-gray-500 py-2 rounded">Revelar/Ocultar Pontos</button>
+                    <button id="prof-reset-game" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Zerar Jogo (Nova Rodada)</button>
+                 </div>
+             </div>
+        </div>
+
     </div>
 
+    <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, addDoc, query, where, getDocs, arrayUnion, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        
+        // Configuração do Firebase fornecida pelo usuário
         const firebaseConfig = {
-          apiKey: "AIzaSyDFx4jZDjnsEmOSFUXW3NykN0hPSTBL7Lc",
-          authDomain: "genesis-empresarial-87b1d.firebaseapp.com",
-          projectId: "genesis-empresarial-87b1d",
-          storageBucket: "genesis-empresarial-87b1d.firebasestorage.app",
-          messagingSenderId: "41214218923",
-          appId: "1:41214218923:web:4b77d3930b61f423dbddee",
-          measurementId: "G-S68YFP7JHC"
+            apiKey: "AIzaSyDFx4jZDjnsEmOSFUXW3NykN0hPSTBL7Lc",
+            authDomain: "genesis-empresarial-87b1d.firebaseapp.com",
+            projectId: "genesis-empresarial-87b1d",
+            storageBucket: "genesis-empresarial-87b1d.appspot.com",
+            messagingSenderId: "41214218923",
+            appId: "1:41214218923:web:4b77d3930b61f423dbddee",
+            measurementId: "G-S68YFP7JHC"
+        };
+
+        // Inicialização do Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Estado global da aplicação
+        let currentUser = null;
+        let currentPlayerName = null;
+        let currentTeamId = null;
+        let unsubscribeFromTeam = null; // Função para parar de ouvir updates da equipe
+        let currentTeamData = null; // Cache local dos dados da equipe
+
+        // --- LÓGICA DO JOGO E CONTEÚDO ---
+        
+        // Perguntas do Quiz
+        const quizQuestions = [
+            { question: "Diante de um grande projeto com prazo apertado, qual sua primeira reação?", options: ["Planejar cada etapa meticulosamente.", "Reunir a equipe para um brainstorm de ideias inovadoras.", "Começar a executar as tarefas mais urgentes imediatamente.", "Analisar os riscos e criar planos de contingência."] },
+            { question: "Qual ambiente de trabalho te deixa mais produtivo?", options: ["Um local organizado, silencioso e com regras claras.", "Um espaço colaborativo, cheio de energia e novas ideias.", "Um ambiente dinâmico, focado em resultados e metas.", "Um lugar que valoriza a segurança, estabilidade e o bem-estar da equipe."] },
+            { question: "Ao receber um feedback negativo, como você lida?", options: ["Agradeço, analiso os pontos e crio um plano de melhoria.", "Vejo como uma oportunidade para repensar minha abordagem de forma criativa.", "Foco em como posso reverter o resultado rapidamente.", "Busco entender o sentimento da outra pessoa e fortalecer a relação."] },
+            { question: "Qual tipo de tarefa te dá mais satisfação?", options: ["Otimizar um processo para torná-lo mais eficiente.", "Criar algo completamente novo, que ninguém pensou antes.", "Superar uma meta desafiadora e ver o resultado concreto.", "Ajudar um colega a resolver um problema ou desenvolver uma habilidade."] },
+            { question: "Em uma discussão em grupo, seu papel costuma ser:", options: ["O que organiza as ideias e define os próximos passos.", "O que propõe soluções 'fora da caixa' e inspira os outros.", "O que mantém o foco no objetivo e impulsiona a ação.", "O que garante que todos sejam ouvidos e o clima seja positivo."] },
+            { question: "O que é mais importante para o sucesso de uma empresa?", options: ["Processos bem definidos e controle de qualidade rigoroso.", "Inovação constante e capacidade de se adaptar ao futuro.", "Agressividade comercial e conquista de mercado.", "Uma cultura forte, com funcionários felizes e engajados."] },
+            { question: "Como você toma decisões importantes?", options: ["Com base em dados, fatos e análises detalhadas.", "Seguindo minha intuição e visão de longo prazo.", "De forma rápida e pragmática, focando no impacto imediato.", "Considerando o impacto nas pessoas e nos valores da equipe."] },
+            { question: "Seu lema profissional seria algo como:", options: ["'Ordem e progresso.'", "'Pense diferente.'", "'Feito é melhor que perfeito.'", "'Pessoas em primeiro lugar.'"] },
+            { question: "O que te frustra mais em um projeto?", options: ["Falta de planejamento e mudanças de escopo constantes.", "Falta de liberdade para experimentar e testar novas ideias.", "Burocracia e lentidão que impedem o progresso.", "Conflitos interpessoais e falta de espírito de equipe."] },
+            { question: "Qual líder famoso você mais admira?", options: ["Um gestor como Alfred Sloan (General Motors), mestre da organização.", "Um visionário como Steve Jobs (Apple), que mudou o mundo.", "Um executor como Jeff Bezos (Amazon), focado em crescimento.", "Um líder humano como Howard Schultz (Starbucks), que valoriza as pessoas."] }
+        ];
+
+        // Perfis e lógica de cálculo (A=Analista, I=Inovador, E=Executor, C=Comunicador)
+        const profileMapping = { 0: 'A', 1: 'I', 2: 'E', 3: 'C' };
+        const profiles = {
+            'A': { title: "O Analista", description: "Metódico, organizado e detalhista. Você é excelente em planejar, otimizar processos e tomar decisões baseadas em dados. Sua força está em trazer ordem ao caos e garantir a qualidade e eficiência das entregas." },
+            'I': { title: "O Inovador", description: "Criativo, visionário e inspirador. Você enxerga o futuro e adora criar soluções disruptivas. Sua energia move a equipe para fora da zona de conforto, gerando ideias que podem transformar o mercado." },
+            'E': { title: "O Executor", description: "Pragmático, focado e orientado a resultados. Você é a pessoa que faz acontecer. Transforma ideias em ações concretas, supera obstáculos e não descansa até que as metas sejam atingidas. Sua agilidade é contagiante." },
+            'C': { title: "O Comunicador", description: "Empático, diplomático e motivador. Você é o elo que une a equipe. Sua habilidade em ouvir, mediar conflitos e criar um ambiente positivo é fundamental para manter o time engajado e colaborativo." }
+        };
+
+        // Segmentos de empresa
+        const companySegments = {
+            saas: { 
+                title: "SaaS B2B", 
+                description: "Software como Serviço para outras empresas. Foco em resolver um problema específico de um nicho de mercado.",
+                needs: "Exige forte capacidade de desenvolvimento de produto, marketing digital focado e um time de vendas consultivas. A retenção de clientes é chave.",
+                idealProfiles: ['A', 'E', 'I'] // Analista para produto, Executor para vendas, Inovador para diferenciação
+            },
+            fintech: { 
+                title: "Fintech", 
+                description: "Tecnologia aplicada ao mercado financeiro. Soluções para pagamentos, investimentos, crédito, etc.",
+                needs: "Alta necessidade de segurança, conformidade regulatória (compliance) e uma experiência de usuário impecável para gerar confiança. A agilidade para lançar produtos é um diferencial.",
+                idealProfiles: ['A', 'E', 'C'] // Analista para segurança/dados, Executor para agilidade, Comunicador para confiança
+            },
+            edtech: { 
+                title: "EdTech", 
+                description: "Tecnologia para a educação. Plataformas de ensino a distância, gamificação do aprendizado, ferramentas para escolas.",
+                needs: "Foco em engajamento do usuário e metodologias pedagógicas eficazes. A criação de conteúdo de qualidade e uma comunidade forte são essenciais.",
+                idealProfiles: ['I', 'C', 'A'] // Inovador para pedagogia, Comunicador para comunidade, Analista para métricas
+            },
+            healthtech: { 
+                title: "HealthTech", 
+                description: "Soluções tecnológicas para a área da saúde. Prontuários eletrônicos, telemedicina, agendamento de consultas.",
+                needs: "Requer extremo cuidado com a privacidade de dados (LGPD), usabilidade para profissionais de saúde e pacientes, e parcerias estratégicas com hospitais e clínicas.",
+                idealProfiles: ['A', 'C', 'E'] // Analista para dados/segurança, Comunicador para parcerias, Executor para implementação
+            },
+            marketplace: { 
+                title: "Marketplace de Nicho", 
+                description: "Plataforma que conecta compradores e vendedores de um segmento específico (ex: artesãos, produtos orgânicos).",
+                needs: "O maior desafio é resolver o 'problema do ovo e da galinha': atrair compradores e vendedores simultaneamente. Exige forte senso de comunidade e logística eficiente.",
+                idealProfiles: ['C', 'I', 'E'] // Comunicador para comunidade, Inovador para solução, Executor para operação
+            }
+        };
+
+        // Cargos e perfis ideais
+        const directorRoles = {
+            CTO: { title: "Diretor(a) de Tecnologia (CTO)", description: "Responsável por toda a parte técnica, desenvolvimento do produto e infraestrutura.", idealProfiles: ['A', 'I'] },
+            CMO: { title: "Diretor(a) de Marketing (CMO)", description: "Cuida da aquisição de clientes, marca e comunicação com o mercado.", idealProfiles: ['I', 'C'] },
+            COO: { title: "Diretor(a) de Operações (COO)", description: "Garante que os processos internos funcionem, da entrega ao suporte ao cliente.", idealProfiles: ['A', 'E'] },
+            CPO: { title: "Diretor(a) de Produto (CPO)", description: "Define a visão e estratégia do produto, pesquisando o mercado e as necessidades dos usuários.", idealProfiles: ['I', 'A'] },
+            CHRO: { title: "Diretor(a) de Recursos Humanos (CHRO)", description: "Responsável pela cultura da empresa, contratação e desenvolvimento das pessoas.", idealProfiles: ['C', 'A'] }
+        };
+
+        const allPossibleHires = [
+            { id: 'dev_front', name: 'Dev Front-End', area: 'CTO' }, { id: 'dev_back', name: 'Dev Back-End', area: 'CTO' }, { id: 'devops', name: 'DevOps', area: 'CTO' }, { id: 'qa', name: 'Analista de QA', area: 'CTO' },
+            { id: 'social_media', name: 'Analista de Mídias Sociais', area: 'CMO' }, { id: 'seo', name: 'Especialista em SEO', area: 'CMO' }, { id: 'paid_traffic', name: 'Gestor de Tráfego Pago', area: 'CMO' }, { id: 'content', name: 'Produtor de Conteúdo', area: 'CMO' },
+            { id: 'support_l1', name: 'Suporte Nível 1', area: 'COO' }, { id: 'support_l2', name: 'Suporte Nível 2', area: 'COO' }, { id: 'success', name: 'Customer Success', area: 'COO' }, { id: 'process', name: 'Analista de Processos', area: 'COO' },
+            { id: 'ux_designer', name: 'UX Designer', area: 'CPO' }, { id: 'ui_designer', name: 'UI Designer', area: 'CPO' }, { id: 'product_owner', name: 'Product Owner', area: 'CPO' }, { id: 'data_analyst', name: 'Analista de Dados', area: 'CPO' },
+            { id: 'recruiter', name: 'Recrutador(a)', area: 'CHRO' }, { id: 'dp', name: 'Analista de DP', area: 'CHRO' }, { id: 'culture', name: 'Analista de Cultura', area: 'CHRO' },
+            { id: 'sales_sdr', name: 'Vendedor (SDR)', area: 'CMO' }, { id: 'sales_closer', name: 'Vendedor (Closer)', area: 'CMO' },
+        ];
+
+        const hireCosts = {
+            dev_front: 2000, dev_back: 2500, devops: 3000, qa: 1500,
+            social_media: 1200, seo: 1800, paid_traffic: 2000, content: 1300,
+            support_l1: 800, support_l2: 1200, success: 1500, process: 1600,
+            ux_designer: 2200, ui_designer: 2000, product_owner: 2500, data_analyst: 2200,
+            recruiter: 1500, dp: 1000, culture: 1400,
+            sales_sdr: 1300, sales_closer: 1800
+        };
+
+        const directorNeeds = {
+            CTO: { desc: "Sua missão é construir um produto robusto e escalável. Sem um bom time técnico, a empresa não sai do papel.", essential: ['dev_front', 'dev_back'] },
+            CMO: { desc: "Sua missão é trazer os primeiros clientes. Sem marketing e vendas, o melhor produto do mundo não se vende sozinho.", essential: ['paid_traffic', 'sales_sdr'] },
+            COO: { desc: "Sua missão é garantir que os clientes fiquem satisfeitos. Um mau atendimento pode destruir a reputação da empresa.", essential: ['support_l1', 'success'] },
+            CPO: { desc: "Sua missão é garantir que o produto resolva um problema real. Construir a coisa errada é o caminho mais rápido para o fracasso.", essential: ['ux_designer', 'data_analyst'] },
+            CHRO: { desc: "Sua missão é montar a equipe certa. Contratar as pessoas erradas nos cargos-chave pode ser fatal para uma startup.", essential: ['recruiter'] }
+        };
+
+        // --- FUNÇÕES AUXILIARES ---
+
+        const showScreen = (screenId) => {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active-screen');
+                screen.style.display = 'none';
+            });
+            const activeScreen = document.getElementById(screenId);
+            if (activeScreen) {
+                activeScreen.classList.add('active-screen');
+                activeScreen.style.display = 'block';
+            }
         };
         
-        let app, auth, db;
-        try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } catch (e) { console.error("Firebase initialization failed:", e); }
+        // Função para gerar ID de equipe
+        const generateTeamId = () => {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        };
 
-        const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
+        // --- LÓGICA DE AUTENTICAÇÃO E INICIALIZAÇÃO ---
 
-        createApp({
-            setup() {
-                 const loading = ref(true);
-                const loadingMessage = ref('Conectando ao servidor...');
-                const playerAuthenticated = ref(false);
-                const teamId = ref(null);
-                const currentStep = ref(0);
-                const userId = ref(null);
-                const playerNameInput = ref('');
-                const playerPasswordInput = ref('');
-                const teamNameInput = ref('');
-                const joinCodeInput = ref('');
-                const teamName = ref('');
-                const joinCodeDisplay = ref('');
-                const teamMembers = ref([]);
-                const suggestions = ref({ votes: {}, satisfaction: {}, hires: {} });
-                const assignedRoles = ref({});
-                const selectedCompany = ref(null);
-                const hiredCounts = ref({});
-                const teamSatisfaction = ref({});
-                const finalReport = ref(null);
-                const userProfile = ref(null);
-                const answers = ref([]);
-                const userVote = ref({});
-                const userSuggestion = ref({});
-                const userSatisfactionInput = ref({});
-                const showScoreboard = ref(false);
-                const allTeams = ref([]);
-                const scoresVisible = ref(false);
-                const showProfessorModal = ref(false);
-                const isProfessor = ref(false);
-                const professorPassword = ref('');
-                let teamListener = null;
-
-                const staticData = reactive({
-                     questions: [
-                        { text: "Diante de um grande projeto novo, sua primeira reação é:", options: [{text: "Planejar cada detalhe antes de começar.", type: "Analista"},{text: "Juntar a equipe para um brainstorming de ideias malucas.", type: "Inovador"},{text: "Começar a construir um protótipo imediatamente.", type: "Executor"},{text: "Conversar com as pessoas para entender o que elas precisam.", type: "Comunicador"}]},
-                        { text: "Qual ambiente de trabalho te deixa mais produtivo?", options: [{text: "Um lugar quieto, com dados e gráficos para analisar.", type: "Analista"},{text: "Uma sala cheia de quadros brancos, post-its e liberdade para criar.", type: "Inovador"},{text: "Qualquer lugar onde eu possa colocar a mão na massa e ver resultados.", type: "Executor"},{text: "Um ambiente colaborativo, cheio de reuniões e conversas.", type: "Comunicador"}]},
-                        { text: "Um cliente reporta um problema inesperado. O que você faz?", options: [{text: "Investigo a causa raiz do problema sistematicamente.", type: "Analista"},{text: "Penso em três soluções completamente novas para resolver e encantar.", type: "Inovador"},{text: "Aplico uma correção rápida para resolver o agora, e depois melhoro.", type: "Executor"},{text: "Ligo para o cliente, ouço com atenção e garanto que ele se sinta compreendido.", type: "Comunicador"}]},
-                        { text: "Como você prefere aprender algo novo?", options: [{text: "Lendo a documentação completa e fazendo anotações.", type: "Analista"},{text: "Assistindo a vídeos inspiradores e experimentando sem medo de errar.", type: "Inovador"},{text: "Seguindo um tutorial prático, passo a passo.", type: "Executor"},{text: "Participando de um workshop em grupo e discutindo com colegas.", type: "Comunicador"}]},
-                        { text: "O que é mais importante para o sucesso de uma empresa?", options: [{text: "Processos eficientes e decisões baseadas em dados.", type: "Analista"},{text: "Uma visão de futuro ousada e capacidade de se reinventar.", type: "Inovador"},{text: "Entregar resultados de forma rápida e consistente.", type: "Executor"},{text: "Uma cultura forte e um bom relacionamento com clientes e equipe.", type: "Comunicador"}]},
-                        { text: "Quando um projeto em que você trabalhou intensamente falha, sua reação é:", options: [{text: "Analisar o que deu errado para criar um relatório de lições aprendidas.", type: "Analista"},{text: "Ver o fracasso como uma oportunidade de pivotar para uma ideia ainda melhor.", type: "Inovador"},{text: "Começar a trabalhar imediatamente em uma nova versão, corrigindo os erros.", type: "Executor"},{text: "Reunir a equipe para levantar o moral e discutir o que aprenderam juntos.", type: "Comunicador"}]},
-                        { text: "Você precisa apresentar sua ideia para investidores. Qual sua abordagem?", options: [{text: "Um pitch deck recheado de dados de mercado, projeções financeiras e KPIs.", type: "Analista"},{text: "Uma apresentação visionária, focada na história e no potencial transformador da ideia.", type: "Inovador"},{text: "Uma demonstração ao vivo do protótipo, mostrando o que já funciona.", type: "Executor"},{text: "Focar em construir um relacionamento com os investidores, entendendo suas dores e visões.", type: "Comunicador"}]},
-                        { text: "O que te dá mais satisfação?", options: [{text: "Resolver um problema complexo que ninguém mais conseguiu.", type: "Analista"},{text: "Ter uma ideia que muda completamente as regras do jogo.", type: "Inovador"},{text: "Entregar um projeto no prazo e ver as pessoas usando o produto.", type: "Executor"},{text: "Receber um feedback positivo de um cliente ou colega de equipe.", type: "Comunicador"}]},
-                        { text: "Como você lida com feedback sobre seu trabalho?", options: [{text: "Agradeço e peço dados ou exemplos específicos para entender a fundo.", type: "Analista"},{text: "Uso o feedback como combustível para ter ideias ainda mais criativas.", type: "Inovador"},{text: "Agradeço e já começo a implementar as mudanças sugeridas.", type: "Executor"},{text: "Inicio uma conversa para entender a perspectiva da pessoa e o sentimento por trás do feedback.", type: "Comunicador"}]},
-                        { text: "Em uma equipe, qual papel você naturalmente assume?", options: [{text: "O que organiza os processos e garante que nada seja esquecido.", type: "Analista"},{text: "O que traz novas perspectivas e desafia o status quo.", type: "Inovador"},{text: "O que arregaça as mangas e incentiva todos a focarem na entrega.", type: "Executor"},{text: "O que mantém a equipe unida e garante que todos estão se comunicando bem.", type: "Comunicador"}]}
-                    ],
-                    profiles: {
-                        Analista: { name: "O Arquiteto Analista", title: "A Mente Estratégica", description: "Você é metódico, detalhista e brilha ao analisar dados para tomar decisões bem-fundamentadas. Sua força está em criar sistemas lógicos, encontrar falhas e garantir a qualidade e a estabilidade. Processos e planejamento são seus melhores amigos." },
-                        Inovador: { name: "O Visionário Inovador", title: "A Força Criativa", description: "Você enxerga além do óbvio e adora criar soluções disruptivas. Sua mente está sempre borbulhando com novas ideias e possibilidades. Você não tem medo de arriscar e é apaixonado por construir o futuro, mesmo que o caminho seja incerto." },
-                        Executor: { name: "O Realizador Executor", title: "A Potência da Ação", description: "Você é prático, focado e tem uma habilidade incrível de transformar ideias em realidade. Enquanto outros discutem, você já está fazendo. Seu lema é 'feito é melhor que perfeito' e você se motiva ao ver o progresso e entregar resultados concretos." },
-                        Comunicador: { name: "O Conector Comunicador", title: "A Alma do Negócio", description: "Você entende de pessoas. Sua grande força é construir pontes, motivar a equipe, negociar com clientes e criar uma cultura positiva. Você sabe que a tecnologia só tem valor quando resolve problemas reais para pessoas reais." }
-                    },
-                    companies: [ /* 5 companies with idealProfiles */ ],
-                    allRoles: [ /* 5 C-level roles with idealProfiles */ ],
-                    availableHires: [ /* 10 hireable roles with salary and area */ ],
-                    orcamentoInicial: 50000,
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                currentUser = user;
+                // Se já tiver nome e equipe, tenta reconectar
+                const savedName = localStorage.getItem('playerName');
+                const savedTeamId = localStorage.getItem('teamId');
+                if (savedName && savedTeamId) {
+                    currentPlayerName = savedName;
+                    currentTeamId = savedTeamId;
+                    document.getElementById('player-name-display').textContent = currentPlayerName;
+                    listenToTeamUpdates(currentTeamId);
+                } else {
+                    showScreen('login-screen');
+                }
+            } else {
+                signInAnonymously(auth).catch(error => {
+                    console.error("Erro no login anônimo:", error);
+                    alert("Não foi possível conectar. Tente recarregar a página.");
                 });
+            }
+        });
+        
+        document.getElementById('login-button').addEventListener('click', () => {
+            const name = document.getElementById('player-name-input').value.trim();
+            if (name) {
+                currentPlayerName = name;
+                localStorage.setItem('playerName', name);
+                document.getElementById('player-name-display').textContent = currentPlayerName;
+                showScreen('team-select-screen');
+            } else {
+                alert('Por favor, digite seu nome.');
+            }
+        });
+
+        // --- LÓGICA DE CRIAÇÃO E ENTRADA EM EQUIPES ---
+
+        document.getElementById('create-team-button').addEventListener('click', async () => {
+            const teamId = generateTeamId();
+            currentTeamId = teamId;
+            localStorage.setItem('teamId', teamId);
+            const teamRef = doc(db, 'teams', teamId);
+
+            const initialTeamData = {
+                teamId: teamId,
+                creatorId: currentUser.uid,
+                players: {
+                    [currentUser.uid]: {
+                        name: currentPlayerName,
+                        id: currentUser.uid,
+                    }
+                },
+                gameStage: 'lobby',
+                createdAt: serverTimestamp(),
+                score: 0,
+                scoreLosses: [],
+            };
+
+            await setDoc(teamRef, initialTeamData);
+            listenToTeamUpdates(teamId);
+        });
+
+        document.getElementById('join-team-button').addEventListener('click', async () => {
+            const teamId = document.getElementById('join-team-id-input').value.trim().toUpperCase();
+            if (!teamId) {
+                alert("Por favor, insira um código de equipe.");
+                return;
+            }
+
+            const teamRef = doc(db, 'teams', teamId);
+            const teamSnap = await getDoc(teamRef);
+
+            if (teamSnap.exists()) {
+                currentTeamId = teamId;
+                localStorage.setItem('teamId', teamId);
                 
-                const isLoggedIn = computed(() => playerAuthenticated.value && !!teamId.value);
-                const isCEO = computed(() => userId.value && assignedRoles.value.CEO === userId.value);
-                const isTeamCreator = computed(() => teamMembers.value.length > 0 && teamMembers.value[0].id === userId.value);
-                const allMembersHaveProfile = computed(() => teamMembers.value.length > 0 && teamMembers.value.every(m => m.profile));
-                const currentUserProfileCompleted = computed(() => teamMembers.value.find(m => m.id === userId.value)?.profile);
-                const sortedTeams = computed(() => [...allTeams.value].sort((a, b) => (b.score || 0) - (a.score || 0)));
-
-                const userVotedFor = (voteType) => {
-                    return suggestions.value?.votes?.[voteType] && suggestions.value.votes[voteType][userId.value];
-                };
-
-                const userHasRated = (satType) => {
-                    return suggestions.value?.satisfaction?.[satType] && suggestions.value.satisfaction[satType][userId.value];
+                const teamData = teamSnap.data();
+                if (teamData.gameStage !== 'lobby') {
+                    alert('Este jogo já começou. Não é possível entrar.');
+                    return;
                 }
 
-                const setupFirebase = () => {
-                     onAuthStateChanged(auth, async user => {
-                        if (user) {
-                            userId.value = user.uid;
-                            await loadPlayerState();
-                            setupListeners();
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                        loading.value = false;
-                    });
-                };
-
-                const loadPlayerState = async () => {
-                     const localData = JSON.parse(localStorage.getItem('genesis-empresarial-session'));
-                    if (localData?.playerName && localData.playerPassword) {
-                        playerNameInput.value = localData.playerName;
-                        playerPasswordInput.value = localData.playerPassword;
-                        playerAuthenticated.value = true;
-                        if (localData.teamId) {
-                            await joinTeam(true);
-                        }
+                await updateDoc(teamRef, {
+                    [`players.${currentUser.uid}`]: {
+                        name: currentPlayerName,
+                        id: currentUser.uid,
                     }
-                };
-                
-                const setupListeners = () => {
-                    onSnapshot(collection(db, "teams"), (snapshot) => {
-                        allTeams.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    });
-                     onSnapshot(doc(db, "controller", "game_state"), (doc) => {
-                        scoresVisible.value = doc.data()?.scoresVisible || false;
-                    });
-                };
-                
-                const syncWithTeam = (newTeamId) => {
-                    if (teamListener) teamListener();
-                    teamId.value = newTeamId;
-                    const teamDocRef = doc(db, "teams", newTeamId);
-                    teamListener = onSnapshot(teamDocRef, (docSnap) => {
-                        if (docSnap.exists()) {
-                            const data = docSnap.data();
-                            teamName.value = data.name;
-                            currentStep.value = data.currentStep;
-                            joinCodeDisplay.value = data.joinCode;
-                            teamMembers.value = data.members;
-                            suggestions.value = data.suggestions;
-                            assignedRoles.value = data.assignedRoles || {};
-                            selectedCompany.value = data.selectedCompany || null;
-                            hiredCounts.value = data.hiredCounts || {};
-                            teamSatisfaction.value = data.teamSatisfaction || {};
-                            finalReport.value = data.finalReport || null;
-                        } else {
-                            resetLocalState(false); 
-                        }
-                    });
-                };
-                
-                const saveState = (data) => updateDoc(doc(db, "teams", teamId.value), data);
-
-                const accessPlatform = () => {
-                    localStorage.setItem('genesis-empresarial-session', JSON.stringify({
-                        playerName: playerNameInput.value.trim(),
-                        playerPassword: playerPasswordInput.value.trim()
-                    }));
-                    playerAuthenticated.value = true;
-                };
-                
-                const logout = () => {
-                     if (confirm("Você tem certeza que quer sair?")) {
-                        resetLocalState(true);
-                    }
-                };
-
-                const resetLocalState = (clearInputs) => {
-                    localStorage.removeItem('genesis-empresarial-session');
-                    if(teamListener) teamListener();
-                    playerAuthenticated.value = false;
-                    teamId.value = null;
-                    if(clearInputs) {
-                        playerNameInput.value = '';
-                        playerPasswordInput.value = '';
-                    }
-                };
-
-                const createTeam = async () => {};
-                const joinTeam = async (isRejoin = false) => {};
-                const calculateProfile = () => {};
-                const confirmProfile = async () => {};
-                const advanceToCompanyVoting = () => {};
-                const submitVote = (voteType) => {};
-                const getCeoName = () => {};
-                const submitSatisfaction = (satisfactionType) => {};
-                const getTeamSatisfactionEmoji = (type) => {};
-                const enterProfessorMode = () => {};
-                const logoutProfessor = () => {};
-                const toggleScoresVisibility = async () => {};
-                const confirmResetGame = () => {};
-                
-                 return {
-                    loading, loadingMessage, playerAuthenticated, teamId, isLoggedIn,
-                    playerNameInput, playerPasswordInput, teamNameInput, joinCodeInput,
-                    accessPlatform, createTeam, joinTeam, logout,
-                    currentStep, teamName, joinCodeDisplay, teamMembers,
-                    staticData, answers, userProfile, calculateProfile, confirmProfile,
-                    currentUserProfileCompleted, allMembersHaveProfile, isTeamCreator, advanceToCompanyVoting,
-                    userVote, submitVote, userVotedFor,
-                    isCEO, getCeoName, userSatisfactionInput, submitSatisfaction, userHasRated,
-                    teamSatisfaction,
-                    assignedRoles,
-                    showScoreboard, sortedTeams, scoresVisible, showProfessorModal, isProfessor, professorPassword,
-                    enterProfessorMode, logoutProfessor, toggleScoresVisibility, confirmResetGame, getTeamSatisfactionEmoji
-                };
+                });
+                listenToTeamUpdates(teamId);
+            } else {
+                alert("Equipe não encontrada. Verifique o código.");
             }
-        }).mount('#app')
+        });
+
+        // --- FUNÇÃO PRINCIPAL DE ATUALIZAÇÃO DA UI (RENDER) ---
+        
+        function listenToTeamUpdates(teamId) {
+            if (unsubscribeFromTeam) {
+                unsubscribeFromTeam();
+            }
+            const teamRef = doc(db, 'teams', teamId);
+            unsubscribeFromTeam = onSnapshot(teamRef, (doc) => {
+                if (doc.exists()) {
+                    const teamData = doc.data();
+                    currentTeamData = teamData; // Atualiza cache local
+                    updateUI(teamData);
+                } else {
+                    // Equipe foi deletada (reset do professor?)
+                    alert("A equipe foi dissolvida. Você será redirecionado.");
+                    localStorage.removeItem('teamId');
+                    localStorage.removeItem('playerName');
+                    window.location.reload();
+                }
+            });
+        }
+
+        function updateUI(teamData) {
+            // Garante que o jogador está na lista de jogadores do BD
+            if (!teamData.players[currentUser.uid]) {
+                // Se foi removido ou houve um erro, volta para a tela de seleção
+                console.warn("Jogador não encontrado nos dados da equipe. Retornando...");
+                unsubscribeFromTeam();
+                localStorage.removeItem('teamId');
+                showScreen('team-select-screen');
+                return;
+            }
+
+            const me = teamData.players[currentUser.uid];
+
+            switch(teamData.gameStage) {
+                case 'lobby':
+                    renderLobby(teamData);
+                    break;
+                case 'quiz':
+                    renderQuiz(teamData);
+                    break;
+                case 'profile_results':
+                     renderProfileResults(teamData);
+                    break;
+                case 'segment_vote':
+                    renderSegmentVote(teamData);
+                    break;
+                case 'ceo_election':
+                    renderCeoElection(teamData);
+                    break;
+                case 'ceo_satisfaction':
+                    renderCeoSatisfaction(teamData);
+                    break;
+                case 'role_assignment':
+                    renderRoleAssignment(teamData);
+                    break;
+                 case 'role_satisfaction':
+                    renderRoleSatisfaction(teamData);
+                    break;
+                case 'hiring':
+                    renderHiring(teamData);
+                    break;
+                case 'org_chart':
+                    renderOrgChart(teamData);
+                    break;
+                case 'final_report':
+                    renderFinalReport(teamData);
+                    break;
+                default:
+                    showScreen('loading-screen');
+            }
+        }
+        
+        // --- RENDERIZAÇÃO DAS TELAS ---
+
+        function renderLobby(teamData) {
+            showScreen('lobby-screen');
+            document.getElementById('team-id-display').textContent = teamData.teamId;
+            const playerListLobby = document.getElementById('player-list-lobby');
+            playerListLobby.innerHTML = '';
+            Object.values(teamData.players).forEach(player => {
+                const playerEl = document.createElement('div');
+                playerEl.className = 'flex items-center bg-gray-800 p-2 rounded';
+                playerEl.innerHTML = `
+                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                    <span class="text-white">${player.name}</span>
+                `;
+                playerListLobby.appendChild(playerEl);
+            });
+
+            const startGameContainer = document.getElementById('start-game-container');
+            if (currentUser.uid === teamData.creatorId) {
+                 startGameContainer.innerHTML = `<button id="start-game-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato 1</button>`;
+                 document.getElementById('start-game-button').onclick = async () => {
+                     if (Object.keys(teamData.players).length < 2) {
+                         alert("Você precisa de pelo menos 2 pessoas na equipe para começar.");
+                         return;
+                     }
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'quiz' });
+                 };
+            } else {
+                startGameContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder (${teamData.players[teamData.creatorId].name}) iniciar o jogo...</p>`;
+            }
+        }
+        
+        document.getElementById('copy-team-id-button').addEventListener('click', () => {
+            const teamId = document.getElementById('team-id-display').textContent;
+            navigator.clipboard.writeText(teamId).then(() => {
+                alert('Código da equipe copiado!');
+            });
+        });
+
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+
+        function renderQuiz(teamData) {
+            showScreen('quiz-screen');
+            const me = teamData.players[currentUser.uid];
+
+            if (me.quizCompleted) {
+                document.getElementById('quiz-content').classList.add('hidden');
+                document.getElementById('quiz-waiting').classList.remove('hidden');
+                return;
+            }
+            
+            document.getElementById('quiz-content').classList.remove('hidden');
+            document.getElementById('quiz-waiting').classList.add('hidden');
+
+            const question = quizQuestions[currentQuestionIndex];
+            document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+            document.getElementById('question-text').textContent = question.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = "w-full text-left bg-gray-800 hover:bg-indigo-600 p-4 rounded-lg transition";
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        async function selectAnswer(optionIndex) {
+            userAnswers.push(optionIndex);
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuiz(currentTeamData);
+            } else {
+                // Quiz finalizado
+                document.getElementById('quiz-content').classList.add('hidden');
+                document.getElementById('quiz-waiting').classList.remove('hidden');
+                
+                // Calcular perfil
+                const counts = { 'A': 0, 'I': 0, 'E': 0, 'C': 0 };
+                userAnswers.forEach(answer => {
+                    counts[profileMapping[answer]]++;
+                });
+                
+                let myProfileKey = 'A';
+                let maxCount = 0;
+                for (const key in counts) {
+                    if (counts[key] > maxCount) {
+                        maxCount = counts[key];
+                        myProfileKey = key;
+                    }
+                }
+                
+                await updateDoc(doc(db, 'teams', currentTeamId), {
+                    [`players.${currentUser.uid}.quizCompleted`]: true,
+                    [`players.${currentUser.uid}.answers`]: userAnswers,
+                    [`players.${currentUser.uid}.profileKey`]: myProfileKey,
+                    [`players.${currentUser.uid}.profile`]: profiles[myProfileKey]
+                });
+                
+                // Verificar se todos terminaram
+                const teamData = (await getDoc(doc(db, 'teams', currentTeamId))).data();
+                const allDone = Object.values(teamData.players).every(p => p.quizCompleted);
+                if (allDone) {
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'profile_results' });
+                }
+            }
+        }
+        
+        function renderProfileResults(teamData) {
+            showScreen('profile-results-screen');
+            const me = teamData.players[currentUser.uid];
+
+            const myProfileContainer = document.getElementById('my-profile-container');
+            myProfileContainer.innerHTML = `
+                <h3 class="text-xl font-semibold mb-4 text-indigo-400">Seu Perfil: <span class="text-white">${me.profile.title}</span></h3>
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <p class="text-gray-300">${me.profile.description}</p>
+                </div>
+            `;
+            
+            const teamProfilesContainer = document.getElementById('team-profiles-container');
+            teamProfilesContainer.innerHTML = '';
+            Object.values(teamData.players).filter(p => p.id !== currentUser.uid).forEach(player => {
+                const profileEl = document.createElement('div');
+                profileEl.className = 'bg-gray-700 p-4 rounded-lg';
+                profileEl.innerHTML = `
+                    <h4 class="font-semibold">${player.name}: <span class="text-pink-400">${player.profile.title}</span></h4>
+                    <p class="text-sm text-gray-400">${player.profile.description}</p>
+                `;
+                teamProfilesContainer.appendChild(profileEl);
+            });
+
+            if (currentUser.uid === teamData.creatorId) {
+                document.getElementById('profile-waiting-container').classList.add('hidden');
+                document.getElementById('profile-continue-container').innerHTML = `
+                    <p class="text-lg text-gray-400 mb-4">Todos concluíram o teste. Quando estiverem prontos, avancem para a próxima etapa.</p>
+                    <button id="continue-to-segments-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Escolher Segmento da Empresa</button>
+                `;
+                document.getElementById('continue-to-segments-button').onclick = async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'segment_vote', segmentVote: { votes: {}, attempt: 1 } });
+                };
+            } else {
+                 document.getElementById('profile-waiting-container').classList.remove('hidden');
+                 document.getElementById('profile-continue-container').innerHTML = '';
+            }
+        }
+        
+        function renderSegmentVote(teamData) {
+            showScreen('segment-vote-screen');
+            const segmentOptionsContainer = document.getElementById('segment-options-container');
+            segmentOptionsContainer.innerHTML = '';
+            
+            const myVote = teamData.segmentVote.votes[currentUser.uid];
+
+            for (const key in companySegments) {
+                const segment = companySegments[key];
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 transition ${myVote === key ? 'bg-indigo-900 border-indigo-500' : 'bg-gray-700 border-gray-600 hover:border-indigo-500 cursor-pointer'}`;
+                card.innerHTML = `
+                    <h4 class="text-lg font-bold">${segment.title}</h4>
+                    <p class="text-sm text-gray-400 mt-2 mb-3">${segment.description}</p>
+                    <p class="text-xs text-gray-500 font-semibold">Necessidades Chave:</p>
+                    <p class="text-xs text-gray-300">${segment.needs}</p>
+                `;
+                if (!myVote) {
+                    card.onclick = () => castSegmentVote(key);
+                }
+                segmentOptionsContainer.appendChild(card);
+            }
+            
+            // Status da votação
+            const waitingFor = Object.values(teamData.players).filter(p => !teamData.segmentVote.votes[p.id]).map(p => p.name);
+            if (waitingFor.length > 0) {
+                document.getElementById('segment-vote-status').classList.remove('hidden');
+                document.getElementById('segment-vote-result').classList.add('hidden');
+                document.getElementById('segment-waiting-for-players').textContent = waitingFor.join(', ');
+            } else {
+                 document.getElementById('segment-vote-status').classList.add('hidden');
+                 // Todos votaram, o criador processa o resultado
+                 if (currentUser.uid === teamData.creatorId) {
+                    processSegmentVote(teamData);
+                 }
+            }
+        }
+        
+        async function castSegmentVote(segmentKey) {
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                [`segmentVote.votes.${currentUser.uid}`]: segmentKey
+            });
+        }
+        
+        async function processSegmentVote(teamData) {
+            const votes = Object.values(teamData.segmentVote.votes);
+            const voteCounts = votes.reduce((acc, vote) => {
+                acc[vote] = (acc[vote] || 0) + 1;
+                return acc;
+            }, {});
+
+            let maxVotes = 0;
+            let winners = [];
+            for (const segment in voteCounts) {
+                if (voteCounts[segment] > maxVotes) {
+                    maxVotes = voteCounts[segment];
+                    winners = [segment];
+                } else if (voteCounts[segment] === maxVotes) {
+                    winners.push(segment);
+                }
+            }
+
+            const resultContainer = document.getElementById('segment-vote-result');
+            resultContainer.classList.remove('hidden');
+
+            if (winners.length === 1) {
+                // Temos um vencedor
+                const winnerKey = winners[0];
+                const winnerSegment = companySegments[winnerKey];
+                
+                // Calcular pontuação
+                let score = 0;
+                const teamProfiles = Object.values(teamData.players).map(p => p.profileKey);
+                const idealProfiles = winnerSegment.idealProfiles;
+                
+                // Cada perfil da equipe que bate com o ideal = 50 pontos
+                let matches = 0;
+                teamProfiles.forEach(p => {
+                    if (idealProfiles.includes(p)) {
+                        matches++;
+                    }
+                });
+                score = matches * 50;
+                
+                // Bônus se todos os perfis ideais estiverem presentes
+                if (idealProfiles.every(ip => teamProfiles.includes(ip))) {
+                    score += 100;
+                }
+
+                resultContainer.innerHTML = `<p class="text-xl">Segmento escolhido: <span class="font-bold text-indigo-400">${winnerSegment.title}</span>! Preparando próxima etapa...</p>`;
+                
+                // Aguarda um pouco e avança
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'ceo_election',
+                        chosenSegment: winnerKey,
+                        score: (teamData.score || 0) + score,
+                        ceoElection: { votes: {}, attempt: 1 }
+                    });
+                }, 4000);
+
+            } else {
+                // Empate, precisa votar de novo
+                const attempt = teamData.segmentVote.attempt;
+                const pointsLost = attempt * 50; // Perde 50 na primeira, 100 na segunda, etc.
+                resultContainer.innerHTML = `<p class="text-xl text-red-400">Houve um empate! A votação será reiniciada. A falta de consenso custou ${pointsLost} pontos à equipe.</p>`;
+
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'segmentVote.votes': {},
+                        'segmentVote.attempt': attempt + 1,
+                        score: (teamData.score || 0) - pointsLost,
+                        scoreLosses: [...(teamData.scoreLosses || []), { stage: 'Escolha de Segmento', reason: `A ${attempt}ª nova votação indicou falta de alinhamento inicial.`}]
+                    });
+                }, 4000);
+            }
+        }
+        
+        function renderCeoElection(teamData) {
+            showScreen('ceo-election-screen');
+            const ceoOptionsContainer = document.getElementById('ceo-options-container');
+            ceoOptionsContainer.innerHTML = '';
+            
+            const myVote = teamData.ceoElection.votes[currentUser.uid];
+
+            Object.values(teamData.players).forEach(player => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 text-center transition ${myVote === player.id ? 'bg-indigo-900 border-indigo-500' : 'bg-gray-700 border-gray-600 hover:border-indigo-500 cursor-pointer'}`;
+                card.innerHTML = `
+                    <p class="font-bold text-lg">${player.name}</p>
+                    <p class="text-sm text-indigo-300">${player.profile.title}</p>
+                `;
+                 if (!myVote) {
+                    card.onclick = () => castCeoVote(player.id);
+                }
+                ceoOptionsContainer.appendChild(card);
+            });
+            
+            // Status da votação
+            const waitingFor = Object.values(teamData.players).filter(p => !teamData.ceoElection.votes[p.id]).map(p => p.name);
+            if (waitingFor.length > 0) {
+                document.getElementById('ceo-vote-status').classList.remove('hidden');
+                document.getElementById('ceo-waiting-for-players').textContent = waitingFor.join(', ');
+            } else {
+                 document.getElementById('ceo-vote-status').classList.add('hidden');
+                 if (currentUser.uid === teamData.creatorId) {
+                    processCeoVote(teamData);
+                 }
+            }
+        }
+        
+        async function castCeoVote(playerId) {
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                [`ceoElection.votes.${currentUser.uid}`]: playerId
+            });
+        }
+        
+        async function processCeoVote(teamData) {
+            const votes = Object.values(teamData.ceoElection.votes);
+            const voteCounts = votes.reduce((acc, vote) => {
+                acc[vote] = (acc[vote] || 0) + 1;
+                return acc;
+            }, {});
+
+            let maxVotes = 0;
+            let electedId = null;
+            let hasMajority = false;
+            const totalPlayers = Object.keys(teamData.players).length;
+
+            for (const playerId in voteCounts) {
+                if (voteCounts[playerId] > maxVotes) {
+                    maxVotes = voteCounts[playerId];
+                    electedId = playerId;
+                }
+            }
+
+            if (maxVotes > totalPlayers / 2) {
+                hasMajority = true;
+            }
+
+            const resultContainer = document.getElementById('ceo-vote-result');
+            resultContainer.classList.remove('hidden');
+
+            if (hasMajority) {
+                const electedCEO = teamData.players[electedId];
+                
+                // Pontuação por divergência
+                const uniqueVotes = new Set(votes);
+                let divergenceScore = 0;
+                if (uniqueVotes.size === 1) divergenceScore = 200; // Unanimidade
+                else if (uniqueVotes.size === 2) divergenceScore = 100;
+                else if (uniqueVotes.size === 3) divergenceScore = 50;
+                
+                // Pontuação por perfil do CEO vs Segmento
+                const segment = companySegments[teamData.chosenSegment];
+                let profileFitScore = 0;
+                if (segment.idealProfiles.includes(electedCEO.profileKey)) {
+                    profileFitScore = 150; // Perfil ideal
+                } else if (electedCEO.profileKey === 'E' || electedCEO.profileKey === 'C') {
+                    profileFitScore = 75; // Perfis geralmente bons para CEO
+                }
+                
+                const totalScore = divergenceScore + profileFitScore;
+
+                resultContainer.innerHTML = `<p class="text-xl">CEO eleito: <span class="font-bold text-indigo-400">${electedCEO.name}</span>! Avançando para a próxima etapa...</p>`;
+                
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'ceo_satisfaction',
+                        ceoId: electedId,
+                        roles: { [electedId]: 'CEO' },
+                        score: teamData.score + totalScore,
+                        ceoSatisfaction: { ratings: {} }
+                    });
+                }, 4000);
+                
+            } else {
+                 // Sem maioria, nova votação
+                const attempt = teamData.ceoElection.attempt;
+                const pointsLost = attempt * 75;
+                resultContainer.innerHTML = `<p class="text-xl text-red-400">Ninguém obteve a maioria dos votos! A eleição será reiniciada. A equipe perdeu ${pointsLost} pontos.</p>`;
+
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'ceoElection.votes': {},
+                        'ceoElection.attempt': attempt + 1,
+                        score: teamData.score - pointsLost,
+                        scoreLosses: [...teamData.scoreLosses, { stage: 'Eleição de CEO', reason: `A ${attempt}ª nova votação foi necessária por falta de maioria.`}]
+                    });
+                }, 4000);
+            }
+        }
+        
+        function renderCeoSatisfaction(teamData) {
+            showScreen('ceo-satisfaction-screen');
+            document.getElementById('elected-ceo-name').textContent = teamData.players[teamData.ceoId].name;
+            
+            const me = teamData.players[currentUser.uid];
+            const myRating = teamData.ceoSatisfaction.ratings[currentUser.uid];
+
+            const inputContainer = document.getElementById('ceo-satisfaction-input-container');
+            const waitingContainer = document.getElementById('ceo-satisfaction-waiting');
+
+            if (currentUser.uid === teamData.ceoId) {
+                // CEO vê a média depois
+                inputContainer.innerHTML = `<p class="text-lg">Você é o CEO. Aguarde a avaliação da sua equipe.</p>`;
+                const allRated = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId).every(pId => teamData.ceoSatisfaction.ratings[pId]);
+                 if(allRated) {
+                     const ratings = Object.values(teamData.ceoSatisfaction.ratings);
+                     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                     inputContainer.innerHTML += `<p class="text-2xl mt-4">Satisfação Média Inicial: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
+                 }
+            } else {
+                 if (myRating) {
+                     inputContainer.classList.add('hidden');
+                     waitingContainer.classList.remove('hidden');
+                 } else {
+                     inputContainer.classList.remove('hidden');
+                     waitingContainer.classList.add('hidden');
+                 }
+            }
+
+            // Checar se todos (exceto CEO) avaliaram
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+            const allMembersRated = members.every(pId => teamData.ceoSatisfaction.ratings[pId]);
+            
+            if (allMembersRated && currentUser.uid === teamData.creatorId) {
+                // Atraso para o CEO ver a média
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'role_assignment' });
+                }, 5000);
+            }
+        }
+        
+        window.submitSatisfaction = async (type, rating) => {
+            const key = type === 'ceo' ? 'ceoSatisfaction' : (type === 'role' ? 'roleSatisfaction' : 'finalSatisfaction');
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                [`${key}.ratings.${currentUser.uid}`]: rating
+            });
+        }
+        
+        function renderRoleAssignment(teamData) {
+            showScreen('role-assignment-screen');
+            const ceoView = document.getElementById('role-assignment-ceo-view');
+            const memberView = document.getElementById('role-assignment-member-view');
+            
+            if (currentUser.uid === teamData.ceoId) {
+                ceoView.classList.remove('hidden');
+                memberView.classList.add('hidden');
+                
+                const assignmentList = document.getElementById('role-assignment-list');
+                assignmentList.innerHTML = '';
+                const membersToAssign = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
+                const availableRoles = Object.keys(directorRoles).slice(0, membersToAssign.length);
+
+                membersToAssign.forEach(player => {
+                    const el = document.createElement('div');
+                    el.className = 'grid grid-cols-3 gap-4 items-center bg-gray-800 p-3 rounded-lg';
+                    el.innerHTML = `
+                        <div class="col-span-1">
+                            <p class="font-semibold">${player.name}</p>
+                            <p class="text-sm text-indigo-300">${player.profile.title}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <select id="role-select-${player.id}" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                                <option value="">Selecione um cargo...</option>
+                                ${availableRoles.map(roleKey => `<option value="${roleKey}">${directorRoles[roleKey].title}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                    assignmentList.appendChild(el);
+                });
+                
+                document.getElementById('confirm-roles-button').onclick = async () => {
+                    const assignments = {};
+                    let allAssigned = true;
+                    const usedRoles = new Set();
+
+                    membersToAssign.forEach(player => {
+                        const select = document.getElementById(`role-select-${player.id}`);
+                        if (select.value) {
+                            assignments[player.id] = select.value;
+                            usedRoles.add(select.value);
+                        } else {
+                            allAssigned = false;
+                        }
+                    });
+
+                    if (!allAssigned) {
+                        alert("Você deve atribuir um cargo para cada membro.");
+                        return;
+                    }
+                    if (usedRoles.size !== membersToAssign.length) {
+                        alert("Cada membro deve receber um cargo diferente.");
+                        return;
+                    }
+
+                    // Calcular pontuação das escolhas do CEO
+                    let assignmentScore = 0;
+                    for(const playerId in assignments) {
+                        const roleKey = assignments[playerId];
+                        const playerProfile = teamData.players[playerId].profileKey;
+                        if (directorRoles[roleKey].idealProfiles.includes(playerProfile)) {
+                            assignmentScore += 100; // Escolha perfeita
+                        } else {
+                            assignmentScore += 25; // Escolha não ideal
+                        }
+                    }
+                    
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'role_satisfaction',
+                        roles: { ...teamData.roles, ...assignments },
+                        score: teamData.score + assignmentScore,
+                        roleSatisfaction: { ratings: {} }
+                    });
+                };
+
+            } else {
+                ceoView.classList.add('hidden');
+                memberView.classList.remove('hidden');
+            }
+        }
+        
+        function renderRoleSatisfaction(teamData) {
+            showScreen('role-satisfaction-screen');
+            const myRoleKey = teamData.roles[currentUser.uid];
+            const myRole = directorRoles[myRoleKey] || { title: 'Aguardando cargo...' };
+            
+            document.getElementById('my-assigned-role').innerHTML = `<p>Seu cargo: <span class="font-bold text-2xl text-indigo-400">${myRole.title}</span></p><p class="text-sm text-gray-400">${myRole.description}</p>`;
+            
+            const assignedRolesList = document.getElementById('assigned-roles-list');
+            assignedRolesList.innerHTML = '';
+            for (const playerId in teamData.roles) {
+                const roleKey = teamData.roles[playerId];
+                const player = teamData.players[playerId];
+                
+                if (!player || !directorRoles[roleKey]) continue; // Sanity check
+
+                const el = document.createElement('p');
+                el.innerHTML = `<span class="font-semibold">${player.name}:</span> <span class="text-gray-300">${directorRoles[roleKey].title}</span>`;
+                assignedRolesList.appendChild(el);
+            }
+
+            const me = teamData.players[currentUser.uid];
+            const myRating = teamData.roleSatisfaction.ratings[currentUser.uid];
+
+            const inputContainer = document.getElementById('role-satisfaction-input-container');
+            const waitingContainer = document.getElementById('role-satisfaction-waiting');
+            
+            if (currentUser.uid === teamData.ceoId) {
+                inputContainer.innerHTML = `<p class="text-center">Aguarde a avaliação da equipe sobre suas escolhas.</p>`;
+                 const allRated = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId).every(pId => teamData.roleSatisfaction.ratings[pId]);
+                 if(allRated) {
+                     const ratings = Object.values(teamData.roleSatisfaction.ratings);
+                     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                     inputContainer.innerHTML += `<p class="text-xl mt-2">Satisfação Média com os Cargos: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
+                 }
+            } else {
+                 if (myRating) {
+                     inputContainer.classList.add('hidden');
+                     waitingContainer.classList.remove('hidden');
+                 } else {
+                     inputContainer.classList.remove('hidden');
+                     waitingContainer.classList.add('hidden');
+                 }
+            }
+            
+            // Checar se todos (exceto CEO) avaliaram
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+            const allMembersRated = members.every(pId => teamData.roleSatisfaction.ratings[pId]);
+            
+            if (allMembersRated && currentUser.uid === teamData.creatorId) {
+                const budget = Object.keys(teamData.players).length * 4000;
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), { 
+                         gameStage: 'hiring',
+                         hiring: { requests: {} },
+                         budget: budget,
+                     });
+                }, 5000);
+            }
+        }
+        
+        function renderHiring(teamData) {
+            showScreen('hiring-screen');
+            const directorView = document.getElementById('hiring-director-view');
+            const ceoView = document.getElementById('hiring-ceo-view');
+            const directorWaitingView = document.getElementById('hiring-director-waiting');
+
+            if (currentUser.uid === teamData.ceoId) {
+                directorView.style.display = 'none';
+                ceoView.classList.remove('hidden');
+                renderHiringCeoView(teamData);
+            } else {
+                directorView.style.display = 'block';
+                ceoView.classList.add('hidden');
+                const myRequests = teamData.hiring.requests[currentUser.uid];
+                
+                if (myRequests) {
+                    directorView.querySelector('.bg-gray-700').classList.add('hidden');
+                    directorWaitingView.classList.remove('hidden');
+                } else {
+                    directorView.querySelector('.bg-gray-700').classList.remove('hidden');
+                    directorWaitingView.classList.add('hidden');
+                    renderHiringDirectorView(teamData);
+                }
+            }
+        }
+        
+        function renderHiringDirectorView(teamData) {
+            const myRoleKey = teamData.roles[currentUser.uid];
+            document.getElementById('director-role-title').textContent = directorRoles[myRoleKey].title;
+            document.getElementById('director-needs-description').textContent = directorNeeds[myRoleKey].desc;
+
+            const positionsList = document.getElementById('hiring-positions-list');
+            positionsList.innerHTML = '';
+            allPossibleHires.forEach(hire => {
+                const isMyArea = hire.area === myRoleKey;
+                const labelClass = isMyArea ? 'text-white' : 'text-gray-500 cursor-not-allowed';
+                const inputDisabled = isMyArea ? '' : 'disabled';
+                positionsList.innerHTML += `
+                    <label class="flex items-center space-x-2 p-2 rounded ${isMyArea ? 'hover:bg-gray-600' : ''} ${labelClass}">
+                        <input type="checkbox" value="${hire.id}" class="form-checkbox bg-gray-800 border-gray-600 text-indigo-500 rounded focus:ring-indigo-500" ${inputDisabled}>
+                        <span>${hire.name}</span>
+                    </label>
+                `;
+            });
+
+            document.getElementById('submit-hiring-requests-button').onclick = async () => {
+                const selectedHires = [];
+                positionsList.querySelectorAll('input[type="checkbox"]:checked').forEach(input => {
+                    selectedHires.push(input.value);
+                });
+                
+                // Pontuação
+                const essentialHires = directorNeeds[myRoleKey].essential;
+                let score = 0;
+                essentialHires.forEach(essential => {
+                    if (selectedHires.includes(essential)) {
+                        score += 100; // Acertou o essencial
+                    }
+                });
+                
+                await updateDoc(doc(db, 'teams', currentTeamId), {
+                    [`hiring.requests.${currentUser.uid}`]: selectedHires,
+                    [`players.${currentUser.uid}.hiringScore`]: score
+                });
+                
+                 // Verificar se todos os diretores solicitaram
+                const allDirectorsRequested = Object.keys(teamData.players)
+                    .filter(pId => pId !== teamData.ceoId)
+                    .every(pId => teamData.hiring.requests[pId]);
+
+                if(allDirectorsRequested && currentUser.uid === teamData.creatorId) {
+                    let totalHiringScore = 0;
+                    Object.values(teamData.players).forEach(p => {
+                        if (p.hiringScore) totalHiringScore += p.hiringScore;
+                    });
+                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                         score: teamData.score + totalHiringScore
+                     });
+                }
+            };
+        }
+        
+        function renderHiringCeoView(teamData) {
+            const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
+            const allDirectorsRequested = directors.every(p => teamData.hiring.requests[p.id]);
+
+            if (!allDirectorsRequested) {
+                 document.getElementById('hiring-ceo-view').innerHTML = `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
+                 return;
+            }
+            
+            document.getElementById('budget-display').textContent = `R$ ${teamData.budget.toFixed(2)}`;
+            const approvalList = document.getElementById('ceo-hiring-approval-list');
+            approvalList.innerHTML = '';
+
+            for (const director of directors) {
+                const directorRoleKey = teamData.roles[director.id];
+                const requests = teamData.hiring.requests[director.id] || [];
+                
+                if (requests.length === 0) continue;
+                
+                let directorSection = `
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <h4 class="font-bold">${director.name} (${directorRoles[directorRoleKey].title}) solicitou:</h4>
+                        <div class="mt-2 grid grid-cols-2 gap-2">`;
+                
+                requests.forEach(hireId => {
+                     const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                     const cost = hireCosts[hireId];
+                     directorSection += `
+                        <label class="flex items-center space-x-2 p-2 rounded hover:bg-gray-700 text-white">
+                            <input type="checkbox" value="${hireId}" data-cost="${cost}" class="form-checkbox ceo-hire-checkbox bg-gray-800 border-gray-600 text-indigo-500 rounded focus:ring-indigo-500">
+                            <span>${hireInfo.name} (R$ ${cost.toFixed(2)})</span>
+                        </label>
+                     `;
+                });
+                
+                directorSection += `</div></div>`;
+                approvalList.innerHTML += directorSection;
+            }
+            
+            // Lógica de cálculo de custo
+            const checkboxes = document.querySelectorAll('.ceo-hire-checkbox');
+            const totalCostDisplay = document.getElementById('total-cost-display');
+            const finalizeButton = document.getElementById('finalize-hiring-button');
+            
+            function updateCost() {
+                let totalCost = 0;
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        totalCost += parseFloat(cb.dataset.cost);
+                    }
+                });
+                totalCostDisplay.textContent = `R$ ${totalCost.toFixed(2)}`;
+                if (totalCost > teamData.budget) {
+                    totalCostDisplay.classList.add('text-red-500');
+                    totalCostDisplay.classList.remove('text-white');
+                    finalizeButton.disabled = true;
+                } else {
+                    totalCostDisplay.classList.remove('text-red-500');
+                    totalCostDisplay.classList.add('text-white');
+                    finalizeButton.disabled = false;
+                }
+            }
+            
+            checkboxes.forEach(cb => cb.addEventListener('change', updateCost));
+            updateCost();
+            
+            finalizeButton.onclick = async () => {
+                const approvedHires = [];
+                checkboxes.forEach(cb => {
+                    if (cb.checked) approvedHires.push(cb.value);
+                });
+                
+                // Pontuação
+                let score = 0;
+                const allEssential = Object.values(directorNeeds).flatMap(n => n.essential);
+                const uniqueEssential = [...new Set(allEssential)];
+                
+                uniqueEssential.forEach(essential => {
+                    if (approvedHires.includes(essential)) {
+                        score += 120; // Contratou quem era essencial
+                    }
+                });
+                
+                await updateDoc(doc(db, 'teams', currentTeamId), {
+                    gameStage: 'org_chart',
+                    finalHires: approvedHires,
+                    score: teamData.score + score,
+                    finalSatisfaction: { ratings: {} }
+                });
+            }
+        }
+        
+        function renderOrgChart(teamData) {
+            showScreen('org-chart-screen');
+            const container = document.getElementById('org-chart-container');
+            container.innerHTML = '';
+            
+            // CEO
+            const ceo = teamData.players[teamData.ceoId];
+            container.innerHTML += `<div class="mb-6"><div class="inline-block bg-indigo-600 p-3 rounded-lg shadow-lg"><p class="font-bold">${ceo.name}</p><p class="text-sm text-indigo-200">CEO</p></div></div>`;
+            
+            // Diretores
+            let directorsHtml = '<div class="flex justify-center gap-4 flex-wrap">';
+            const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
+            directors.forEach(dir => {
+                 const roleKey = teamData.roles[dir.id];
+                 directorsHtml += `<div class="bg-pink-600 p-3 rounded-lg shadow-md"><p class="font-semibold">${dir.name}</p><p class="text-sm text-pink-200">${directorRoles[roleKey].title}</p></div>`;
+            });
+            directorsHtml += '</div>';
+            container.innerHTML += directorsHtml;
+            
+            // Contratados
+            if (teamData.finalHires && teamData.finalHires.length > 0) {
+                 container.innerHTML += '<div class="mt-6 pt-4 border-t border-gray-600"><h4 class="text-lg font-semibold mb-4">Equipe Contratada</h4></div>';
+                 let hiresHtml = '<div class="flex justify-center gap-2 flex-wrap">';
+                 teamData.finalHires.forEach(hireId => {
+                     const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                     hiresHtml += `<div class="bg-gray-600 text-sm py-1 px-3 rounded-full">${hireInfo.name}</div>`;
+                 });
+                 hiresHtml += '</div>';
+                 container.innerHTML += hiresHtml;
+            }
+            
+             // Lógica de avaliação
+             const me = teamData.players[currentUser.uid];
+             const myRating = teamData.finalSatisfaction.ratings[currentUser.uid];
+
+             const inputContainer = document.getElementById('final-satisfaction-input-container');
+             const waitingContainer = document.getElementById('final-satisfaction-waiting');
+            
+             if (currentUser.uid === teamData.ceoId) {
+                document.getElementById('final-satisfaction-container').innerHTML = `<p class="text-center">Aguarde a avaliação final da equipe.</p>`;
+             } else {
+                 if (myRating) {
+                     inputContainer.classList.add('hidden');
+                     waitingContainer.classList.remove('hidden');
+                 } else {
+                     inputContainer.classList.remove('hidden');
+                     waitingContainer.classList.add('hidden');
+                 }
+             }
+
+            // Checar se todos (exceto CEO) avaliaram
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+            const allMembersRated = members.every(pId => teamData.finalSatisfaction.ratings[pId]);
+            
+            if (allMembersRated && currentUser.uid === teamData.creatorId) {
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'final_report' });
+                }, 3000);
+            }
+        }
+        
+        function renderFinalReport(teamData) {
+            showScreen('final-report-screen');
+            document.getElementById('final-score-display').textContent = teamData.score;
+            document.getElementById('max-score-display').textContent = '1500'; // Valor máximo estimado
+
+            // Média de satisfação com o CEO
+            const ceoRatings = Object.values(teamData.ceoSatisfaction.ratings || {});
+            const roleRatings = Object.values(teamData.roleSatisfaction.ratings || {});
+            const finalRatings = Object.values(teamData.finalSatisfaction.ratings || {});
+            const allRatings = [...ceoRatings, ...roleRatings, ...finalRatings];
+            const avgSatisfaction = allRatings.length > 0 ? (allRatings.reduce((a, b) => a + b, 0) / allRatings.length).toFixed(1) : "N/A";
+            document.getElementById('ceo-final-satisfaction-avg').textContent = avgSatisfaction;
+
+            const lossesContainer = document.getElementById('score-losses-container');
+            lossesContainer.innerHTML = '';
+            if (teamData.scoreLosses && teamData.scoreLosses.length > 0) {
+                teamData.scoreLosses.forEach(loss => {
+                    lossesContainer.innerHTML += `
+                        <div class="bg-gray-800 p-3 rounded-lg">
+                            <p class="font-semibold text-red-400">Ponto de Atenção em: ${loss.stage}</p>
+                            <p class="text-sm text-gray-400">${loss.reason}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                 lossesContainer.innerHTML = `<div class="bg-gray-800 p-3 rounded-lg text-green-400"><p>Parabéns! Sua equipe não teve perdas de pontos por repetição de tarefas, demonstrando grande alinhamento!</p></div>`;
+            }
+        }
+        
+        // --- CONTROLES DO PROFESSOR ---
+        
+        document.getElementById('toggle-professor-controls').addEventListener('click', () => {
+            document.getElementById('professor-panel').classList.toggle('hidden');
+        });
+        
+        let profAccess = false;
+        document.getElementById('prof-login-button').addEventListener('click', () => {
+            if (document.getElementById('prof-password-input').value === 'genesis123') { // Senha pré-cadastrada
+                profAccess = true;
+                document.getElementById('prof-password-section').classList.add('hidden');
+                document.getElementById('prof-actions-section').classList.remove('hidden');
+            } else {
+                alert('Senha incorreta.');
+            }
+        });
+        
+        document.getElementById('prof-reset-game').addEventListener('click', async () => {
+            if (!profAccess || !currentTeamId) return;
+            if (confirm('Tem certeza que deseja ZERAR o jogo para esta equipe? Todas as informações serão perdidas.')) {
+                // Ao deletar, o onSnapshot de todos os clientes vai disparar o "doc não existe" e recarregar a página deles.
+                await deleteDoc(doc(db, 'teams', currentTeamId));
+            }
+        });
+        
+        // A funcionalidade de revelar/ocultar pontuação seria mais complexa, exigindo
+        // uma flag no BD e que a UI reaja a ela. Por simplicidade, deixamos para uma próxima versão.
+        document.getElementById('prof-toggle-score').addEventListener('click', () => {
+            alert("Funcionalidade de ocultar/revelar pontuação em desenvolvimento.");
+        });
+
     </script>
 </body>
 </html>
-
