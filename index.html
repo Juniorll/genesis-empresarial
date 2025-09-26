@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gênesis Empresarial - Atos 1 e 2</title>
+    <title>Gênesis Empresarial - O Jogo Completo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,24 +17,12 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4f46e5;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6366f1;
-        }
-        .feature-card.selected {
-            border-color: #6366f1;
-            background-color: #3730a3;
-        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+        .feature-card.selected, .choice-card.selected { border-color: #6366f1; background-color: #3730a3; }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
@@ -42,7 +30,7 @@
     <!-- Container Principal do Jogo -->
     <div id="app-container" class="w-full max-w-5xl mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-700">
 
-        <!-- ===== TELAS DO ATO 1 ===== -->
+        <!-- ===== TELAS COMUNS ===== -->
         <div id="loading-screen" class="screen active-screen text-center">
             <h1 class="text-4xl font-bold brand-gradient mb-4">Gênesis Empresarial</h1>
             <p class="text-gray-400 mb-6">Carregando o futuro do seu negócio...</p>
@@ -73,6 +61,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- ===== TELAS DO ATO 1 ===== -->
         <div id="lobby-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-4">Lobby da Equipe</h2>
             <p class="text-center text-gray-400 mb-6">Compartilhe o código abaixo com seus colegas para que eles possam entrar.</p>
@@ -99,10 +89,10 @@
                     <div id="options-container" class="space-y-3"></div>
                 </div>
             </div>
-             <div id="quiz-waiting" class="text-center hidden">
-                 <p class="text-xl mb-4">Ótimo trabalho! Aguardando os outros membros da equipe finalizarem o teste...</p>
-                 <div class="animate-pulse text-gray-400">Aguardando...</div>
-             </div>
+            <div id="quiz-waiting" class="text-center hidden">
+                <p class="text-xl mb-4">Ótimo trabalho! Aguardando os outros membros da equipe finalizarem o teste...</p>
+                <div class="animate-pulse text-gray-400">Aguardando...</div>
+            </div>
         </div>
         <div id="profile-results-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-6">Perfis da Equipe</h2>
@@ -137,13 +127,13 @@
             <div id="ceo-vote-result" class="mt-6 text-center hidden"></div>
         </div>
         <div id="ceo-satisfaction-screen" class="screen">
-             <h2 class="text-3xl font-bold text-center mb-2">Resultado da Eleição</h2>
-             <p class="text-center text-gray-400 mb-8">O CEO foi eleito! Agora, indique seu nível de satisfação com o resultado (1 = Muito Insatisfeito, 5 = Muito Satisfeito).</p>
-             <div class="max-w-lg mx-auto bg-gray-700 p-6 rounded-lg text-center">
-                 <p class="text-xl mb-4">O novo CEO da empresa é: <span id="elected-ceo-name" class="font-bold text-indigo-400"></span></p>
-                 <div id="ceo-satisfaction-input-container"></div>
-                 <div id="ceo-satisfaction-waiting" class="hidden"></div>
-             </div>
+            <h2 class="text-3xl font-bold text-center mb-2">Resultado da Eleição</h2>
+            <p class="text-center text-gray-400 mb-8">O CEO foi eleito! Agora, indique seu nível de satisfação com o resultado (1 = Muito Insatisfeito, 5 = Muito Satisfeito).</p>
+            <div class="max-w-lg mx-auto bg-gray-700 p-6 rounded-lg text-center">
+                <p class="text-xl mb-4">O novo CEO da empresa é: <span id="elected-ceo-name" class="font-bold text-indigo-400"></span></p>
+                <div id="ceo-satisfaction-input-container"></div>
+                <div id="ceo-satisfaction-waiting" class="hidden"></div>
+            </div>
         </div>
         <div id="role-assignment-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-2">Etapa 5: Montando a Diretoria</h2>
@@ -152,14 +142,14 @@
             <div id="role-assignment-member-view" class="max-w-lg mx-auto text-center hidden"></div>
         </div>
         <div id="role-satisfaction-screen" class="screen">
-             <h2 class="text-3xl font-bold text-center mb-2">Diretoria Definida!</h2>
-             <p class="text-center text-gray-400 mb-8">Confira seu novo cargo e o de seus colegas. Depois, avalie sua satisfação com a escolha do CEO.</p>
-             <div class="max-w-2xl mx-auto bg-gray-700 p-6 rounded-lg">
-                 <div id="assigned-roles-list" class="space-y-3 mb-6"></div>
-                 <div id="my-assigned-role" class="text-center p-4 bg-gray-800 rounded-lg mb-6"></div>
-                 <div id="role-satisfaction-input-container"></div>
-                 <div id="role-satisfaction-waiting" class="hidden text-center"></div>
-             </div>
+            <h2 class="text-3xl font-bold text-center mb-2">Diretoria Definida!</h2>
+            <p class="text-center text-gray-400 mb-8">Confira seu novo cargo e o de seus colegas. Depois, avalie sua satisfação com a escolha do CEO.</p>
+            <div class="max-w-2xl mx-auto bg-gray-700 p-6 rounded-lg">
+                <div id="assigned-roles-list" class="space-y-3 mb-6"></div>
+                <div id="my-assigned-role" class="text-center p-4 bg-gray-800 rounded-lg mb-6"></div>
+                <div id="role-satisfaction-input-container"></div>
+                <div id="role-satisfaction-waiting" class="hidden text-center"></div>
+            </div>
         </div>
         <div id="hiring-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-2">Etapa 6: Expansão Inicial</h2>
@@ -200,20 +190,18 @@
         
         <!-- ===== TELAS DO ATO 2 ===== -->
         <div id="mvp-planning-screen" class="screen">
-             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 2: O Plano de Voo</h2>
-             <p class="text-center text-gray-400 mb-8">A equipe deve definir as funcionalidades e a tecnologia do MVP (Mínimo Produto Viável).</p>
-             <div id="mvp-cpo-view" class="hidden"></div>
-             <div id="mvp-cto-view" class="hidden"></div>
-             <div id="mvp-ceo-view" class="hidden"></div>
-             <div id="mvp-member-view" class="hidden"></div>
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 2: O Plano de Voo</h2>
+            <p class="text-center text-gray-400 mb-8">A equipe deve definir as funcionalidades e a tecnologia do MVP (Mínimo Produto Viável).</p>
+            <div id="mvp-cpo-view" class="hidden"></div>
+            <div id="mvp-cto-view" class="hidden"></div>
+            <div id="mvp-ceo-view" class="hidden"></div>
+            <div id="mvp-member-view" class="hidden"></div>
         </div>
-
         <div id="crisis-management-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 2: Enfrentando a Tempestade</h2>
             <p class="text-center text-gray-400 mb-8">Durante o desenvolvimento, crises surgem. A equipe deve resolvê-las com as ferramentas certas.</p>
             <div id="crisis-container" class="max-w-3xl mx-auto"></div>
         </div>
-
         <div id="launch-decisions-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 2: A Hora da Verdade</h2>
             <p class="text-center text-gray-400 mb-8">O MVP está pronto! É hora de tomar decisões cruciais de lançamento e investimento.</p>
@@ -221,73 +209,152 @@
             <div id="launch-investment-view" class="hidden"></div>
             <div id="launch-member-view" class="hidden"></div>
         </div>
-
         <div id="act2-final-report-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">Fim do Ato 2: Relatório Trimestral</h2>
             <p class="text-center text-gray-400 mb-8">Confira os resultados financeiros e de mercado do primeiro ciclo de operações.</p>
-            <div class="max-w-4xl mx-auto grid lg:grid-cols-2 gap-8">
-                <!-- Coluna da Esquerda: Dados da Empresa -->
-                <div class="bg-gray-700 p-6 rounded-lg space-y-6">
-                    <div>
-                        <h3 class="text-xl font-semibold mb-2 text-center">Demonstrativo Financeiro</h3>
-                        <div class="bg-gray-800 p-4 rounded-lg space-y-2 text-lg">
-                            <div class="flex justify-between"><span>Receita:</span> <span class="text-green-400" id="act2-revenue"></span></div>
-                            <div class="flex justify-between"><span>Despesas:</span> <span class="text-red-400" id="act2-expenses"></span></div>
-                            <div class="flex justify-between border-t border-gray-600 pt-2 mt-2 font-bold"><span>Resultado:</span> <span id="act2-profit"></span></div>
+            <div class="max-w-4xl mx-auto space-y-8">
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="bg-gray-700 p-6 rounded-lg space-y-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-center">Demonstrativo Financeiro</h3>
+                            <div class="bg-gray-800 p-4 rounded-lg space-y-2 text-lg">
+                                <div class="flex justify-between"><span>Receita:</span> <span class="text-green-400" id="act2-revenue"></span></div>
+                                <div class="flex justify-between"><span>Despesas:</span> <span class="text-red-400" id="act2-expenses"></span></div>
+                                <div class="flex justify-between border-t border-gray-600 pt-2 mt-2 font-bold"><span>Resultado:</span> <span id="act2-profit"></span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-center">Métricas de Desempenho</h3>
+                            <div class="bg-gray-800 p-4 rounded-lg space-y-3">
+                                <div class="space-y-1">
+                                    <label>Qualidade do Produto</label>
+                                    <div class="w-full bg-gray-600 rounded-full h-4"><div id="act2-quality-bar" class="bg-blue-500 h-4 rounded-full"></div></div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label>Satisfação do Cliente</label>
+                                    <div class="w-full bg-gray-600 rounded-full h-4"><div id="act2-satisfaction-bar" class="bg-green-500 h-4 rounded-full"></div></div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label>Reputação da Marca</label>
+                                    <div class="w-full bg-gray-600 rounded-full h-4"><div id="act2-reputation-bar" class="bg-pink-500 h-4 rounded-full"></div></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                     <div>
-                        <h3 class="text-xl font-semibold mb-2 text-center">Métricas de Desempenho</h3>
-                        <div class="bg-gray-800 p-4 rounded-lg space-y-3">
-                            <div class="space-y-1">
-                                <label>Qualidade do Produto</label>
-                                <div class="w-full bg-gray-600 rounded-full h-4"><div id="act2-quality-bar" class="bg-blue-500 h-4 rounded-full"></div></div>
+                    <div class="bg-gray-700 p-6 rounded-lg space-y-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-center">Pontuação Geral</h3>
+                            <div class="text-center p-4 bg-gray-800 rounded-lg">
+                                <p class="text-6xl font-bold text-indigo-400" id="act2-final-score"></p>
+                                <p class="text-gray-400">pontos acumulados</p>
                             </div>
-                            <div class="space-y-1">
-                                <label>Satisfação do Cliente</label>
-                                <div class="w-full bg-gray-600 rounded-full h-4"><div id="act2-satisfaction-bar" class="bg-green-500 h-4 rounded-full"></div></div>
-                            </div>
-                            <div class="space-y-1">
-                                <label>Reputação da Marca</label>
-                                <div class="w-full bg-gray-600 rounded-full h-4"><div id="act2-reputation-bar" class="bg-pink-500 h-4 rounded-full"></div></div>
-                            </div>
+                        </div>
+                         <div>
+                            <h3 class="text-xl font-semibold mb-2 text-center">Ranking</h3>
+                            <div id="act2-ranking-container" class="space-y-2"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Coluna da Direita: Pontuação e Ranking -->
-                <div class="bg-gray-700 p-6 rounded-lg space-y-6">
-                    <div>
-                        <h3 class="text-xl font-semibold mb-2 text-center">Pontuação Geral</h3>
-                        <div class="text-center p-4 bg-gray-800 rounded-lg">
-                             <p class="text-6xl font-bold text-indigo-400" id="act2-final-score"></p>
-                             <p class="text-gray-400">pontos acumulados</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-semibold mb-2 text-center">Ranking Final</h3>
-                        <div id="act2-ranking-container" class="space-y-2"></div>
-                    </div>
-                </div>
+                <div id="continue-to-act3-container" class="text-center"></div>
             </div>
         </div>
-        
+
+        <!-- ===== TELAS DO ATO 3 ===== -->
+        <div id="act3-scaling-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 3: O Desafio do Crescimento</h2>
+            <p class="text-center text-gray-400 mb-8">O produto está no ar, mas a complexidade aumenta. É hora de organizar os processos para escalar.</p>
+            <div id="act3-coo-view" class="hidden"></div>
+            <div id="act3-member-view" class="hidden"></div>
+        </div>
+        <div id="act3-market-shock-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 3: Choque de Mercado!</h2>
+            <p class="text-center text-gray-400 mb-8">Um novo concorrente agressivo entrou no mercado, abalando a estrutura de preços.</p>
+            <div id="act3-shock-cmo-view" class="hidden"></div>
+            <div id="act3-shock-ceo-view" class="hidden"></div>
+            <div id="act3-shock-member-view" class="hidden"></div>
+        </div>
+        <div id="act3-final-report-screen" class="screen">
+             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">Fim do Ato 3: Relatório de Tração</h2>
+            <p class="text-center text-gray-400 mb-8">A empresa sobreviveu ao primeiro surto de crescimento. Veja os resultados.</p>
+            <div id="report-content-act3" class="max-w-4xl mx-auto space-y-8"></div>
+        </div>
+
+        <!-- ===== TELAS DO ATO 4 ===== -->
+        <div id="act4-stagnation-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 4: O Platô</h2>
+            <p class="text-center text-gray-400 mb-8">O crescimento estagnou e a moral da equipe está baixa. O futuro da empresa depende da próxima grande decisão de produto.</p>
+            <div id="act4-cpo-view" class="hidden"></div>
+            <div id="act4-ceo-view" class="hidden"></div>
+            <div id="act4-member-view" class="hidden"></div>
+        </div>
+        <div id="act4-morale-crisis-screen" class="screen">
+             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 4: Crise de Moral</h2>
+            <p class="text-center text-gray-400 mb-8">Um funcionário chave pediu demissão e a insatisfação é palpável. A cultura da empresa está em jogo.</p>
+            <div id="act4-chro-view" class="hidden"></div>
+            <div id="act4-morale-ceo-view" class="hidden"></div>
+            <div id="act4-morale-member-view" class="hidden"></div>
+        </div>
+        <div id="act4-ceo-vote-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 text-red-500">ATO 4: Moção de Desconfiança</h2>
+            <p class="text-center text-gray-400 mb-8">A insatisfação com a liderança atingiu um ponto crítico. A equipe irá votar secretamente pela permanência ou troca do CEO.</p>
+            <div id="act4-vote-container" class="max-w-xl mx-auto text-center"></div>
+        </div>
+         <div id="act4-final-report-screen" class="screen">
+               <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">Fim do Ato 4: Ponto de Inflexão</h2>
+            <p class="text-center text-gray-400 mb-8">A empresa passou por sua maior prova interna. Veja se a equipe saiu mais forte ou mais fraca.</p>
+            <div id="report-content-act4" class="max-w-4xl mx-auto space-y-8"></div>
+        </div>
+
+        <!-- ===== TELAS DO ATO 5 ===== -->
+        <div id="act5-funding-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 5: A Rodada de Investimento</h2>
+            <p class="text-center text-gray-400 mb-8">Para dar o próximo passo, a empresa precisa de capital. É hora de preparar o pitch para os investidores da Série A.</p>
+            <div id="act5-funding-prep-view"></div>
+            <div id="act5-funding-result-view" class="hidden"></div>
+        </div>
+        <div id="act5-legal-crisis-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 5: Crise Legal</h2>
+            <p class="text-center text-gray-400 mb-8">A empresa recebeu uma notificação judicial por suposta infração de patente. Uma decisão cara e arriscada precisa ser tomada.</p>
+            <div id="act5-legal-ceo-view"></div>
+             <div id="act5-legal-member-view" class="hidden"></div>
+        </div>
+        <div id="act5-exit-strategy-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">ATO 5: A Aposta Final</h2>
+            <p class="text-center text-gray-400 mb-8">Com base em toda a jornada, a diretoria deve decidir o destino final da empresa. Esta é a última votação.</p>
+            <div id="act5-exit-vote-view"></div>
+        </div>
+        <div id="game-end-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">Gênesis Empresarial: O Legado</h2>
+            <p class="text-center text-gray-400 mb-8">A jornada chegou ao fim. Veja o que o futuro reservou para a <span id="final-company-name" class="font-bold"></span>.</p>
+            <div class="max-w-4xl mx-auto bg-gray-700 p-6 rounded-lg">
+                <div id="final-epilogue" class="text-center prose prose-invert max-w-none"></div>
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-center mb-4">Relatório Final da Empresa</h3>
+                    <div id="final-game-report"></div>
+                </div>
+            </div>
+            <div id="final-ranking-container" class="max-w-4xl mx-auto mt-8"></div>
+            <div class="text-center mt-8">
+                <button id="play-again-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg">Jogar Novamente</button>
+            </div>
+        </div>
+
+
         <!-- ===== PAINEL DO PROFESSOR ===== -->
         <div id="professor-controls-container" class="absolute bottom-4 right-4">
-             <button id="toggle-professor-controls" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-             </button>
-             <div id="professor-panel" class="hidden absolute bottom-14 right-0 bg-gray-800 border border-gray-600 p-4 rounded-lg w-64 shadow-lg">
-                 <h4 class="font-bold mb-2">Painel do Professor</h4>
-                 <div id="prof-password-section">
-                     <input type="password" id="prof-password-input" placeholder="Senha" class="w-full bg-gray-700 text-white p-2 rounded mb-2">
-                     <button id="prof-login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded">Acessar</button>
-                 </div>
-                 <div id="prof-actions-section" class="hidden space-y-2">
-                     <button id="prof-toggle-score" class="w-full bg-gray-600 hover:bg-gray-500 py-2 rounded">Revelar/Ocultar Pontos</button>
-                     <button id="prof-reset-game" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Zerar Jogo (Nova Rodada)</button>
-                 </div>
-             </div>
+            <button id="toggle-professor-controls" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+            <div id="professor-panel" class="hidden absolute bottom-14 right-0 bg-gray-800 border border-gray-600 p-4 rounded-lg w-64 shadow-lg">
+                <h4 class="font-bold mb-2">Painel do Professor</h4>
+                <div id="prof-password-section">
+                    <input type="password" id="prof-password-input" placeholder="Senha" class="w-full bg-gray-700 text-white p-2 rounded mb-2">
+                    <button id="prof-login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded">Acessar</button>
+                </div>
+                <div id="prof-actions-section" class="hidden space-y-2">
+                    <button id="prof-reset-game" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Zerar Jogo (Nova Rodada)</button>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -299,7 +366,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, serverTimestamp, getDocs, query, where, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
-        // Configuração do Firebase fornecida pelo usuário
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDFx4jZDjnsEmOSFUXW3NykN0hPSTBL7Lc",
             authDomain: "genesis-empresarial-87b1d.firebaseapp.com",
@@ -327,7 +394,7 @@
         const quizQuestions = [ { question: "Diante de um grande projeto com prazo apertado, qual sua primeira reação?", options: ["Planejar cada etapa meticulosamente.", "Reunir a equipe para um brainstorm de ideias inovadoras.", "Começar a executar as tarefas mais urgentes imediatamente.", "Analisar os riscos e criar planos de contingência."] }, { question: "Qual ambiente de trabalho te deixa mais produtivo?", options: ["Um local organizado, silencioso e com regras claras.", "Um espaço colaborativo, cheio de energia e novas ideias.", "Um ambiente dinâmico, focado em resultados e metas.", "Um lugar que valoriza a segurança, estabilidade e o bem-estar da equipe."] }, { question: "Ao receber um feedback negativo, como você lida?", options: ["Agradeço, analiso os pontos e crio um plano de melhoria.", "Vejo como uma oportunidade para repensar minha abordagem de forma criativa.", "Foco em como posso reverter o resultado rapidamente.", "Busco entender o sentimento da outra pessoa e fortalecer a relação."] }, { question: "Qual tipo de tarefa te dá mais satisfação?", options: ["Otimizar um processo para torná-lo mais eficiente.", "Criar algo completamente novo, que ninguém pensou antes.", "Superar uma meta desafiadora e ver o resultado concreto.", "Ajudar um colega a resolver um problema ou desenvolver uma habilidade."] }, { question: "Em uma discussão em grupo, seu papel costuma ser:", options: ["O que organiza as ideias e define os próximos passos.", "O que propõe soluções 'fora da caixa' e inspira os outros.", "O que mantém o foco no objetivo e impulsiona a ação.", "O que garante que todos sejam ouvidos e o clima seja positivo."] }, { question: "O que é mais importante para o sucesso de uma empresa?", options: ["Processos bem definidos e controle de qualidade rigoroso.", "Inovação constante e capacidade de se adaptar ao futuro.", "Agressividade comercial e conquista de mercado.", "Uma cultura forte, com funcionários felizes e engajados."] }, { question: "Como você toma decisões importantes?", options: ["Com base em dados, fatos e análises detalhadas.", "Seguindo minha intuição e visão de longo prazo.", "De forma rápida e pragmática, focando no impacto imediato.", "Considerando o impacto nas pessoas e nos valores da equipe."] }, { question: "Seu lema profissional seria algo como:", options: ["'Ordem e progresso.'", "'Pense diferente.'", "'Feito é melhor que perfeito.'", "'Pessoas em primeiro lugar.'"] }, { question: "O que te frustra mais em um projeto?", options: ["Falta de planejamento e mudanças de escopo constantes.", "Falta de liberdade para experimentar e testar novas ideias.", "Burocracia e lentidão que impedem o progresso.", "Conflitos interpessoais e falta de espírito de equipe."] }, { question: "Qual líder famoso você mais admira?", options: ["Um gestor como Alfred Sloan (General Motors), mestre da organização.", "Um visionário como Steve Jobs (Apple), que mudou o mundo.", "Um executor como Jeff Bezos (Amazon), focado em crescimento.", "Um líder humano como Howard Schultz (Starbucks), que valoriza as pessoas."] } ];
         const profileMapping = { 0: 'A', 1: 'I', 2: 'E', 3: 'C' };
         const profiles = { 'A': { title: "O Analista", description: "Metódico, organizado e detalhista. Você é excelente em planejar, otimizar processos e tomar decisões baseadas em dados. Sua força está em trazer ordem ao caos e garantir a qualidade e eficiência das entregas." }, 'I': { title: "O Inovador", description: "Criativo, visionário e inspirador. Você enxerga o futuro e adora criar soluções disruptivas. Sua energia move a equipe para fora da zona de conforto, gerando ideias que podem transformar o mercado." }, 'E': { title: "O Executor", description: "Pragmático, focado e orientado a resultados. Você é a pessoa que faz acontecer. Transforma ideias em ações concretas, supera obstáculos e não descansa até que as metas sejam atingidas. Sua agilidade é contagiante." }, 'C': { title: "O Comunicador", description: "Empático, diplomático e motivador. Você é o elo que une a equipe. Sua habilidade em ouvir, mediar conflitos e criar um ambiente positivo é fundamental para manter o time engajado e colaborativo." } };
-        const companySegments = { saas: { title: "SaaS B2B", description: "Software como Serviço para outras empresas. Foco em resolver um problema específico de um nicho de mercado.", needs: "Exige forte capacidade de desenvolvimento de produto, marketing digital focado e um time de vendas consultivas. A retenção de clientes é chave.", idealProfiles: ['A', 'E', 'I'] }, fintech: { title: "Fintech", description: "Tecnologia aplicada ao mercado financeiro. Soluções para pagamentos, investimentos, crédito, etc.", needs: "Alta necessidade de segurança, conformidade regulatória (compliance) e uma experiência de usuário impecável para gerar confiança. A agilidade para lançar produtos é um diferencial.", idealProfiles: ['A', 'E', 'C'] }, edtech: { title: "EdTech", description: "Tecnologia para a educação. Plataformas de ensino a distância, gamificação do aprendizado, ferramentas para escolas.", needs: "Foco em engajamento do usuário e metodologias pedagógicas eficazes. A criação de conteúdo de qualidade e uma comunidade forte são essenciais.", idealProfiles: ['I', 'C', 'A'] }, healthtech: { title: "HealthTech", description: "Soluções tecnológicas para a área da saúde. Prontuários eletrônicos, telemedicina, agendamento de consultas.", needs: "Requer extremo cuidado com a privacidade de dados (LGPD), usabilidade para profissionais de saúde e pacientes, e parcerias estratégicas com hospitais e clínicas.", idealProfiles: ['A', 'C', 'E'] }, marketplace: { title: "Marketplace de Nicho", description: "Plataforma que conecta compradores e vendedores de um segmento específico (ex: artesãos, produtos orgânicos).", needs: "O maior desafio é resolver o 'problema do ovo e da galinha': atrair compradores e vendedores simultaneamente. Exige forte senso de comunidade e logística eficiente.", idealProfiles: ['C', 'I', 'E'] } };
+        const companySegments = { saas: { title: "SaaS B2B", description: "Software como Serviço para outras empresas. Foco em resolver um problema específico de um nicho de mercado.", needs: "Exige forte capacidade de desenvolvimento de produto, marketing digital focado e um time de vendas consultivas. A retenção de clientes é chave.", idealProfiles: ['A', 'E', 'I'] }, fintech: { title: "Fintech", description: "Tecnologia aplicada ao mercado financeiro. Soluções para pagamentos, investimentos, crédito, etc.", needs: "Alta necessidade de segurança, conformidade regulatória (compliance) e uma experiência de usuário impecável para gerar confiança. A agilidade para lançar produtos é um diferencial.", idealProfiles: ['A', 'E', 'C'] }, edtech: { title: "EdTech", description: "Tecnologia para a educação. Plataformas de ensino a distância, gamificação do aprendizado, ferramentas para escolas.", needs: "Foco em engajamento do usuário e metodologias pedagógicas eficazes. A criação de conteúdo de qualidade e uma comunidade forte são essenciais.", idealProfiles: ['I', 'C', 'A'] }, healthtech: { title: "HealthTech", description: "Soluções tecnológicas para a área da saúde. Prontuários eletrônicos, telemedicinas, agendamento de consultas.", needs: "Requer extremo cuidado com a privacidade de dados (LGPD), usabilidade para profissionais de saúde e pacientes, e parcerias estratégicas com hospitais e clínicas.", idealProfiles: ['A', 'C', 'E'] }, marketplace: { title: "Marketplace de Nicho", description: "Plataforma que conecta compradores e vendedores de um segmento específico (ex: artesãos, produtos orgânicos).", needs: "O maior desafio é resolver o 'problema do ovo e da galinha': atrair compradores e vendedores simultaneamente. Exige forte senso de comunidade e logística eficiente.", idealProfiles: ['C', 'I', 'E'] } };
         const directorRoles = { CTO: { title: "Diretor(a) de Tecnologia (CTO)", description: "Responsável por toda a parte técnica, desenvolvimento do produto e infraestrutura.", idealProfiles: ['A', 'I'] }, CMO: { title: "Diretor(a) de Marketing (CMO)", description: "Cuida da aquisição de clientes, marca e comunicação com o mercado.", idealProfiles: ['I', 'C'] }, COO: { title: "Diretor(a) de Operações (COO)", description: "Garante que os processos internos funcionem, da entrega ao suporte ao cliente.", idealProfiles: ['A', 'E'] }, CPO: { title: "Diretor(a) de Produto (CPO)", description: "Define a visão e estratégia do produto, pesquisando o mercado e as necessidades dos usuários.", idealProfiles: ['I', 'A'] }, CHRO: { title: "Diretor(a) de Recursos Humanos (CHRO)", description: "Responsável pela cultura da empresa, contratação e desenvolvimento das pessoas.", idealProfiles: ['C', 'A'] } };
         const allPossibleHires = [ { id: 'dev_front', name: 'Dev Front-End', area: 'Tecnologia' }, { id: 'dev_back', name: 'Dev Back-End', area: 'Tecnologia' }, { id: 'devops', name: 'DevOps', area: 'Tecnologia' }, { id: 'qa', name: 'Analista de QA', area: 'Tecnologia' }, { id: 'social_media', name: 'Analista de Mídias Sociais', area: 'Marketing' }, { id: 'seo', name: 'Especialista em SEO', area: 'Marketing' }, { id: 'paid_traffic', name: 'Gestor de Tráfego Pago', area: 'Marketing' }, { id: 'content', name: 'Produtor de Conteúdo', area: 'Marketing' }, { id: 'support_l1', name: 'Suporte Nível 1', area: 'Operações' }, { id: 'support_l2', name: 'Suporte Nível 2', area: 'Operações' }, { id: 'success', name: 'Customer Success', area: 'Operações' }, { id: 'process', name: 'Analista de Processos', area: 'Operações' }, { id: 'ux_designer', name: 'UX Designer', area: 'Produto' }, { id: 'ui_designer', name: 'UI Designer', area: 'Produto' }, { id: 'product_owner', name: 'Product Owner', area: 'Produto' }, { id: 'data_analyst', name: 'Analista de Dados', area: 'Produto' }, { id: 'recruiter', name: 'Recrutador(a)', area: 'RH' }, { id: 'dp', name: 'Analista de DP', area: 'RH' }, { id: 'culture', name: 'Analista de Cultura', area: 'RH' }, { id: 'sales_sdr', name: 'Vendedor (SDR)', area: 'Vendas' }, { id: 'sales_closer', name: 'Vendedor (Closer)', area: 'Vendas' }, ];
         const hireCosts = { dev_front: 2000, dev_back: 2500, devops: 3000, qa: 1500, social_media: 1200, seo: 1800, paid_traffic: 2000, content: 1300, support_l1: 800, support_l2: 1200, success: 1500, process: 1600, ux_designer: 2200, ui_designer: 2000, product_owner: 2500, data_analyst: 2200, recruiter: 1500, dp: 1000, culture: 1400, sales_sdr: 1300, sales_closer: 1800 };
@@ -336,6 +403,13 @@
         const techArchitectures = { A: { title: "Rápida e Barata (Monolito)", desc: "Usa tecnologias simples. Lançamento rápido, mas difícil de escalar e com segurança básica.", cost: 5000, qualityImpact: -20, reputationImpact: -10, points: 50 }, B: { title: "Robusta e Segura (Microsserviços)", desc: "Arquitetura complexa e moderna, ideal para o futuro. Lançamento mais lento e caro.", cost: 12000, qualityImpact: +30, reputationImpact: +15, points: 200 }, C: { title: "Equilibrada (Modular)", desc: "Solução intermediária. Mais flexível que o monolito, menos complexa que microsserviços.", cost: 8000, qualityImpact: +10, reputationImpact: +5, points: 120 } };
         const crisisEvents = [ { id: 'c1', title: "Bug Crítico", desc: "Um erro grave foi encontrado no sistema de login, impedindo novos usuários de se cadastrarem. O projeto está parado até a resolução.", bestTool: 'ishikawa' }, { id: 'c2', title: "Mudança de Escopo", desc: "Um cliente grande e potencial disse que só contrata se o produto tiver a funcionalidade X (não planejada), que levaria 3 semanas extras para desenvolver. E agora?", bestTool: 'gut' }, { id: 'c3', title: "Dívida Técnica", desc: "A equipe de tecnologia informa que a 'solução rápida' usada na arquitetura está causando lentidão e instabilidade. Precisamos parar para refatorar ou continuamos lançando features?", bestTool: 'pdca' } ];
         const qualityTools = { ishikawa: { title: "Diagrama de Ishikawa", desc: "Também conhecido como 'Espinha de Peixe', ideal para identificar as causas raiz de um problema complexo." }, pdca: { title: "Ciclo PDCA", desc: "Um método para a melhoria contínua de processos. Plan (Planejar), Do (Fazer), Check (Verificar), Act (Agir)." }, '5w2h': { title: "5W2H", desc: "Uma ferramenta para criar planos de ação detalhados respondendo: What, Why, Who, Where, When, How, How Much." }, gut: { title: "Matriz GUT", desc: "Usada para priorizar problemas ou decisões com base na Gravidade, Urgência e Tendência de cada item." } };
+        const act3_scalingOptions = { scrum: { title: "Adotar Scrum", desc: "Implementa sprints de 2 semanas, rituais diários e planejamento. Aumenta a produtividade e a previsibilidade, mas exige disciplina.", productivity: 20, quality: 10, morale: 5, points: 150 }, kanban: { title: "Usar Kanban", desc: "Foca no fluxo contínuo de trabalho e na limitação de tarefas em andamento (WIP). Melhora a eficiência e reduz gargalos.", productivity: 15, quality: 15, morale: 10, points: 150 }, adhoc: { title: "Continuar 'Ad-Hoc'", desc: "Manter o método atual, onde cada um gerencia suas próprias tarefas. É flexível, mas pode gerar caos com o crescimento da equipe.", productivity: -10, quality: -20, morale: -15, points: -50 } };
+        const act3_marketShockOptions = { lower_price: { title: "Guerra de Preços", desc: "Reduzir nosso preço para competir diretamente. Risco de diminuir a percepção de valor e a margem de lucro.", revenue_mod: 0.7, reputation_mod: -10, points: 50 }, add_features: { title: "Diferenciar por Valor", desc: "Manter o preço e focar em adicionar funcionalidades exclusivas que o concorrente não tem. Exige mais investimento em P&D.", revenue_mod: 1.1, reputation_mod: 15, points: 150 }, ignore: { title: "Ignorar o Concorrente", desc: "Apostar que nosso público é fiel e que o concorrente não tem qualidade. Risco de perder market share rapidamente.", revenue_mod: 0.5, reputation_mod: -20, points: -100 } };
+        const act4_productPivots = { expand: { title: "Expandir Features (Mais do Mesmo)", desc: "Adicionar mais funcionalidades ao produto atual para atender mais casos de uso do público existente.", impact: 150, risk: 30, cost: 20000 }, new_market: { title: "Novo Segmento de Mercado", desc: "Adaptar o produto para atender um novo perfil de cliente (ex: ir de PMEs para grandes corporações).", impact: 300, risk: 60, cost: 50000 }, freemium: { title: "Lançar um Plano Freemium", desc: "Criar uma versão gratuita do produto para acelerar a aquisição de usuários e converter em vendas depois.", impact: 250, risk: 50, cost: 35000 } };
+        const act4_moraleInitiatives = { bonus: { title: "Bônus Financeiro", desc: "Implementar um plano de bônus agressivo baseado em metas. Efeito rápido, mas pode não ser sustentável.", cost: 30000, morale: 25, productivity: 15 }, benefits: { title: "Pacote de Benefícios", desc: "Oferecer plano de saúde, vale-cultura e academia. Aumenta a retenção a longo prazo.", cost: 15000, morale: 15, productivity: 5 }, training: { title: "Plano de Carreira e Treinamento", desc: "Investir no desenvolvimento dos funcionários. Gera lealdade e melhora a qualidade do time.", cost: 10000, morale: 20, productivity: 10 } };
+        const act5_legalOptions = { settle: { title: "Fazer Acordo", desc: "Pagar para encerrar o processo rapidamente. Custo certo, mas pode ser visto como uma admissão de culpa.", cost: 50000, reputation: -5, points: 50 }, fight: { title: "Lutar na Justiça", desc: "Contratar advogados e brigar. Pode vencer e não pagar nada (e até ganhar reputação), ou perder e pagar muito mais.", cost: 20000, reputation: 0, points: 0 }};
+        const act5_exitStrategies = { growth: { title: "Crescimento Agressivo (IPO)", epilogue: "A empresa usou o capital para uma expansão massiva. Após anos de uma operação arriscada no 'tudo ou nada', ela se tornou líder de mercado, mas ao custo de uma cultura interna implacável e da saída de vários fundadores.", result: "Sucesso de Mercado" }, acquisition: { title: "Venda para Gigante de Tecnologia", epilogue: "A diretoria aceitou uma oferta generosa de uma grande corporação. Os fundadores tiveram um bom retorno financeiro e o produto foi integrado ao ecossistema do comprador, perdendo sua identidade original, mas ganhando escala global.", result: "Sucesso Financeiro" }, bootstrap: { title: "Foco na Lucratividade", epilogue: "A empresa optou por um caminho mais lento e seguro. Sem a pressão dos investidores, focou em seu nicho e se tornou um negócio rentável e sustentável, conhecido por sua cultura forte e pela qualidade do produto, embora nunca tenha alcançado uma escala massiva.", result: "Sucesso Sustentável" }};
+
 
         // --- FUNÇÕES AUXILIARES ---
         const showScreen = (screenId) => {
@@ -392,6 +466,8 @@
                 teamId: teamId, creatorId: currentUser.uid,
                 players: { [currentUser.uid]: { name: currentPlayerName, id: currentUser.uid } },
                 gameStage: 'lobby', createdAt: serverTimestamp(), score: 0, scoreLosses: [],
+                metrics: { quality: 50, satisfaction: 50, reputation: 50, productivity: 50, morale: 50 },
+                financials: { expenses: 0, revenue: 0, profit: 0, budget: 0 }
             };
             await setDoc(teamRef, initialTeamData);
             listenToTeamUpdates(teamId);
@@ -438,30 +514,57 @@
                 return;
             }
             const stage = teamData.gameStage;
-            if (stage.startsWith('act2_')) {
-                const act2Stage = stage.split('_')[1];
-                switch(act2Stage) {
-                    case 'mvp': renderMvpPlanning(teamData); break;
-                    case 'crisis': renderCrisisManagement(teamData); break;
-                    case 'launch': renderLaunchDecisions(teamData); break;
-                    case 'report': renderAct2FinalReport(teamData); break;
-                }
-            } else {
-                 switch(stage) {
-                    case 'lobby': renderLobby(teamData); break;
-                    case 'quiz': renderQuiz(teamData); break;
-                    case 'profile_results': renderProfileResults(teamData); break;
-                    case 'company_name_vote': renderCompanyNameVote(teamData); break;
-                    case 'segment_vote': renderSegmentVote(teamData); break;
-                    case 'ceo_election': renderCeoElection(teamData); break;
-                    case 'ceo_satisfaction': renderCeoSatisfaction(teamData); break;
-                    case 'role_assignment': renderRoleAssignment(teamData); break;
-                    case 'role_satisfaction': renderRoleSatisfaction(teamData); break;
-                    case 'hiring': renderHiring(teamData); break;
-                    case 'org_chart': renderOrgChart(teamData); break;
-                    case 'final_report': renderFinalReport(teamData); break;
-                    default: showScreen('loading-screen');
-                }
+            const act = stage.split('_')[0];
+
+            switch(act) {
+                case 'lobby': renderLobby(teamData); break;
+                case 'quiz': renderQuiz(teamData); break;
+                case 'profile': renderProfileResults(teamData); break;
+                case 'company': renderCompanyNameVote(teamData); break;
+                case 'segment': renderSegmentVote(teamData); break;
+                case 'ceo': 
+                    if(stage === 'ceo_election') renderCeoElection(teamData);
+                    else renderCeoSatisfaction(teamData);
+                    break;
+                case 'role': 
+                    if(stage === 'role_assignment') renderRoleAssignment(teamData);
+                    else renderRoleSatisfaction(teamData);
+                    break;
+                case 'hiring': renderHiring(teamData); break;
+                case 'org': renderOrgChart(teamData); break;
+                case 'final': renderFinalReport(teamData); break;
+                
+                case 'act2':
+                    if (stage === 'act2_mvp') renderMvpPlanning(teamData);
+                    else if (stage === 'act2_crisis') renderCrisisManagement(teamData);
+                    else if (stage === 'act2_launch') renderLaunchDecisions(teamData);
+                    else if (stage === 'act2_report') renderAct2FinalReport(teamData);
+                    break;
+                
+                case 'act3':
+                    if (stage === 'act3_scaling') renderAct3Scaling(teamData);
+                    else if (stage === 'act3_market_shock') renderAct3MarketShock(teamData);
+                    else if (stage === 'act3_report') renderGenericReport(teamData, 3);
+                    break;
+
+                case 'act4':
+                    if (stage === 'act4_stagnation') renderAct4Stagnation(teamData);
+                    else if (stage === 'act4_morale_crisis') renderAct4MoraleCrisis(teamData);
+                    else if (stage === 'act4_ceo_vote') renderAct4CeoVote(teamData);
+                    else if (stage === 'act4_report') renderGenericReport(teamData, 4);
+                    break;
+
+                case 'act5':
+                    if (stage === 'act5_funding') renderAct5Funding(teamData);
+                    else if (stage === 'act5_legal_crisis') renderAct5LegalCrisis(teamData);
+                    else if (stage === 'act5_exit_strategy') renderAct5ExitStrategy(teamData);
+                    break;
+
+                case 'gameEnd':
+                    renderGameEnd(teamData);
+                    break;
+
+                default: showScreen('loading-screen');
             }
         }
         
@@ -588,15 +691,15 @@
                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'company_name_vote', companyNameVote: { suggestions: {}, votes: {}, attempt: 1 } });
                 };
             } else {
-                 waitingContainer.classList.remove('hidden');
-                 waitingContainer.innerHTML = `<p class="text-lg text-gray-400">Aguardando o líder da equipe iniciar a próxima etapa...</p>`;
-                 continueContainer.classList.add('hidden');
-                 continueContainer.innerHTML = '';
+                waitingContainer.classList.remove('hidden');
+                waitingContainer.innerHTML = `<p class="text-lg text-gray-400">Aguardando o líder da equipe iniciar a próxima etapa...</p>`;
+                continueContainer.classList.add('hidden');
+                continueContainer.innerHTML = '';
             }
         }
         
         async function castNameVote(name) {
-             await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.votes.${currentUser.uid}`]: name });
+            await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.votes.${currentUser.uid}`]: name });
         }
         
         async function processNameVote(teamData) {
@@ -623,7 +726,7 @@
                 resultContainer.innerHTML = `<p class="text-xl">O nome da empresa será <span class="font-bold text-indigo-400">${winnerName}</span>! Preparando próxima etapa...</p>`;
                 
                 setTimeout(async () => {
-                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
                         gameStage: 'segment_vote',
                         companyName: winnerName,
                         segmentVote: { votes: {}, attempt: 1 }
@@ -662,19 +765,19 @@
                 const mySuggestion = suggestions[currentUser.uid];
                 if (mySuggestion) {
                     suggestionPhase.innerHTML = `<p class="text-center text-xl">Sua sugestão foi enviada! Aguardando os demais...</p>
-                    <div class="text-center mt-4"><p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p></div>`;
+                        <div class="text-center mt-4"><p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p></div>`;
                 } else {
                     suggestionPhase.innerHTML = `
-                            <div class="max-w-md mx-auto">
-                                <h3 class="text-xl font-semibold text-center mb-4">Sugira um nome para a empresa:</h3>
-                                <input type="text" id="company-name-suggestion-input" placeholder="Ex: TecnoSoluções, InovaTech, etc." class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white mb-4">
-                                <button id="submit-name-suggestion-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg">Enviar Sugestão</button>
-                            </div>
-                            <div class="text-center mt-4">
-                                <p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p>
-                            </div>
+                        <div class="max-w-md mx-auto">
+                            <h3 class="text-xl font-semibold text-center mb-4">Sugira um nome para a empresa:</h3>
+                            <input type="text" id="company-name-suggestion-input" placeholder="Ex: TecnoSoluções, InovaTech, etc." class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white mb-4">
+                            <button id="submit-name-suggestion-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg">Enviar Sugestão</button>
+                        </div>
+                        <div class="text-center mt-4">
+                            <p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p>
+                        </div>
                     `;
-                     document.getElementById('submit-name-suggestion-button').onclick = async () => {
+                    document.getElementById('submit-name-suggestion-button').onclick = async () => {
                         const name = document.getElementById('company-name-suggestion-input').value.trim();
                         if (name) {
                             await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.suggestions.${currentUser.uid}`]: name });
@@ -760,10 +863,10 @@
                 document.getElementById('segment-vote-status').classList.remove('hidden');
                 document.getElementById('segment-vote-result').classList.add('hidden');
             } else {
-                 document.getElementById('segment-vote-status').classList.add('hidden');
-                 if (currentUser.uid === teamData.creatorId) {
+                document.getElementById('segment-vote-status').classList.add('hidden');
+                if (currentUser.uid === teamData.creatorId) {
                     processSegmentVote(teamData);
-                 }
+                }
             }
         }
         
@@ -817,7 +920,7 @@
                 resultContainer.innerHTML = `<p class="text-xl">Segmento escolhido: <span class="font-bold text-indigo-400">${winnerSegment.title}</span>! Preparando próxima etapa...</p>`;
                 
                 setTimeout(async () => {
-                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
                         gameStage: 'ceo_election',
                         chosenSegment: winnerKey,
                         score: (teamData.score || 0) + score,
@@ -855,8 +958,8 @@
                     <p class="font-bold text-lg">${player.name}</p>
                     <p class="text-sm text-indigo-300">${player.profile.title}</p>
                 `;
-                 if (!myVote) {
-                     card.onclick = () => castCeoVote(player.id);
+                if (!myVote) {
+                    card.onclick = () => castCeoVote(player.id);
                 }
                 ceoOptionsContainer.appendChild(card);
             });
@@ -866,10 +969,10 @@
                 document.getElementById('ceo-vote-status').innerHTML = `<p class="text-lg">Aguardando votos de: <span>${waitingFor.join(', ')}</span></p>`;
                 document.getElementById('ceo-vote-status').classList.remove('hidden');
             } else {
-                 document.getElementById('ceo-vote-status').classList.add('hidden');
-                 if (currentUser.uid === teamData.creatorId) {
+                document.getElementById('ceo-vote-status').classList.add('hidden');
+                if (currentUser.uid === teamData.creatorId) {
                     processCeoVote(teamData);
-                 }
+                }
             }
         }
         
@@ -963,18 +1066,18 @@
             if (currentUser.uid === teamData.ceoId) {
                 inputContainer.innerHTML = `<p class="text-lg">Você é o CEO. Aguarde a avaliação da sua equipe.</p>`;
                 const allRated = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId).every(pId => teamData.ceoSatisfaction.ratings[pId]);
-                 if(allRated) {
-                     const ratings = Object.values(teamData.ceoSatisfaction.ratings);
-                     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-                     inputContainer.innerHTML += `<p class="text-2xl mt-4">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
-                 }
+                if(allRated) {
+                    const ratings = Object.values(teamData.ceoSatisfaction.ratings);
+                    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                    inputContainer.innerHTML += `<p class="text-2xl mt-4">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
+                }
             } else {
-                 if (myRating) {
-                     inputContainer.innerHTML = '';
-                     inputContainer.classList.add('hidden');
-                     waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
-                     waitingContainer.classList.remove('hidden');
-                 } else {
+                if (myRating) {
+                    inputContainer.innerHTML = '';
+                    inputContainer.classList.add('hidden');
+                    waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
+                    waitingContainer.classList.remove('hidden');
+                } else {
                     inputContainer.classList.remove('hidden');
                     waitingContainer.classList.add('hidden');
                     inputContainer.innerHTML = `<p class="mb-4">Qual seu nível de satisfação?</p>
@@ -985,7 +1088,7 @@
                             <button onclick="submitSatisfaction('ceo', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
                             <button onclick="submitSatisfaction('ceo', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
                         </div>`;
-                 }
+                }
             }
 
             const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
@@ -993,7 +1096,7 @@
             
             if (allMembersRated && currentUser.uid === teamData.creatorId) {
                 setTimeout(async () => {
-                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'role_assignment' });
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'role_assignment' });
                 }, 5000);
             }
         }
@@ -1117,29 +1220,29 @@
                 inputContainer.innerHTML = `<p class="text-center">Aguarde a avaliação da equipe.</p>`;
                 const allMembersRatedCheck = members.every(pId => ratings[pId] !== undefined);
                 
-                 if(allMembersRatedCheck && members.length > 0) {
-                     const memberRatings = Object.values(ratings);
-                     const avg = memberRatings.reduce((a, b) => a + b, 0) / memberRatings.length;
-                     inputContainer.innerHTML += `<p class="text-xl mt-2">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
-                 }
+                if(allMembersRatedCheck && members.length > 0) {
+                    const memberRatings = Object.values(ratings);
+                    const avg = memberRatings.reduce((a, b) => a + b, 0) / memberRatings.length;
+                    inputContainer.innerHTML += `<p class="text-xl mt-2">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
+                }
             } else {
-                 if (myRating !== undefined) {
-                     inputContainer.innerHTML = '';
-                     inputContainer.classList.add('hidden');
-                     waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
-                     waitingContainer.classList.remove('hidden');
-                 } else {
+                if (myRating !== undefined) {
+                    inputContainer.innerHTML = '';
+                    inputContainer.classList.add('hidden');
+                    waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
+                    waitingContainer.classList.remove('hidden');
+                } else {
                     inputContainer.classList.remove('hidden');
                     waitingContainer.classList.add('hidden');
                     inputContainer.innerHTML = `<p class="text-center mb-4">Qual seu nível de satisfação com seu cargo?</p>
                         <div class="flex justify-center space-x-2">
-                           <button onclick="submitSatisfaction('role', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
-                           <button onclick="submitSatisfaction('role', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
-                           <button onclick="submitSatisfaction('role', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
-                           <button onclick="submitSatisfaction('role', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
-                           <button onclick="submitSatisfaction('role', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                            <button onclick="submitSatisfaction('role', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                            <button onclick="submitSatisfaction('role', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                            <button onclick="submitSatisfaction('role', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                            <button onclick="submitSatisfaction('role', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                            <button onclick="submitSatisfaction('role', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
                         </div>`;
-                 }
+                }
             }
             
             const allMembersRated = members.every(pId => ratings[pId] !== undefined);
@@ -1147,11 +1250,11 @@
             if (allMembersRated && currentUser.uid === teamData.creatorId) {
                 const budget = Object.keys(teamData.players).length * 4000;
                 setTimeout(async () => {
-                      await updateDoc(doc(db, 'teams', currentTeamId), { 
-                           gameStage: 'hiring',
-                           hiring: { requests: {} },
-                           budget: budget,
-                       });
+                    await updateDoc(doc(db, 'teams', currentTeamId), { 
+                        gameStage: 'hiring',
+                        hiring: { requests: {} },
+                        'financials.budget': budget,
+                    });
                 }, 5000);
             }
         }
@@ -1194,7 +1297,7 @@
                                     ${hire.name} <span class="text-xs text-gray-400">(${hire.area})</span>
                                 </label>
                                 <input type="number" id="hire-${hire.id}" min="0" max="5" placeholder="0" 
-                                       class="form-input bg-gray-800 border-gray-600 text-white rounded w-full text-center">
+                                    class="form-input bg-gray-800 border-gray-600 text-white rounded w-full text-center">
                             </div>
                         `).join('')}
                     </div>
@@ -1233,10 +1336,10 @@
                     Object.values(freshTeamData.players).forEach(p => {
                         if (p.hiringScore) totalHiringScore += p.hiringScore;
                     });
-                     await updateDoc(doc(db, 'teams', currentTeamId), {
-                          score: freshTeamData.score + totalHiringScore,
-                          'hiring.directorScoresTallied': true
-                     });
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        score: freshTeamData.score + totalHiringScore,
+                        'hiring.directorScoresTallied': true
+                    });
                 }
             };
         }
@@ -1245,18 +1348,19 @@
             const ceoView = document.getElementById('hiring-ceo-view');
             const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
             const allDirectorsRequested = directors.every(p => teamData.hiring.requests && teamData.hiring.requests[p.id]);
+            const budget = teamData.financials.budget;
 
             let htmlContent = `<div class="bg-gray-700 p-6 rounded-lg max-w-4xl mx-auto">`;
 
             if (!allDirectorsRequested) {
-                 htmlContent += `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
+                htmlContent += `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
             } else {
                 htmlContent += `
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
                         <div class="text-right">
                             <p class="text-gray-400 text-sm">Orçamento Disponível</p>
-                            <p class="text-2xl font-bold text-green-400" id="budget-display">R$ ${teamData.budget.toFixed(2)}</p>
+                            <p class="text-2xl font-bold text-green-400" id="budget-display">R$ ${budget.toFixed(2)}</p>
                         </div>
                     </div>
                     <p class="text-gray-400 mb-6">Abaixo estão as sugestões dos diretores. Você tem total liberdade para contratar quem julgar necessário, respeitando o orçamento.</p>
@@ -1282,9 +1386,9 @@
                     if (Object.keys(requests).length === 0) return;
                     let directorSection = `<div class="bg-gray-800 p-3 rounded-lg"><p class="font-semibold">${director.name} (${directorRoles[directorRoleKey].title}) sugeriu:</p><ul class="list-disc list-inside text-sm text-gray-300 mt-1">`;
                     for (const hireId in requests) {
-                         const quantity = requests[hireId];
-                         const hireInfo = allPossibleHires.find(h => h.id === hireId);
-                         directorSection += `<li>${quantity}x ${hireInfo.name}</li>`;
+                        const quantity = requests[hireId];
+                        const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                        directorSection += `<li>${quantity}x ${hireInfo.name}</li>`;
                     }
                     directorSection += `</ul></div>`;
                     suggestionsList.innerHTML += directorSection;
@@ -1308,8 +1412,8 @@
                         if (quantity > 0) totalCost += hireCosts[input.dataset.hireId] * quantity;
                     });
                     totalCostDisplay.textContent = `R$ ${totalCost.toFixed(2)}`;
-                    totalCostDisplay.classList.toggle('text-red-500', totalCost > teamData.budget);
-                    finalizeButton.disabled = totalCost > teamData.budget;
+                    totalCostDisplay.classList.toggle('text-red-500', totalCost > budget);
+                    finalizeButton.disabled = totalCost > budget;
                 };
                 
                 numberInputs.forEach(input => input.addEventListener('input', updateCost));
@@ -1317,9 +1421,13 @@
                 
                 finalizeButton.onclick = async () => {
                     const approvedHires = [];
+                    let totalCost = 0;
                     numberInputs.forEach(input => {
                         const quantity = parseInt(input.value, 10) || 0;
-                        if (quantity > 0) approvedHires.push({ id: input.dataset.hireId, quantity: quantity });
+                        if (quantity > 0) {
+                            approvedHires.push({ id: input.dataset.hireId, quantity: quantity });
+                            totalCost += hireCosts[input.dataset.hireId] * quantity;
+                        }
                     });
                     
                     let score = 0;
@@ -1332,7 +1440,9 @@
                         gameStage: 'org_chart',
                         finalHires: approvedHires,
                         score: teamData.score + score,
-                        finalSatisfaction: { ratings: {} }
+                        finalSatisfaction: { ratings: {} },
+                        'financials.budget': budget - totalCost,
+                        'financials.expenses': teamData.financials.expenses + totalCost
                     });
                 }
             }
@@ -1347,21 +1457,21 @@
             let directorsHtml = '<div class="flex justify-center gap-4 flex-wrap">';
             const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
             directors.forEach(dir => {
-                 const roleKey = teamData.roles[dir.id];
-                 directorsHtml += `<div class="bg-pink-600 p-3 rounded-lg shadow-md"><p class="font-semibold">${dir.name}</p><p class="text-sm text-pink-200">${directorRoles[roleKey].title}</p></div>`;
+                const roleKey = teamData.roles[dir.id];
+                directorsHtml += `<div class="bg-pink-600 p-3 rounded-lg shadow-md"><p class="font-semibold">${dir.name}</p><p class="text-sm text-pink-200">${directorRoles[roleKey].title}</p></div>`;
             });
             directorsHtml += '</div>';
             container.innerHTML += directorsHtml;
             
             if (teamData.finalHires && teamData.finalHires.length > 0) {
-                 container.innerHTML += '<div class="mt-6 pt-4 border-t border-gray-600"><h4 class="text-lg font-semibold mb-4">Equipe Contratada</h4></div>';
-                 let hiresHtml = '<div class="flex justify-center gap-2 flex-wrap">';
-                 teamData.finalHires.forEach(hire => {
-                     const hireInfo = allPossibleHires.find(h => h.id === hire.id);
-                     hiresHtml += `<div class="bg-gray-600 text-sm py-1 px-3 rounded-full">${hireInfo.name} ${hire.quantity > 1 ? `(x${hire.quantity})` : ''}</div>`;
-                 });
-                 hiresHtml += '</div>';
-                 container.innerHTML += hiresHtml;
+                container.innerHTML += '<div class="mt-6 pt-4 border-t border-gray-600"><h4 class="text-lg font-semibold mb-4">Equipe Contratada</h4></div>';
+                let hiresHtml = '<div class="flex justify-center gap-2 flex-wrap">';
+                teamData.finalHires.forEach(hire => {
+                    const hireInfo = allPossibleHires.find(h => h.id === hire.id);
+                    hiresHtml += `<div class="bg-gray-600 text-sm py-1 px-3 rounded-full">${hireInfo.name} ${hire.quantity > 1 ? `(x${hire.quantity})` : ''}</div>`;
+                });
+                hiresHtml += '</div>';
+                container.innerHTML += hiresHtml;
             }
             
             const comparisonContainer = document.getElementById('hiring-comparison-container');
@@ -1372,7 +1482,7 @@
                 const ceoDecisions = teamData.finalHires || [];
                 const allComparedHiresIds = new Set([...Object.keys(mySuggestions), ...ceoDecisions.map(d => d.id)]);
                 if (allComparedHiresIds.size === 0) {
-                     comparisonHtml += `<p class="text-center text-gray-400">Você não fez sugestões e o CEO não contratou.</p>`;
+                    comparisonHtml += `<p class="text-center text-gray-400">Você não fez sugestões e o CEO não contratou.</p>`;
                 } else {
                     let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="border-b border-gray-600"><th class="p-2">Cargo</th><th class="p-2 text-center">Sua Sugestão</th><th class="p-2 text-center">Decisão do CEO</th></tr></thead><tbody>`;
                     allComparedHiresIds.forEach(hireId => {
@@ -1399,31 +1509,28 @@
                 finalSatisfactionContainer.innerHTML = `<p class="text-center">Aguarde a avaliação final da equipe.</p>`;
             } else {
                 const myRating = teamData.finalSatisfaction && teamData.finalSatisfaction.ratings ? teamData.finalSatisfaction.ratings[currentUser.uid] : undefined;
-                 if (myRating !== undefined) {
-                     finalSatisfactionContainer.innerHTML = `<div id="final-satisfaction-waiting" class="text-center"><p class="text-lg">Aguardando os outros membros avaliarem...</p></div>`;
-                 } else {
-                      finalSatisfactionContainer.innerHTML = `<div id="final-satisfaction-input-container">
-                          <p class="text-center mb-4">Qual seu nível de satisfação com as contratações?</p>
-                          <div class="flex justify-center space-x-2">
-                              <button onclick="submitSatisfaction('final', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
-                              <button onclick="submitSatisfaction('final', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
-                              <button onclick="submitSatisfaction('final', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
-                              <button onclick="submitSatisfaction('final', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
-                              <button onclick="submitSatisfaction('final', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
-                          </div>
-                      </div>`;
-                 }
+                if (myRating !== undefined) {
+                    finalSatisfactionContainer.innerHTML = `<div id="final-satisfaction-waiting" class="text-center"><p class="text-lg">Aguardando os outros membros avaliarem...</p></div>`;
+                } else {
+                    finalSatisfactionContainer.innerHTML = `<div id="final-satisfaction-input-container">
+                        <p class="text-center mb-4">Qual seu nível de satisfação com as contratações?</p>
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="submitSatisfaction('final', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                            <button onclick="submitSatisfaction('final', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                            <button onclick="submitSatisfaction('final', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                            <button onclick="submitSatisfaction('final', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                            <button onclick="submitSatisfaction('final', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                        </div>
+                    </div>`;
+                }
             }
-
-            // ===== CORREÇÃO APLICADA AQUI =====
-            // Verifica de forma segura se todos os membros (exceto o CEO) já avaliaram.
             const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
-            const ratings = teamData.finalSatisfaction?.ratings || {}; // Usamos optional chaining e um valor padrão
+            const ratings = teamData.finalSatisfaction?.ratings || {}; 
             const allMembersRated = members.every(pId => ratings[pId] !== undefined);
             
             if (allMembersRated && currentUser.uid === teamData.creatorId) {
                 setTimeout(async () => {
-                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'final_report' });
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'final_report' });
                 }, 3000);
             }
         }
@@ -1431,16 +1538,15 @@
         function renderFinalReport(teamData) {
             showScreen('final-report-screen');
             
-            // Lógica para calcular a pontuação máxima possível no Ato 1
             const numPlayers = Object.keys(teamData.players).length;
             const numDirectors = numPlayers - 1;
             let maxScore = 0;
-            maxScore += 200; // Alinhamento na eleição de CEO
-            maxScore += 150; // Perfil do CEO alinhado ao segmento
-            maxScore += (numDirectors * 100); // Atribuição perfeita de cargos
-            maxScore += (numDirectors * (directorNeeds[Object.keys(directorNeeds)[0]].essential.length * 100)); // Solicitação de contratações essenciais
-            maxScore += [...new Set(Object.values(directorNeeds).flatMap(n => n.essential))].length * 120; // CEO contrata todos os essenciais
-            maxScore += numPlayers * 50; // Bônus de alinhamento por segmento (aprox)
+            maxScore += 200; 
+            maxScore += 150; 
+            maxScore += (numDirectors * 100); 
+            maxScore += (numDirectors * (directorNeeds[Object.keys(directorNeeds)[0]].essential.length * 100)); 
+            maxScore += [...new Set(Object.values(directorNeeds).flatMap(n => n.essential))].length * 120; 
+            maxScore += numPlayers * 50; 
             
             document.getElementById('final-score-display').textContent = teamData.score || 0;
             document.getElementById('max-score-display').textContent = maxScore;
@@ -1480,14 +1586,12 @@
             if (currentUser.uid === teamData.creatorId) {
                 continueContainer.innerHTML = `<button id="start-act2-button" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato 2</button>`;
                 document.getElementById('start-act2-button').onclick = async () => {
-                     await updateDoc(doc(db, 'teams', currentTeamId), { 
+                    await updateDoc(doc(db, 'teams', currentTeamId), { 
                         gameStage: 'act2_mvp',
                         act2_mvp: { features: {}, architecture: {}, ceoDecision: null },
                         act2_crisis: { currentIndex: 0, solved: {} },
                         act2_launch: {},
-                        act2_metrics: { quality: 50, satisfaction: 50, reputation: 50 },
-                        act2_financials: { expenses: 0, revenue: 0, profit: 0 }
-                     });
+                    });
                 };
             } else {
                 continueContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder iniciar o Ato 2...</p>`;
@@ -1535,7 +1639,7 @@
             }
             
             let featuresHtml = `<h3 class="text-xl font-semibold mb-4">Sua Missão (CPO): Selecione as 4 features essenciais para o MVP.</h3>
-                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="feature-selection-grid">`;
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="feature-selection-grid">`;
             mvpFeatures.forEach(f => {
                 featuresHtml += `
                     <div id="feature-${f.id}" class="feature-card cursor-pointer p-4 bg-gray-700 rounded-lg border-2 border-gray-600 hover:border-indigo-500 transition" onclick="toggleFeatureSelection('${f.id}')">
@@ -1617,36 +1721,31 @@
 
             const cpoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CPO');
             const ctoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CTO');
-
-            // O CEO toma a decisão se o cargo estiver ausente. A decisão é armazenada sob o ID do CEO.
             const cpoForChoice = cpoId || currentUser.uid;
             const ctoForChoice = ctoId || currentUser.uid;
-
             const cpoChoice = teamData.act2_mvp.features[cpoForChoice];
             const ctoChoice = teamData.act2_mvp.architecture[ctoForChoice];
 
-            // Render UI
             let ceoHtml = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (CEO): Definir e Aprovar o plano do MVP.</h3>
-                         <div class="grid md:grid-cols-2 gap-6">`;
+                <div class="grid md:grid-cols-2 gap-6">`;
 
             // Seção CPO
             ceoHtml += `<div class="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-2">`;
             if (cpoId) {
                 ceoHtml += `<h4 class="font-bold">Recomendação do CPO (${teamData.players[cpoId].name}):</h4>`;
                 if (cpoChoice) {
-                     ceoHtml += `<ul class="list-disc list-inside text-gray-300 text-sm">
-                                ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
-                            </ul>`;
+                    ceoHtml += `<ul class="list-disc list-inside text-gray-300 text-sm">
+                        ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
+                    </ul>`;
                 } else {
                     ceoHtml += `<p class="text-center text-yellow-400 animate-pulse">Aguardando recomendação...</p>`;
                 }
             } else {
-                // CEO atua como CPO
                 ceoHtml += `<h4 class="font-bold">Sua Missão (como CPO): Selecione as 4 features essenciais.</h4>`;
                 if (cpoChoice) {
-                    ceoHtml += `<ul class="list-disc list-inside text-gray-300 text-sm">
-                                ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
-                            </ul><p class="text-xs text-green-400">Seleção confirmada.</p>`;
+                     ceoHtml += `<ul class="list-disc list-inside text-gray-300 text-sm">
+                        ${cpoChoice.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
+                    </ul><p class="text-xs text-green-400">Seleção confirmada.</p>`;
                 } else {
                     let featuresHtml = `<div class="grid grid-cols-1 gap-2 mt-2 max-h-60 overflow-y-auto pr-2" id="feature-selection-grid">`;
                     mvpFeatures.forEach(f => {
@@ -1667,23 +1766,22 @@
 
             // Seção CTO
             ceoHtml += `<div class="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-2">`;
-             if (ctoId) {
+            if (ctoId) {
                 ceoHtml += `<h4 class="font-bold">Recomendação do CTO (${teamData.players[ctoId].name}):</h4>`;
                 if (ctoChoice) {
                     const chosenArch = techArchitectures[ctoChoice];
                     ceoHtml += `<p class="text-lg font-semibold">${chosenArch.title}</p>
-                                <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>`;
+                        <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>`;
                 } else {
                     ceoHtml += `<p class="text-center text-yellow-400 animate-pulse">Aguardando recomendação...</p>`;
                 }
             } else {
-                // CEO atua como CTO
-                ceoHtml += `<h4 class="font-bold">Sua Missão (como CTO): Escolha a arquitetura.</h4>`;
+                 ceoHtml += `<h4 class="font-bold">Sua Missão (como CTO): Escolha a arquitetura.</h4>`;
                 if (ctoChoice) {
                     const chosenArch = techArchitectures[ctoChoice];
                     ceoHtml += `<p class="text-lg font-semibold">${chosenArch.title}</p>
-                                <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>
-                                <p class="text-xs text-green-400">Seleção confirmada.</p>`;
+                        <p class="text-sm">Custo: <span class="text-yellow-400">R$ ${chosenArch.cost.toFixed(2)}</span></p>
+                        <p class="text-xs text-green-400">Seleção confirmada.</p>`;
                 } else {
                     let archHtml = `<div class="space-y-2 mt-2">`;
                     for (const key in techArchitectures) {
@@ -1699,27 +1797,23 @@
                     ceoHtml += archHtml;
                 }
             }
-            ceoHtml += `</div></div>`; // Fecha grid e seção
+            ceoHtml += `</div></div>`; 
 
             // Botão Final
             ceoHtml += `<div class="mt-6"><button id="approve-mvp-plan" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Aprovar Plano e Iniciar Desenvolvimento</button></div>`;
             view.innerHTML = ceoHtml;
 
-            // --- Adiciona event listeners e lógica ---
-            // Se o CEO precisa atuar como CPO
+            // Add event listeners
             if (!cpoId && !cpoChoice) {
-                 document.getElementById('submit-features').onclick = async () => {
+                document.getElementById('submit-features').onclick = async () => {
                     const selected = Array.from(document.querySelectorAll('.feature-card.selected')).map(el => el.id.replace('feature-', ''));
-                    // A decisão é armazenada sob o ID do CEO
                     await updateDoc(doc(db, 'teams', currentTeamId), { [`act2_mvp.features.${currentUser.uid}`]: selected });
                 };
             }
-            // Se o CEO precisa atuar como CTO
             if (!ctoId && !ctoChoice) {
                 document.getElementById('submit-architecture').onclick = async () => {
                     const selectedArch = document.querySelector('input[name="architecture"]:checked');
                     if (!selectedArch) return alert("Selecione uma arquitetura.");
-                    // A decisão é armazenada sob o ID do CEO
                     await updateDoc(doc(db, 'teams', currentTeamId), { [`act2_mvp.architecture.${currentUser.uid}`]: selectedArch.value });
                 };
             }
@@ -1733,25 +1827,23 @@
                     const finalCtoChoice = ctoChoice;
                     
                     const chosenArch = techArchitectures[finalCtoChoice];
-                    const teamBudget = teamData.budget;
                     const expenses = chosenArch.cost;
-                    const newBudget = teamBudget - expenses;
-
+                    
                     let score = chosenArch.points;
                     let featureImpactScore = 0;
                     finalCpoChoice.forEach(fId => { featureImpactScore += mvpFeatures.find(f => f.id === fId).impact * 10; });
                     score += featureImpactScore;
                     
-                    const metrics = teamData.act2_metrics;
-                    metrics.quality += chosenArch.qualityImpact;
-                    metrics.reputation += chosenArch.reputationImpact;
-
+                    const newMetrics = {...teamData.metrics};
+                    newMetrics.quality += chosenArch.qualityImpact;
+                    newMetrics.reputation += chosenArch.reputationImpact;
+                    
                     await updateDoc(doc(db, 'teams', currentTeamId), {
                         'act2_mvp.ceoDecision': { features: finalCpoChoice, architecture: finalCtoChoice },
-                        budget: newBudget,
+                        'financials.budget': teamData.financials.budget - expenses,
                         score: (teamData.score || 0) + score,
-                        act2_metrics: metrics,
-                        'act2_financials.expenses': (teamData.act2_financials.expenses || 0) + expenses
+                        metrics: newMetrics,
+                        'financials.expenses': (teamData.financials.expenses || 0) + expenses
                     });
                 };
             }
@@ -1764,24 +1856,24 @@
             if (decision) {
                 const chosenArch = techArchitectures[decision.architecture];
                 view.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-center">Plano do MVP Definido!</h3>
-                <div class="grid md:grid-cols-2 gap-6 text-center">
-                    <div class="bg-gray-700 p-4 rounded-lg">
-                        <h4 class="font-bold mb-2">Features Essenciais:</h4>
-                        <ul class="list-none text-gray-300">
-                             ${decision.features.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
-                        </ul>
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-bold mb-2">Features Essenciais:</h4>
+                            <ul class="list-none text-gray-300">
+                                ${decision.features.map(fId => `<li>${mvpFeatures.find(f => f.id === fId).title}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-bold mb-2">Arquitetura de TI:</h4>
+                            <p class="text-lg font-semibold">${chosenArch.title}</p>
+                        </div>
                     </div>
-                     <div class="bg-gray-700 p-4 rounded-lg">
-                        <h4 class="font-bold mb-2">Arquitetura de TI:</h4>
-                        <p class="text-lg font-semibold">${chosenArch.title}</p>
-                    </div>
-                </div>
-                <p class="mt-6 text-center">Preparando para a fase de desenvolvimento...</p>`;
-                 if(currentUser.uid === teamData.creatorId) {
+                    <p class="mt-6 text-center">Preparando para a fase de desenvolvimento...</p>`;
+                if(currentUser.uid === teamData.creatorId) {
                     setTimeout(async () => { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' }); }, 4000);
-                 }
+                }
             } else {
-                 view.innerHTML = `<p class="text-center text-xl">Aguardando as definições de Produto, Tecnologia e a aprovação final do CEO...</p>`;
+                view.innerHTML = `<p class="text-center text-xl">Aguardando as definições de Produto, Tecnologia e a aprovação final do CEO...</p>`;
             }
         }
         
@@ -1815,7 +1907,7 @@
 
             if (myRole === 'COO') {
                 if (cooDecision) {
-                     crisisHtml += `<p class="text-center text-xl mt-6">Sua decisão foi registrada. Aguardando o resultado...</p>`;
+                    crisisHtml += `<p class="text-center text-xl mt-6">Sua decisão foi registrada. Aguardando o resultado...</p>`;
                 } else {
                     crisisHtml += `<div class="mt-6 bg-gray-700 p-6 rounded-lg">
                         <h4 class="text-lg font-semibold text-center mb-4">Sua Missão (COO): Qual ferramenta da qualidade usar para analisar este problema?</h4>
@@ -1832,18 +1924,18 @@
                     </div>`;
                 }
             } else {
-                 if (cooDecision) {
-                     const cooName = teamData.players[Object.keys(teamData.roles).find(k => teamData.roles[k] === 'COO')].name;
-                     const chosenTool = qualityTools[cooDecision.tool].title;
-                     crisisHtml += `<p class="text-center text-lg mt-6">${cooName} decidiu usar a ferramenta: <span class="font-bold text-indigo-400">${chosenTool}</span>. Analisando o resultado...</p>`;
-                 } else {
-                     crisisHtml += `<p class="text-center text-xl mt-6">Aguardando o Diretor(a) de Operações decidir como lidar com a crise...</p>`;
-                 }
+                if (cooDecision) {
+                    const cooName = teamData.players[Object.keys(teamData.roles).find(k => teamData.roles[k] === 'COO')].name;
+                    const chosenTool = qualityTools[cooDecision.tool].title;
+                    crisisHtml += `<p class="text-center text-lg mt-6">${cooName} decidiu usar a ferramenta: <span class="font-bold text-indigo-400">${chosenTool}</span>. Analisando o resultado...</p>`;
+                } else {
+                    crisisHtml += `<p class="text-center text-xl mt-6">Aguardando o Diretor(a) de Operações decidir como lidar com a crise...</p>`;
+                }
             }
             container.innerHTML = crisisHtml;
             
             if (document.getElementById('submit-tool-choice')) {
-                 document.getElementById('submit-tool-choice').onclick = async () => {
+                document.getElementById('submit-tool-choice').onclick = async () => {
                     const selectedTool = document.querySelector('input[name="qualityTool"]:checked');
                     if (!selectedTool) return alert("Selecione uma ferramenta.");
                     
@@ -1854,7 +1946,7 @@
                     await updateDoc(doc(db, 'teams', currentTeamId), {
                         [`act2_crisis.solved.${currentCrisis.id}`]: { tool: selectedTool.value, correct: isCorrect },
                         score: teamData.score + score,
-                        'act2_metrics.quality': teamData.act2_metrics.quality + qualityImpact
+                        'metrics.quality': teamData.metrics.quality + qualityImpact
                     });
                     
                     setTimeout(async () => {
@@ -1864,7 +1956,7 @@
                             });
                         }
                     }, 4000);
-                 };
+                };
             }
         }
         
@@ -1897,7 +1989,7 @@
         
         function renderLaunchCmoView(teamData) {
             const view = document.getElementById('launch-cmo-view');
-            const budget = teamData.budget;
+            const budget = teamData.financials.budget;
             view.innerHTML = `
                 <div class="bg-gray-700 p-6 rounded-lg max-w-2xl mx-auto">
                     <h3 class="text-xl font-semibold text-center mb-4">Sua Missão (CMO): Alocar o Orçamento de Lançamento</h3>
@@ -1937,7 +2029,8 @@
                 
                 if (total > budget) {
                     const overflow = total - budget;
-                    sliders.forEach(s => { if (s !== this) s.value = Math.max(0, s.value - overflow/2) });
+                    const inputs = sliders.filter(s => s.id !== this.id);
+                    inputs.forEach(s => { s.value = Math.max(0, parseFloat(s.value) - overflow / inputs.length) });
                     total = sliders.reduce((acc, s) => acc + parseFloat(s.value), 0);
                 }
                 
@@ -1967,7 +2060,7 @@
             const view = document.getElementById('launch-investment-view');
             const investmentVote = teamData.act2_launch.investmentVote;
             const myVote = investmentVote.votes[currentUser.uid];
-            const investmentAmount = teamData.budget * 2;
+            const investmentAmount = teamData.financials.budget * 2;
             const equity = 20;
 
             if (myVote !== undefined) {
@@ -2015,32 +2108,32 @@
             if (consensus) score += 150;
 
             let marketingSpend = marketingBudget.content + marketingBudget.paid + marketingBudget.partners;
-            let finalBudget = teamData.budget - marketingSpend;
+            let finalBudget = teamData.financials.budget - marketingSpend;
             let reputationImpact = consensus ? 10 : -10;
 
             if (decision) {
-                finalBudget += teamData.budget * 2;
+                finalBudget += teamData.financials.budget * 2;
                 score += 100;
             }
 
-            const profit = revenue - (teamData.act2_financials.expenses + marketingSpend);
+            const profit = revenue - (teamData.financials.expenses + marketingSpend);
             
             await updateDoc(doc(db, 'teams', currentTeamId), {
                 gameStage: 'act2_report',
-                budget: finalBudget,
+                'financials.budget': finalBudget,
                 score: teamData.score + score,
-                'act2_metrics.reputation': teamData.act2_metrics.reputation + reputationImpact,
-                'act2_metrics.satisfaction': teamData.act2_metrics.satisfaction + (revenue / 1000),
-                'act2_financials.revenue': revenue,
-                'act2_financials.profit': profit,
-                'act2_financials.expenses': teamData.act2_financials.expenses + marketingSpend
+                'metrics.reputation': teamData.metrics.reputation + reputationImpact,
+                'metrics.satisfaction': teamData.metrics.satisfaction + (revenue / 1000),
+                'financials.revenue': teamData.financials.revenue + revenue,
+                'financials.profit': teamData.financials.profit + profit,
+                'financials.expenses': teamData.financials.expenses + marketingSpend
             });
         }
         
         function renderAct2FinalReport(teamData) {
             showScreen('act2-final-report-screen');
-            const financials = teamData.act2_financials;
-            const metrics = teamData.act2_metrics;
+            const financials = teamData.financials;
+            const metrics = teamData.metrics;
 
             document.getElementById('act2-revenue').textContent = `R$ ${financials.revenue.toFixed(2)}`;
             document.getElementById('act2-expenses').textContent = `- R$ ${financials.expenses.toFixed(2)}`;
@@ -2055,6 +2148,535 @@
             
             document.getElementById('act2-final-score').textContent = teamData.score;
             renderRanking('act2-ranking-container', 'act2_report');
+
+            const continueContainer = document.getElementById('continue-to-act3-container');
+            if (currentUser.uid === teamData.creatorId) {
+                continueContainer.innerHTML = `<button id="start-act3-button" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato 3</button>`;
+                document.getElementById('start-act3-button').onclick = async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), { 
+                        gameStage: 'act3_scaling',
+                        act3_scaling: { decision: null },
+                        act3_market_shock: { cmo_decision: null, ceo_decision: null }
+                    });
+                };
+            } else {
+                continueContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder iniciar o Ato 3...</p>`;
+            }
+        }
+        
+        // --- FUNÇÕES DE RENDERIZAÇÃO (ATO 3) ---
+
+        function renderAct3Scaling(teamData) {
+            showScreen('act3-scaling-screen');
+            const myRole = teamData.roles[currentUser.uid];
+            const cooView = document.getElementById('act3-coo-view');
+            const memberView = document.getElementById('act3-member-view');
+
+            cooView.classList.add('hidden');
+            memberView.classList.add('hidden');
+            const decision = teamData.act3_scaling?.decision;
+
+            if (myRole === 'COO') {
+                cooView.classList.remove('hidden');
+                if (decision) {
+                    cooView.innerHTML = `<p class="text-center text-xl">Sua decisão sobre a metodologia de trabalho foi registrada. Aguardando a próxima etapa...</p>`;
+                } else {
+                    let html = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (COO): Escolha uma metodologia para organizar o trabalho.</h3><div class="space-y-4">`;
+                    for (const key in act3_scalingOptions) {
+                        const opt = act3_scalingOptions[key];
+                        html += `<label class="block p-4 bg-gray-700 rounded-lg border-2 border-gray-600 hover:border-indigo-500 transition cursor-pointer">
+                            <input type="radio" name="scaling" value="${key}" class="mr-2">
+                            <span class="font-bold text-lg">${opt.title}</span>
+                            <p class="text-sm text-gray-400">${opt.desc}</p>
+                        </label>`;
+                    }
+                    html += `</div><button id="submit-scaling" class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Confirmar Metodologia</button>`;
+                    cooView.innerHTML = html;
+                    document.getElementById('submit-scaling').onclick = async () => {
+                        const choice = document.querySelector('input[name="scaling"]:checked')?.value;
+                        if (!choice) return alert('Você precisa escolher uma opção.');
+                        
+                        const option = act3_scalingOptions[choice];
+                        const newMetrics = {...teamData.metrics};
+                        newMetrics.productivity += option.productivity;
+                        newMetrics.quality += option.quality;
+                        newMetrics.morale += option.morale;
+                        
+                        await updateDoc(doc(db, 'teams', currentTeamId), {
+                            'act3_scaling.decision': choice,
+                            score: teamData.score + option.points,
+                            metrics: newMetrics
+                        });
+
+                        setTimeout(async () => {
+                           if(currentUser.uid === teamData.creatorId) await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act3_market_shock' });
+                        }, 4000);
+                    };
+                }
+            } else {
+                memberView.classList.remove('hidden');
+                if (decision) {
+                    memberView.innerHTML = `<p class="text-center text-xl">O COO decidiu adotar a metodologia <span class="font-bold text-indigo-400">${act3_scalingOptions[decision].title}</span>. Aguardando a próxima etapa...</p>`;
+                     if(currentUser.uid === teamData.creatorId) {
+                        setTimeout(async () => {
+                           await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act3_market_shock' });
+                        }, 4000);
+                    }
+                } else {
+                    memberView.innerHTML = `<p class="text-center text-xl">Aguardando o COO definir a metodologia de trabalho para escalar a empresa...</p>`;
+                }
+            }
+        }
+
+        function renderAct3MarketShock(teamData) {
+            showScreen('act3-market-shock-screen');
+            const myRole = teamData.roles[currentUser.uid];
+            const shockData = teamData.act3_market_shock || {};
+
+            const cmoView = document.getElementById('act3-shock-cmo-view');
+            const ceoView = document.getElementById('act3-shock-ceo-view');
+            const memberView = document.getElementById('act3-shock-member-view');
+            [cmoView, ceoView, memberView].forEach(v => v.classList.add('hidden'));
+
+            if (myRole === 'CMO' && !shockData.cmo_decision) {
+                cmoView.classList.remove('hidden');
+                let html = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (CMO): Como responder ao novo concorrente?</h3><div class="space-y-4">`;
+                 for (const key in act3_marketShockOptions) {
+                    const opt = act3_marketShockOptions[key];
+                    html += `<label class="block p-4 bg-gray-700 rounded-lg border-2 border-gray-600 hover:border-indigo-500 transition cursor-pointer">
+                        <input type="radio" name="shock" value="${key}" class="mr-2">
+                        <span class="font-bold text-lg">${opt.title}</span>
+                        <p class="text-sm text-gray-400">${opt.desc}</p>
+                    </label>`;
+                }
+                html += `</div><button id="submit-shock" class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Recomendar Estratégia</button>`;
+                cmoView.innerHTML = html;
+                document.getElementById('submit-shock').onclick = async () => {
+                     const choice = document.querySelector('input[name="shock"]:checked')?.value;
+                     if(!choice) return alert('Escolha uma estratégia.');
+                     await updateDoc(doc(db, 'teams', currentTeamId), { 'act3_market_shock.cmo_decision': choice });
+                };
+
+            } else if (myRole === 'CEO') {
+                ceoView.classList.remove('hidden');
+                if (!shockData.cmo_decision) {
+                    ceoView.innerHTML = `<p class="text-center text-xl">Aguardando a recomendação do CMO sobre como reagir...</p>`;
+                } else if (!shockData.ceo_decision) {
+                     const cmoChoice = act3_marketShockOptions[shockData.cmo_decision];
+                     ceoView.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (CEO): Aprovar a estratégia de resposta.</h3>
+                     <div class="bg-gray-700 p-4 rounded-lg text-center">
+                        <p class="text-gray-400">O CMO recomendou:</p>
+                        <p class="text-2xl font-bold text-indigo-300 my-2">${cmoChoice.title}</p>
+                        <p>${cmoChoice.desc}</p>
+                     </div>
+                     <div class="flex gap-4 mt-6">
+                        <button id="approve-shock" class="w-full bg-green-600 hover:bg-green-700 font-bold py-3 rounded-lg">Aprovar</button>
+                        <button id="reject-shock" class="w-full bg-red-600 hover:bg-red-700 font-bold py-3 rounded-lg">Rejeitar e Ignorar</button>
+                     </div>`;
+                     document.getElementById('approve-shock').onclick = () => processMarketShock(teamData, shockData.cmo_decision);
+                     document.getElementById('reject-shock').onclick = () => processMarketShock(teamData, 'ignore');
+                } else {
+                    ceoView.innerHTML = `<p class="text-center text-xl">Decisão final tomada. A empresa irá <span class="font-bold text-indigo-400">${act3_marketShockOptions[shockData.ceo_decision].title}</span>.</p>`;
+                }
+
+            } else { // Membros
+                 memberView.classList.remove('hidden');
+                 if (!shockData.ceo_decision) {
+                     memberView.innerHTML = `<p class="text-center text-xl">Aguardando a decisão da liderança sobre como reagir ao novo concorrente...</p>`;
+                 } else {
+                     memberView.innerHTML = `<p class="text-center text-xl">A diretoria decidiu: <span class="font-bold text-indigo-400">${act3_marketShockOptions[shockData.ceo_decision].title}</span>. Avaliando os impactos...</p>`;
+                 }
+            }
+        }
+
+        async function processMarketShock(teamData, finalDecision) {
+            const option = act3_marketShockOptions[finalDecision];
+            const newMetrics = {...teamData.metrics};
+            newMetrics.reputation += option.reputation_mod;
+
+            const newFinancials = {...teamData.financials};
+            newFinancials.revenue *= option.revenue_mod;
+            newFinancials.profit = newFinancials.revenue - newFinancials.expenses;
+
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                'act3_market_shock.ceo_decision': finalDecision,
+                score: teamData.score + option.points,
+                metrics: newMetrics,
+                financials: newFinancials
+            });
+
+            setTimeout(async () => {
+                if (currentUser.uid === teamData.creatorId) await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act3_report' });
+            }, 4000);
+        }
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO (ATO 4) ---
+
+        function renderAct4Stagnation(teamData) {
+            showScreen('act4-stagnation-screen');
+            const myRole = teamData.roles[currentUser.uid];
+            const cpoView = document.getElementById('act4-cpo-view');
+            const ceoView = document.getElementById('act4-ceo-view');
+            const memberView = document.getElementById('act4-member-view');
+            [cpoView, ceoView, memberView].forEach(v => v.classList.add('hidden'));
+            
+            const stagnationData = teamData.act4_stagnation || {};
+
+            if (myRole === 'CPO' && !stagnationData.cpo_decision) {
+                cpoView.classList.remove('hidden');
+                let html = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (CPO): O crescimento parou. Qual será o próximo grande movimento do produto?</h3><div class="space-y-4">`;
+                for (const key in act4_productPivots) {
+                    const opt = act4_productPivots[key];
+                    html += `<label class="block p-4 bg-gray-700 rounded-lg border-2 border-gray-600 hover:border-indigo-500 transition cursor-pointer">
+                        <input type="radio" name="pivot" value="${key}" class="mr-2">
+                        <span class="font-bold text-lg">${opt.title}</span>
+                        <p class="text-sm text-gray-400">${opt.desc}</p>
+                        <p class="text-sm mt-2">Custo Estimado: <span class="font-semibold text-yellow-400">R$ ${opt.cost.toFixed(2)}</span></p>
+                    </label>`;
+                }
+                html += `</div><button id="submit-pivot" class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Recomendar Pivô Estratégico</button>`;
+                cpoView.innerHTML = html;
+                document.getElementById('submit-pivot').onclick = async () => {
+                    const choice = document.querySelector('input[name="pivot"]:checked')?.value;
+                    if(!choice) return alert('Escolha uma estratégia.');
+                    await updateDoc(doc(db, 'teams', currentTeamId), { 'act4_stagnation.cpo_decision': choice });
+                };
+            } else if (myRole === 'CEO') {
+                ceoView.classList.remove('hidden');
+                if (!stagnationData.cpo_decision) {
+                    ceoView.innerHTML = `<p class="text-center text-xl">Aguardando a recomendação do CPO para a próxima estratégia de produto...</p>`;
+                } else if (!stagnationData.ceo_decision) {
+                    const cpoChoice = act4_productPivots[stagnationData.cpo_decision];
+                    const canAfford = teamData.financials.budget >= cpoChoice.cost;
+                    ceoView.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-center">Sua Missão (CEO): Aprovar o novo rumo do produto.</h3>
+                     <div class="bg-gray-700 p-4 rounded-lg text-center">
+                        <p class="text-gray-400">O CPO recomendou:</p>
+                        <p class="text-2xl font-bold text-indigo-300 my-2">${cpoChoice.title}</p>
+                        <p>${cpoChoice.desc}</p>
+                        <p class="text-lg mt-2 ${canAfford ? 'text-green-400' : 'text-red-400'}">Custo: R$ ${cpoChoice.cost.toFixed(2)} / Orçamento: R$ ${teamData.financials.budget.toFixed(2)}</p>
+                     </div>
+                     <div class="mt-6">
+                        <button id="approve-pivot" class="w-full bg-green-600 hover:bg-green-700 font-bold py-3 rounded-lg ${!canAfford && 'opacity-50 cursor-not-allowed'}" ${!canAfford && 'disabled'}>Aprovar e Investir</button>
+                     </div>`;
+                     if(canAfford) {
+                        document.getElementById('approve-pivot').onclick = async () => {
+                            const option = act4_productPivots[stagnationData.cpo_decision];
+                            const success = Math.random() * 100 > option.risk;
+                            const score = success ? option.impact : -option.impact / 2;
+                            const revenue_increase = success ? teamData.financials.revenue * (1 + option.impact / 200) : 0;
+                            
+                            await updateDoc(doc(db, 'teams', currentTeamId), {
+                                'act4_stagnation.ceo_decision': { choice: stagnationData.cpo_decision, success },
+                                score: teamData.score + score,
+                                'financials.budget': teamData.financials.budget - option.cost,
+                                'financials.expenses': teamData.financials.expenses + option.cost,
+                                'financials.revenue': teamData.financials.revenue + revenue_increase,
+                            });
+                            
+                            setTimeout(async () => {
+                                if(currentUser.uid === teamData.creatorId) await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act4_morale_crisis' });
+                            }, 4000);
+                        };
+                     }
+                } else {
+                     ceoView.innerHTML = `<p class="text-center text-xl">Decisão tomada. A empresa vai focar em <span class="font-bold text-indigo-400">${act4_productPivots[stagnationData.ceo_decision.choice].title}</span>.</p>`;
+                }
+            } else {
+                memberView.classList.remove('hidden');
+                if (!stagnationData.ceo_decision) {
+                    memberView.innerHTML = `<p class="text-center text-xl">Aguardando a decisão da liderança sobre a próxima grande aposta do produto...</p>`;
+                } else {
+                     memberView.innerHTML = `<p class="text-center text-xl">A diretoria decidiu: <span class="font-bold text-indigo-400">${act4_productPivots[stagnationData.ceo_decision.choice].title}</span>. O resultado foi ${stagnationData.ceo_decision.success ? '<span class="text-green-400">um sucesso</span>' : '<span class="text-red-400">um fracasso</span>'}.</p>`;
+                    if(currentUser.uid === teamData.creatorId) {
+                         setTimeout(async () => {
+                            await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act4_morale_crisis' });
+                        }, 4000);
+                    }
+                }
+            }
+        }
+
+        function renderAct4MoraleCrisis(teamData) {
+            // Similar a act3_market_shock, mas com CHRO e CEO
+            showScreen('act4-morale-crisis-screen');
+            const myRole = teamData.roles[currentUser.uid];
+            const moraleData = teamData.act4_morale_crisis || {};
+            const chroView = document.getElementById('act4-chro-view');
+            const ceoView = document.getElementById('act4-morale-ceo-view');
+            const memberView = document.getElementById('act4-morale-member-view');
+            [chroView, ceoView, memberView].forEach(v => v.classList.add('hidden'));
+
+            if (myRole === 'CHRO' && !moraleData.chro_decision) {
+                 chroView.classList.remove('hidden');
+                 // Render CHRO choices
+            } else if (myRole === 'CEO') {
+                ceoView.classList.remove('hidden');
+                // Render CEO approval
+            } else {
+                memberView.classList.remove('hidden');
+                // Render waiting/result view
+            }
+            
+            // Lógica simplificada para avançar
+             if (currentUser.uid === teamData.creatorId) {
+                setTimeout(async () => {
+                    // Lógica para decidir se a votação de CEO acontece
+                    const avgSatisfaction = calculateAverageSatisfaction(teamData);
+                    const morale = teamData.metrics.morale;
+                    if (avgSatisfaction < 2.5 && morale < 30) {
+                         await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act4_ceo_vote', act4_ceo_vote: { votes: {} } });
+                    } else {
+                         await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act4_report' });
+                    }
+                }, 2000);
+             } else {
+                 memberView.innerHTML = `<p class="text-center text-xl">A crise de moral está sendo gerenciada pela diretoria. Aguardando...</p>`;
+             }
+        }
+
+        function renderAct4CeoVote(teamData) {
+            showScreen('act4-ceo-vote-screen');
+            const container = document.getElementById('act4-vote-container');
+            const myVote = teamData.act4_ceo_vote.votes[currentUser.uid];
+
+            if (myVote !== undefined) {
+                container.innerHTML = `<p class="text-xl">Seu voto foi computado. Aguardando os demais membros...</p>`;
+            } else {
+                container.innerHTML = `<p class="text-gray-300 mb-6">O CEO atual é <span class="font-bold">${teamData.players[teamData.ceoId].name}</span>. Você vota pela sua permanência?</p>
+                <div class="flex gap-4 justify-center">
+                    <button id="vote-keep-ceo" class="bg-green-600 hover:bg-green-700 font-bold py-3 px-6 rounded-lg">SIM, manter o CEO</button>
+                    <button id="vote-oust-ceo" class="bg-red-600 hover:bg-red-700 font-bold py-3 px-6 rounded-lg">NÃO, trocar o CEO</button>
+                </div>`;
+                document.getElementById('vote-keep-ceo').onclick = () => castCeoConfidenceVote(true);
+                document.getElementById('vote-oust-ceo').onclick = () => castCeoConfidenceVote(false);
+            }
+            
+            const allVoted = Object.keys(teamData.players).length === Object.keys(teamData.act4_ceo_vote.votes).length;
+            if(allVoted && currentUser.uid === teamData.creatorId) {
+                processCeoConfidenceVote(teamData);
+            }
+        }
+
+        async function castCeoConfidenceVote(decision) {
+            await updateDoc(doc(db, 'teams', currentTeamId), { [`act4_ceo_vote.votes.${currentUser.uid}`]: decision });
+        }
+
+        async function processCeoConfidenceVote(teamData) {
+            const votes = Object.values(teamData.act4_ceo_vote.votes);
+            const keepVotes = votes.filter(v => v).length;
+            const keepMajority = keepVotes > votes.length / 2;
+
+            if (keepMajority) {
+                 await updateDoc(doc(db, 'teams', currentTeamId), { 
+                     gameStage: 'act4_report',
+                     score: teamData.score + 200, // Bônus por estabilidade
+                     'metrics.morale': teamData.metrics.morale + 20
+                 });
+            } else {
+                // CEO é trocado - reiniciar eleição
+                await updateDoc(doc(db, 'teams', currentTeamId), {
+                    gameStage: 'ceo_election', // Volta para a eleição
+                    score: teamData.score - 200, // Penalidade por instabilidade
+                    'metrics.morale': teamData.metrics.morale - 30,
+                    ceoId: null, // Remove o CEO atual
+                    roles: {}, // Zera todos os cargos
+                    ceoElection: { votes: {}, attempt: 1 } // Prepara para nova votação
+                });
+            }
+        }
+
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO (ATO 5) ---
+        function renderAct5Funding(teamData) {
+            showScreen('act5-funding-screen');
+            // Lógica automática baseada em métricas
+            const { quality, reputation, profit } = teamData.metrics;
+            const success = (quality + reputation + (profit > 0 ? 50 : 0)) > 150; // Limiar de sucesso
+            const fundingAmount = 100000 + (teamData.score * 50);
+
+            const resultView = document.getElementById('act5-funding-result-view');
+            if (success) {
+                resultView.innerHTML = `<p class="text-2xl text-center text-green-400">Investimento Garantido!</p><p class="text-center mt-2">A empresa levantou R$ ${fundingAmount.toFixed(2)}!</p>`;
+            } else {
+                resultView.innerHTML = `<p class="text-2xl text-center text-red-400">Investimento Recusado.</p><p class="text-center mt-2">Os investidores não se convenceram. A empresa terá que continuar com os próprios recursos.</p>`;
+            }
+            resultView.classList.remove('hidden');
+
+            if(currentUser.uid === teamData.creatorId) {
+                setTimeout(async () => {
+                    let updates = { gameStage: 'act5_legal_crisis' };
+                    if(success) {
+                        updates['financials.budget'] = teamData.financials.budget + fundingAmount;
+                        updates['score'] = teamData.score + 300;
+                    } else {
+                        updates['score'] = teamData.score - 100;
+                    }
+                    await updateDoc(doc(db, 'teams', currentTeamId), updates);
+                }, 5000);
+            }
+        }
+
+        function renderAct5LegalCrisis(teamData) {
+             showScreen('act5-legal-crisis-screen');
+             const myRole = teamData.roles[currentUser.uid];
+             const ceoView = document.getElementById('act5-legal-ceo-view');
+             const memberView = document.getElementById('act5-legal-member-view');
+             const decision = teamData.act5_legal_crisis?.decision;
+
+             if(myRole === 'CEO' && !decision) {
+                ceoView.classList.remove('hidden');
+                memberView.classList.add('hidden');
+                let html = `<div class="bg-gray-700 p-6 rounded-lg text-center"><h3 class="text-xl font-semibold mb-4">Sua Missão (CEO): Decida como lidar com o processo.</h3><div class="space-y-4">`;
+                for(const key in act5_legalOptions) {
+                    const opt = act5_legalOptions[key];
+                     html += `<div class="p-4 bg-gray-800 rounded-lg">
+                        <h4 class="text-lg font-bold">${opt.title}</h4>
+                        <p class="text-sm text-gray-400 my-2">${opt.desc}</p>
+                        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg" onclick="window.processLegal('${key}')">Escolher esta opção</button>
+                     </div>`;
+                }
+                html += `</div></div>`;
+                ceoView.innerHTML = html;
+
+             } else {
+                 memberView.classList.remove('hidden');
+                 ceoView.classList.add('hidden');
+                 if(decision) {
+                    memberView.innerHTML = `<p class="text-center text-xl">O CEO decidiu: <span class="font-bold text-indigo-400">${act5_legalOptions[decision].title}</span>. Aguardando o resultado...</p>`;
+                 } else {
+                    memberView.innerHTML = `<p class="text-center text-xl">Aguardando a decisão do CEO sobre a crise legal...</p>`;
+                 }
+             }
+        }
+
+        window.processLegal = async (choice) => {
+            const option = act5_legalOptions[choice];
+            const updates = { 
+                'act5_legal_crisis.decision': choice,
+                score: currentTeamData.score + option.points,
+                'metrics.reputation': currentTeamData.metrics.reputation + option.reputation
+            };
+            if(choice === 'settle') {
+                 updates['financials.budget'] = currentTeamData.financials.budget - option.cost;
+                 updates['financials.expenses'] = currentTeamData.financials.expenses + option.cost;
+            } else { // Fight
+                 updates['financials.budget'] = currentTeamData.financials.budget - option.cost; // Custo inicial
+                 updates['financials.expenses'] = currentTeamData.financials.expenses + option.cost;
+                 const win = Math.random() > 0.5;
+                 if(!win) {
+                     updates['financials.budget'] -= 100000; // Penalidade extra
+                     updates['financials.expenses'] += 100000;
+                     updates['metrics.reputation'] -= 20;
+                 } else {
+                     updates['metrics.reputation'] += 20;
+                 }
+                 updates['act5_legal_crisis.outcome_win'] = win;
+            }
+            await updateDoc(doc(db, 'teams', currentTeamId), updates);
+            setTimeout(async () => {
+                if(currentUser.uid === currentTeamData.creatorId) await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act5_exit_strategy' });
+            }, 4000);
+        }
+
+        function renderAct5ExitStrategy(teamData) {
+            showScreen('act5-exit-strategy-screen');
+            const container = document.getElementById('act5-exit-vote-view');
+            const myVote = teamData.act5_exit_strategy?.votes?.[currentUser.uid];
+
+            if (myVote) {
+                container.innerHTML = `<p class="text-xl text-center">Seu voto foi registrado. Aguardando a decisão final da diretoria...</p>`;
+            } else {
+                let html = `<div class="space-y-4">`;
+                for(const key in act5_exitStrategies) {
+                    const opt = act5_exitStrategies[key];
+                    html += `<div class="p-4 bg-gray-700 rounded-lg border-2 border-transparent hover:border-indigo-500 transition cursor-pointer" onclick="window.castExitVote('${key}')">
+                        <h4 class="text-lg font-bold">${opt.title}</h4>
+                        <p class="text-sm text-gray-400">${opt.epilogue}</p>
+                    </div>`;
+                }
+                html += `</div>`;
+                container.innerHTML = html;
+            }
+
+            const allVoted = Object.keys(teamData.players).length === Object.keys(teamData.act5_exit_strategy?.votes || {}).length;
+            if(allVoted && currentUser.uid === teamData.creatorId) {
+                processExitVote(teamData);
+            }
+        }
+
+        window.castExitVote = async (choice) => {
+            await updateDoc(doc(db, 'teams', currentTeamId), { [`act5_exit_strategy.votes.${currentUser.uid}`]: choice });
+        }
+
+        async function processExitVote(teamData) {
+            const votes = Object.values(teamData.act5_exit_strategy.votes);
+            const voteCounts = votes.reduce((acc, vote) => { acc[vote] = (acc[vote] || 0) + 1; return acc; }, {});
+            let maxVotes = 0;
+            let finalChoice = 'bootstrap'; // Default
+            for (const choice in voteCounts) {
+                if (voteCounts[choice] > maxVotes) {
+                    maxVotes = voteCounts[choice];
+                    finalChoice = choice;
+                }
+            }
+
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                'act5_exit_strategy.final_decision': finalChoice,
+                gameStage: 'gameEnd'
+            });
+        }
+        
+        // --- TELA FINAL ---
+        function renderGameEnd(teamData) {
+            showScreen('game-end-screen');
+            const finalDecision = teamData.act5_exit_strategy.final_decision;
+            const epilogue = act5_exitStrategies[finalDecision].epilogue;
+            
+            document.getElementById('final-company-name').textContent = teamData.companyName;
+            document.getElementById('final-epilogue').innerHTML = `<p class="text-lg">${epilogue}</p><p class="mt-4 text-2xl font-bold text-indigo-400">Resultado: ${act5_exitStrategies[finalDecision].result}</p>`;
+            document.getElementById('final-game-report').innerHTML = generateFinalReportHTML(teamData);
+            renderRanking('final-ranking-container', 'gameEnd');
+
+            document.getElementById('play-again-button').onclick = () => {
+                 const confirmation = confirm("Tem certeza que deseja apagar esta equipe e começar de novo para todos? Esta ação não pode ser desfeita.");
+                 if(confirmation) {
+                    deleteDoc(doc(db, 'teams', currentTeamId));
+                 }
+            };
+        }
+
+        function generateFinalReportHTML(teamData) {
+            const { financials, metrics, score } = teamData;
+            return `<div class="bg-gray-800 p-4 rounded-lg space-y-4">
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                        <p class="text-gray-400">Pontuação Final</p>
+                        <p class="text-3xl font-bold text-indigo-400">${score}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400">Caixa Final</p>
+                        <p class="text-3xl font-bold ${financials.budget >= 0 ? 'text-green-400' : 'text-red-400'}">R$ ${financials.budget.toFixed(2)}</p>
+                    </div>
+                </div>
+                 <div class="bg-gray-900 p-4 rounded-lg space-y-3">
+                    <div class="space-y-1">
+                        <label>Qualidade do Produto</label>
+                        <div class="w-full bg-gray-600 rounded-full h-4"><div style="width:${metrics.quality}%" class="bg-blue-500 h-4 rounded-full"></div></div>
+                    </div>
+                    <div class="space-y-1">
+                        <label>Satisfação do Cliente</label>
+                        <div class="w-full bg-gray-600 rounded-full h-4"><div style="width:${metrics.satisfaction}%" class="bg-green-500 h-4 rounded-full"></div></div>
+                    </div>
+                    <div class="space-y-1">
+                        <label>Reputação da Marca</label>
+                        <div class="w-full bg-gray-600 rounded-full h-4"><div style="width:${metrics.reputation}%" class="bg-pink-500 h-4 rounded-full"></div></div>
+                    </div>
+                     <div class="space-y-1">
+                        <label>Moral da Equipe</label>
+                        <div class="w-full bg-gray-600 rounded-full h-4"><div style="width:${metrics.morale}%" class="bg-yellow-500 h-4 rounded-full"></div></div>
+                    </div>
+                </div>
+            </div>`;
         }
 
         // --- FUNÇÕES GERAIS ---
@@ -2070,16 +2692,16 @@
                     teams.push({ id: doc.id, name: data.companyName || `Equipe ${doc.id.substring(0,4)}`, score: data.score || 0 });
                 });
                 teams.sort((a, b) => b.score - a.score);
-                let rankingHtml = '<ol class="space-y-2">';
+                let rankingHtml = '<div><h3 class="text-xl font-semibold mb-4 text-center">Ranking Final</h3><ol class="space-y-2">';
                 if (teams.length === 0) {
                     rankingHtml += '<li class="text-center text-gray-500">Nenhuma equipe finalizou ainda.</li>';
                 } else {
                     teams.forEach((team, index) => {
                         const isMyTeam = team.id === currentTeamId;
-                        rankingHtml += `<li class="flex justify-between items-center p-2 rounded ${isMyTeam ? 'bg-indigo-600' : 'bg-gray-800'}"><span class="font-semibold">${index + 1}. ${team.name}</span><span class="font-bold text-lg">${team.score} pts</span></li>`;
+                        rankingHtml += `<li class="flex justify-between items-center p-2 rounded ${isMyTeam ? 'bg-indigo-600' : 'bg-gray-900'}"><span class="font-semibold">${index + 1}. ${team.name}</span><span class="font-bold text-lg">${team.score} pts</span></li>`;
                     });
                 }
-                rankingHtml += '</ol>';
+                rankingHtml += '</ol></div>';
                 rankingContainer.innerHTML = rankingHtml;
             } catch (error) {
                 console.error("Erro ao buscar ranking:", error);
@@ -2087,6 +2709,49 @@
             }
         }
         
+        function calculateAverageSatisfaction(teamData) {
+            let totalSatisfaction = 0;
+            let ratingCount = 0;
+            const satisfactionStages = ['ceoSatisfaction', 'roleSatisfaction', 'finalSatisfaction'];
+            satisfactionStages.forEach(stageKey => {
+                if(teamData[stageKey] && teamData[stageKey].ratings) {
+                    const ratings = Object.values(teamData[stageKey].ratings);
+                    ratings.forEach(r => {
+                        totalSatisfaction += r;
+                        ratingCount++;
+                    });
+                }
+            });
+            return ratingCount > 0 ? (totalSatisfaction / ratingCount) : 5;
+        }
+
+        function renderGenericReport(teamData, actNumber) {
+            showScreen(`act${actNumber}-final-report-screen`);
+            const container = document.getElementById(`report-content-act${actNumber}`);
+            container.innerHTML = `${generateFinalReportHTML(teamData)}
+            <div id="continue-to-act${actNumber + 1}-container" class="text-center mt-8"></div>`;
+
+            const continueContainer = document.getElementById(`continue-to-act${actNumber + 1}-container`);
+            if (currentUser.uid === teamData.creatorId) {
+                continueContainer.innerHTML = `<button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato ${actNumber+1}</button>`;
+                continueContainer.querySelector('button').onclick = async () => {
+                    let nextStage = '';
+                    let updates = {};
+                    if (actNumber === 3) {
+                       nextStage = 'act4_stagnation';
+                       updates = { act4_stagnation: {}, act4_morale_crisis: {}, act4_ceo_vote: {} };
+                    } else if (actNumber === 4) {
+                       nextStage = 'act5_funding';
+                       updates = { act5_funding: {}, act5_legal_crisis: {}, act5_exit_strategy: {} };
+                    }
+                    updates.gameStage = nextStage;
+                    await updateDoc(doc(db, 'teams', currentTeamId), updates);
+                };
+            } else {
+                 continueContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder iniciar o Ato ${actNumber+1}...</p>`;
+            }
+        }
+
         // --- PAINEL DO PROFESSOR ---
         document.getElementById('toggle-professor-controls').addEventListener('click', () => { document.getElementById('professor-panel').classList.toggle('hidden'); });
         let profAccess = false;
@@ -2098,22 +2763,23 @@
             } else { alert('Senha incorreta.'); }
         });
         document.getElementById('prof-reset-game').addEventListener('click', async () => {
-            if (!profAccess || !currentTeamId) return;
-            const confirmation = window.prompt("Para confirmar a DISSOLUÇÃO da equipe e reiniciar para todos, digite ZERAR em maiúsculas.");
+            if (!profAccess) return alert('Acesso negado.');
+            if (!currentTeamId) return alert('Nenhuma equipe ativa para zerar.');
+            
+            const confirmation = prompt("Para confirmar a DISSOLUÇÃO da equipe e reiniciar para todos, digite ZERAR em maiúsculas.");
             if (confirmation === 'ZERAR') {
                 try {
                     await deleteDoc(doc(db, 'teams', currentTeamId));
-                    alert("A equipe foi dissolvida. Todos voltarão para a tela inicial.");
-                    localStorage.removeItem('teamId');
-                    localStorage.removeItem('playerName');
-                    window.location.reload();
-                } catch (error) { console.error("Erro ao dissolver a equipe:", error); }
-            } else { alert("Operação cancelada."); }
+                    alert("A equipe foi dissolvida. A página será recarregada.");
+                } catch (error) { 
+                    console.error("Erro ao dissolver a equipe:", error);
+                    alert("Erro ao dissolver a equipe.");
+                }
+            } else { 
+                alert("Operação cancelada."); 
+            }
         });
-        document.getElementById('prof-toggle-score').addEventListener('click', () => alert("Funcionalidade em desenvolvimento."));
-
+        
     </script>
 </body>
 </html>
-
-
