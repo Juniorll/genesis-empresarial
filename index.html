@@ -1107,20 +1107,23 @@
                 assignedRolesList.appendChild(el);
             }
 
-            const myRating = teamData.roleSatisfaction.ratings[currentUser.uid];
+            const ratings = teamData.roleSatisfaction?.ratings || {}; // Safe access
+            const myRating = ratings[currentUser.uid];
             const inputContainer = document.getElementById('role-satisfaction-input-container');
             const waitingContainer = document.getElementById('role-satisfaction-waiting');
-            
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+
             if (currentUser.uid === teamData.ceoId) {
                 inputContainer.innerHTML = `<p class="text-center">Aguarde a avaliação da equipe.</p>`;
-                const allRated = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId).every(pId => teamData.roleSatisfaction.ratings[pId]);
-                 if(allRated) {
-                     const ratings = Object.values(teamData.roleSatisfaction.ratings);
-                     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                const allMembersRatedCheck = members.every(pId => ratings[pId] !== undefined);
+                
+                 if(allMembersRatedCheck && members.length > 0) {
+                     const memberRatings = Object.values(ratings);
+                     const avg = memberRatings.reduce((a, b) => a + b, 0) / memberRatings.length;
                      inputContainer.innerHTML += `<p class="text-xl mt-2">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
                  }
             } else {
-                 if (myRating) {
+                 if (myRating !== undefined) {
                      inputContainer.innerHTML = '';
                      inputContainer.classList.add('hidden');
                      waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
@@ -1139,8 +1142,7 @@
                  }
             }
             
-            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
-            const allMembersRated = members.every(pId => teamData.roleSatisfaction.ratings[pId]);
+            const allMembersRated = members.every(pId => ratings[pId] !== undefined);
             
             if (allMembersRated && currentUser.uid === teamData.creatorId) {
                 const budget = Object.keys(teamData.players).length * 4000;
@@ -2022,3 +2024,4 @@
     </script>
 </body>
 </html>
+
