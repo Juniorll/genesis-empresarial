@@ -1274,96 +1274,98 @@
             const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
             const allDirectorsRequested = directors.every(p => teamData.hiring.requests && teamData.hiring.requests[p.id]);
 
-            const ceoViewContainer = ceoView.querySelector('.bg-gray-700');
-            if (!ceoViewContainer) return;
+            let htmlContent = `<div class="bg-gray-700 p-6 rounded-lg max-w-4xl mx-auto">`;
 
             if (!allDirectorsRequested) {
-                 ceoViewContainer.innerHTML = `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
-                 return;
-            }
-            
-            ceoViewContainer.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
-                    <div class="text-right">
-                        <p class="text-gray-400 text-sm">Orçamento Disponível</p>
-                        <p class="text-2xl font-bold text-green-400" id="budget-display">R$ ${teamData.budget.toFixed(2)}</p>
+                 htmlContent += `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
+            } else {
+                htmlContent += `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
+                        <div class="text-right">
+                            <p class="text-gray-400 text-sm">Orçamento Disponível</p>
+                            <p class="text-2xl font-bold text-green-400" id="budget-display">R$ ${teamData.budget.toFixed(2)}</p>
+                        </div>
                     </div>
-                </div>
-                <p class="text-gray-400 mb-6">Abaixo estão as sugestões dos diretores. Você tem total liberdade para contratar quem julgar necessário, respeitando o orçamento.</p>
-                <h4 class="text-lg font-bold mb-3 text-indigo-300">Sugestões da Diretoria</h4>
-                <div id="director-suggestions-list" class="space-y-4 mb-6 max-h-48 overflow-y-auto pr-2"></div>
-                <h4 class="text-lg font-bold mb-3 text-indigo-300">Painel de Contratação do CEO</h4>
-                <div id="ceo-hiring-panel" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
-                <div class="mt-6 pt-4 border-t border-gray-600 flex justify-between items-center">
-                    <p>Custo Total: <span id="total-cost-display" class="font-bold">R$ 0,00</span></p>
-                    <button id="finalize-hiring-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Finalizar Contratações</button>
-                </div>
-            `;
+                    <p class="text-gray-400 mb-6">Abaixo estão as sugestões dos diretores. Você tem total liberdade para contratar quem julgar necessário, respeitando o orçamento.</p>
+                    <h4 class="text-lg font-bold mb-3 text-indigo-300">Sugestões da Diretoria</h4>
+                    <div id="director-suggestions-list" class="space-y-4 mb-6 max-h-48 overflow-y-auto pr-2"></div>
+                    <h4 class="text-lg font-bold mb-3 text-indigo-300">Painel de Contratação do CEO</h4>
+                    <div id="ceo-hiring-panel" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+                    <div class="mt-6 pt-4 border-t border-gray-600 flex justify-between items-center">
+                        <p>Custo Total: <span id="total-cost-display" class="font-bold">R$ 0,00</span></p>
+                        <button id="finalize-hiring-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Finalizar Contratações</button>
+                    </div>
+                `;
+            }
+            htmlContent += `</div>`;
+            ceoView.innerHTML = htmlContent;
 
-            const suggestionsList = document.getElementById('director-suggestions-list');
-            suggestionsList.innerHTML = '';
-            directors.forEach(director => {
-                const directorRoleKey = teamData.roles[director.id];
-                const requests = teamData.hiring.requests[director.id] || {};
-                if (Object.keys(requests).length === 0) return;
-                let directorSection = `<div class="bg-gray-800 p-3 rounded-lg"><p class="font-semibold">${director.name} (${directorRoles[directorRoleKey].title}) sugeriu:</p><ul class="list-disc list-inside text-sm text-gray-300 mt-1">`;
-                for (const hireId in requests) {
-                     const quantity = requests[hireId];
-                     const hireInfo = allPossibleHires.find(h => h.id === hireId);
-                     directorSection += `<li>${quantity}x ${hireInfo.name}</li>`;
+            if (allDirectorsRequested) {
+                const suggestionsList = document.getElementById('director-suggestions-list');
+                suggestionsList.innerHTML = '';
+                directors.forEach(director => {
+                    const directorRoleKey = teamData.roles[director.id];
+                    const requests = teamData.hiring.requests[director.id] || {};
+                    if (Object.keys(requests).length === 0) return;
+                    let directorSection = `<div class="bg-gray-800 p-3 rounded-lg"><p class="font-semibold">${director.name} (${directorRoles[directorRoleKey].title}) sugeriu:</p><ul class="list-disc list-inside text-sm text-gray-300 mt-1">`;
+                    for (const hireId in requests) {
+                         const quantity = requests[hireId];
+                         const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                         directorSection += `<li>${quantity}x ${hireInfo.name}</li>`;
+                    }
+                    directorSection += `</ul></div>`;
+                    suggestionsList.innerHTML += directorSection;
+                });
+                if (suggestionsList.innerHTML === '') { suggestionsList.innerHTML = '<p class="text-gray-400 text-sm">Nenhuma sugestão foi feita.</p>'; }
+
+                document.getElementById('ceo-hiring-panel').innerHTML = allPossibleHires.map(hire => `
+                    <div class="grid grid-cols-3 gap-2 items-center">
+                        <label for="ceo-hire-${hire.id}" class="col-span-2">${hire.name} <span class="text-xs text-gray-400">(R$ ${hireCosts[hire.id].toFixed(2)})</span></label>
+                        <input type="number" id="ceo-hire-${hire.id}" data-hire-id="${hire.id}" min="0" max="5" placeholder="0" class="form-input ceo-hire-input bg-gray-900 border-gray-600 text-white rounded w-full text-center">
+                    </div>`).join('');
+                
+                const numberInputs = document.querySelectorAll('.ceo-hire-input');
+                const totalCostDisplay = document.getElementById('total-cost-display');
+                const finalizeButton = document.getElementById('finalize-hiring-button');
+                
+                const updateCost = () => {
+                    let totalCost = 0;
+                    numberInputs.forEach(input => {
+                        const quantity = parseInt(input.value, 10) || 0;
+                        if (quantity > 0) totalCost += hireCosts[input.dataset.hireId] * quantity;
+                    });
+                    totalCostDisplay.textContent = `R$ ${totalCost.toFixed(2)}`;
+                    totalCostDisplay.classList.toggle('text-red-500', totalCost > teamData.budget);
+                    finalizeButton.disabled = totalCost > teamData.budget;
+                };
+                
+                numberInputs.forEach(input => input.addEventListener('input', updateCost));
+                updateCost();
+                
+                finalizeButton.onclick = async () => {
+                    const approvedHires = [];
+                    numberInputs.forEach(input => {
+                        const quantity = parseInt(input.value, 10) || 0;
+                        if (quantity > 0) approvedHires.push({ id: input.dataset.hireId, quantity: quantity });
+                    });
+                    
+                    let score = 0;
+                    const uniqueEssential = [...new Set(Object.values(directorNeeds).flatMap(n => n.essential))];
+                    uniqueEssential.forEach(essential => {
+                        if (approvedHires.some(h => h.id === essential)) score += 120;
+                    });
+                    
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'org_chart',
+                        finalHires: approvedHires,
+                        score: teamData.score + score,
+                        finalSatisfaction: { ratings: {} }
+                    });
                 }
-                directorSection += `</ul></div>`;
-                suggestionsList.innerHTML += directorSection;
-            });
-            if (suggestionsList.innerHTML === '') { suggestionsList.innerHTML = '<p class="text-gray-400 text-sm">Nenhuma sugestão foi feita.</p>'; }
-
-            document.getElementById('ceo-hiring-panel').innerHTML = allPossibleHires.map(hire => `
-                <div class="grid grid-cols-3 gap-2 items-center">
-                    <label for="ceo-hire-${hire.id}" class="col-span-2">${hire.name} <span class="text-xs text-gray-400">(R$ ${hireCosts[hire.id].toFixed(2)})</span></label>
-                    <input type="number" id="ceo-hire-${hire.id}" data-hire-id="${hire.id}" min="0" max="5" placeholder="0" class="form-input ceo-hire-input bg-gray-900 border-gray-600 text-white rounded w-full text-center">
-                </div>`).join('');
-            
-            const numberInputs = document.querySelectorAll('.ceo-hire-input');
-            const totalCostDisplay = document.getElementById('total-cost-display');
-            const finalizeButton = document.getElementById('finalize-hiring-button');
-            
-            const updateCost = () => {
-                let totalCost = 0;
-                numberInputs.forEach(input => {
-                    const quantity = parseInt(input.value, 10) || 0;
-                    if (quantity > 0) totalCost += hireCosts[input.dataset.hireId] * quantity;
-                });
-                totalCostDisplay.textContent = `R$ ${totalCost.toFixed(2)}`;
-                totalCostDisplay.classList.toggle('text-red-500', totalCost > teamData.budget);
-                finalizeButton.disabled = totalCost > teamData.budget;
-            };
-            
-            numberInputs.forEach(input => input.addEventListener('input', updateCost));
-            updateCost();
-            
-            finalizeButton.onclick = async () => {
-                const approvedHires = [];
-                numberInputs.forEach(input => {
-                    const quantity = parseInt(input.value, 10) || 0;
-                    if (quantity > 0) approvedHires.push({ id: input.dataset.hireId, quantity: quantity });
-                });
-                
-                let score = 0;
-                const uniqueEssential = [...new Set(Object.values(directorNeeds).flatMap(n => n.essential))];
-                uniqueEssential.forEach(essential => {
-                    if (approvedHires.some(h => h.id === essential)) score += 120;
-                });
-                
-                await updateDoc(doc(db, 'teams', currentTeamId), {
-                    gameStage: 'org_chart',
-                    finalHires: approvedHires,
-                    score: teamData.score + score,
-                    finalSatisfaction: { ratings: {} }
-                });
             }
         }
-        
+
         function renderOrgChart(teamData) {
             showScreen('org-chart-screen');
             const container = document.getElementById('org-chart-container');
@@ -1981,4 +1983,5 @@
     </script>
 </body>
 </html>
+
 
