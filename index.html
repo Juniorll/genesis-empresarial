@@ -1092,7 +1092,10 @@
             }
 
             const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
-            const allMembersRated = members.every(pId => teamData.ceoSatisfaction.ratings[pId]);
+            // CORREÇÃO: Adicionada verificação segura para o objeto 'ratings' antes de checar os votos.
+            // Isso previne erros que poderiam interromper o jogo e causar o travamento na tela seguinte.
+            const ratings = teamData.ceoSatisfaction?.ratings || {};
+            const allMembersRated = members.every(pId => ratings[pId] !== undefined);
             
             if (allMembersRated && currentUser.uid === teamData.creatorId) {
                 setTimeout(async () => {
@@ -2637,10 +2640,17 @@
             document.getElementById('final-game-report').innerHTML = generateFinalReportHTML(teamData);
             renderRanking('final-ranking-container', 'gameEnd');
 
+            // CORREÇÃO: O uso de 'confirm()' pode ser bloqueado em alguns navegadores/iframes.
+            // Substituído por 'prompt()' para uma confirmação mais robusta.
             document.getElementById('play-again-button').onclick = () => {
-                 const confirmation = confirm("Tem certeza que deseja apagar esta equipe e começar de novo para todos? Esta ação não pode ser desfeita.");
-                 if(confirmation) {
-                    deleteDoc(doc(db, 'teams', currentTeamId));
+                 const confirmation = prompt("Para APAGAR esta equipe e recomeçar, digite o nome da sua empresa: \"" + teamData.companyName + "\"");
+                 if (confirmation === teamData.companyName) {
+                    deleteDoc(doc(db, 'teams', currentTeamId)).catch(err => {
+                        console.error("Erro ao apagar equipe: ", err);
+                        alert("Não foi possível apagar a equipe.");
+                    });
+                 } else if (confirmation !== null) { // Evita alerta se o usuário clicar em "cancelar"
+                    alert("O nome não corresponde. A equipe não foi apagada.");
                  }
             };
         }
@@ -2783,3 +2793,4 @@
     </script>
 </body>
 </html>
+
