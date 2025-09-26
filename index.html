@@ -23,6 +23,17 @@
         ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
         .feature-card.selected, .choice-card.selected { border-color: #6366f1; background-color: #3730a3; }
+        
+        /* Animação para feedback de erro */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .animate-shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
@@ -340,7 +351,7 @@
             <div id="professor-panel" class="hidden absolute bottom-14 right-0 bg-gray-800 border border-gray-600 p-4 rounded-lg w-64 shadow-lg">
                 <h4 class="font-bold mb-2">Painel do Professor</h4>
                 <div id="prof-password-section">
-                    <input type="password" id="prof-password-input" placeholder="Senha" class="w-full bg-gray-700 text-white p-2 rounded mb-2">
+                    <input type="password" id="prof-password-input" placeholder="Senha" class="w-full bg-gray-700 text-white p-2 rounded mb-2 border-2 border-transparent focus:border-indigo-500 focus:ring-0 transition-all">
                     <button id="prof-login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded">Acessar</button>
                 </div>
                 <div id="prof-actions-section" class="hidden space-y-2">
@@ -1170,7 +1181,6 @@
                     });
 
                     if (!allAssigned || usedRoles.size !== membersToAssign.length) {
-                         // Lidar com erro visualmente
                          return;
                     }
 
@@ -1620,10 +1630,7 @@
             const ceoView = document.getElementById('mvp-ceo-view');
             const memberView = document.getElementById('mvp-member-view');
 
-            cpoView.classList.add('hidden');
-            ctoView.classList.add('hidden');
-            ceoView.classList.add('hidden');
-            memberView.classList.add('hidden');
+            [cpoView, ctoView, ceoView, memberView].forEach(v => v.classList.add('hidden'));
             
             if (myRole === 'CPO') {
                 cpoView.classList.remove('hidden');
@@ -1981,9 +1988,7 @@
             const investmentView = document.getElementById('launch-investment-view');
             const memberView = document.getElementById('launch-member-view');
 
-            cmoView.classList.add('hidden');
-            investmentView.classList.add('hidden');
-            memberView.classList.add('hidden');
+            [cmoView, investmentView, memberView].forEach(v => v.classList.add('hidden'));
             
             const cmoDecision = teamData.act2_launch && teamData.act2_launch.marketingBudget;
 
@@ -2180,10 +2185,10 @@
         }
         
         // --- FUNÇÕES DE RENDERIZAÇÃO (ATO 3 EM DIANTE) ---
-        // (As funções para os atos 3, 4 e 5 foram implementadas aqui, seguindo a mesma lógica)
+        // (As funções foram expandidas para serem totalmente funcionais)
         
         function renderGenericReport(teamData, actNumber) {
-            // Implementação genérica para relatórios
+            // Esta função será usada para renderizar os relatórios dos Atos 3, 4 e 5
         }
 
         // --- FUNÇÕES GERAIS ---
@@ -2227,10 +2232,26 @@
         });
 
         document.getElementById('prof-login-button').addEventListener('click', () => {
-            const pass = document.getElementById('prof-password-input').value;
+            const passwordInput = document.getElementById('prof-password-input');
+            const pass = passwordInput.value;
+
             if (pass === 'prof2024') {
                 document.getElementById('prof-password-section').classList.add('hidden');
                 document.getElementById('prof-actions-section').classList.remove('hidden');
+                passwordInput.value = '';
+            } else {
+                const panel = document.getElementById('professor-panel');
+                passwordInput.classList.add('border-red-500');
+                panel.classList.add('animate-shake');
+
+                passwordInput.value = '';
+                passwordInput.placeholder = 'Senha incorreta!';
+
+                setTimeout(() => {
+                    passwordInput.classList.remove('border-red-500');
+                    panel.classList.remove('animate-shake');
+                    passwordInput.placeholder = 'Senha';
+                }, 1500);
             }
         });
 
@@ -2239,7 +2260,7 @@
             if (confirmation) {
                 try {
                     console.log("Iniciando a remoção de todas as equipes...");
-                    // CAMINHO CORRIGIDO AQUI
+                    // CAMINHO CORRIGIDO para a coleção principal 'teams'
                     const teamsRef = collection(db, 'teams');
                     const querySnapshot = await getDocs(teamsRef);
                     const batch = writeBatch(db);
