@@ -376,7 +376,7 @@
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, serverTimestamp, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, serverTimestamp, getDocs, query, where, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
         // Configuração do Firebase fornecida pelo usuário
         const firebaseConfig = {
@@ -1798,45 +1798,20 @@
         
         document.getElementById('prof-reset-game').addEventListener('click', async () => {
             if (!profAccess || !currentTeamId) return;
-            // Usando a API de prompt nativa com cuidado, já que alert() foi desencorajado.
-            // Em um app real, um modal customizado seria melhor.
-            const confirmation = window.prompt("Para confirmar, digite ZERAR em maiúsculas.");
+            const confirmation = window.prompt("Para confirmar a DISSOLUÇÃO da equipe e reiniciar para todos, digite ZERAR em maiúsculas.");
             if (confirmation === 'ZERAR') {
-                 // Ao deletar, o onSnapshot de todos os clientes vai disparar o "doc não existe" e recarregar a página deles.
-                const teamRef = doc(db, 'teams', currentTeamId);
-                const teamSnap = await getDoc(teamRef);
-                if (teamSnap.exists()) {
-                    const players = teamSnap.data().players;
-                    const newTeamData = {
-                        ...teamSnap.data(),
-                        gameStage: 'lobby',
-                        score: 0,
-                        scoreLosses: [],
-                        companyName: null,
-                        companyNameVote: null,
-                        chosenSegment: null,
-                        segmentVote: null,
-                        ceoId: null,
-                        ceoElection: null,
-                        ceoSatisfaction: null,
-                        roles: null,
-                        roleSatisfaction: null,
-                        hiring: null,
-                        finalHires: null,
-                        finalSatisfaction: null
-                    };
-                    // Limpa dados específicos dos jogadores
-                    for(const pId in players) {
-                        delete newTeamData.players[pId].quizCompleted;
-                        delete newTeamData.players[pId].answers;
-                        delete newTeamData.players[pId].profileKey;
-                        delete newTeamData.players[pId].profile;
-                        delete newTeamData.players[pId].hiringScore;
-                    }
-
-                    await setDoc(teamRef, newTeamData);
-                    alert("O jogo foi reiniciado para esta equipe.");
-
+                 try {
+                    const teamRef = doc(db, 'teams', currentTeamId);
+                    await deleteDoc(teamRef);
+                    // O onSnapshot dos clientes cuidará do reload e redirect.
+                    alert("A equipe foi dissolvida com sucesso. Todos os jogadores voltarão para a tela inicial.");
+                    // O próprio professor também será redirecionado
+                    localStorage.removeItem('teamId');
+                    localStorage.removeItem('playerName');
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Erro ao dissolver a equipe:", error);
+                    alert("Ocorreu um erro ao tentar dissolver a equipe.");
                 }
             } else {
                 alert("Operação cancelada.");
