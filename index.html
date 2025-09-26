@@ -286,21 +286,7 @@
             <!-- Visão do CEO -->
             <div id="hiring-ceo-view" class="hidden">
                  <div class="bg-gray-700 p-6 rounded-lg max-w-4xl mx-auto">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
-                        <div class="text-right">
-                            <p class="text-gray-400 text-sm">Orçamento Disponível</p>
-                            <p class="text-2xl font-bold text-green-400" id="budget-display"></p>
-                        </div>
-                    </div>
-                    <p class="text-gray-400 mb-6">Analise as solicitações dos diretores e aprove as contratações que cabem no orçamento e são estratégicas para a empresa.</p>
-                    <div id="ceo-hiring-approval-list" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                        <!-- Lista de solicitações para aprovação do CEO -->
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-gray-600 flex justify-between items-center">
-                         <p>Custo Total: <span id="total-cost-display" class="font-bold">R$ 0,00</span></p>
-                         <button id="finalize-hiring-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Finalizar Contratações</button>
-                    </div>
+                    <!-- Conteúdo dinâmico injetado por renderHiringCeoView -->
                  </div>
             </div>
         </div>
@@ -1441,12 +1427,11 @@
                     }
                 });
                 
-                // Pontuação
                 const essentialHires = directorNeeds[myRoleKey].essential;
                 let score = 0;
                 essentialHires.forEach(essential => {
                     if (selectedHires[essential] && selectedHires[essential] > 0) {
-                        score += 100; // Acertou o essencial
+                        score += 100;
                     }
                 });
                 
@@ -1455,20 +1440,21 @@
                     [`players.${currentUser.uid}.hiringScore`]: score
                 });
                 
-                 // Verificar se todos os diretores solicitaram
-                const updatedTeamData = (await getDoc(doc(db, 'teams', currentTeamId))).data();
-                const allDirectorsRequested = Object.keys(updatedTeamData.players)
-                    .filter(pId => pId !== updatedTeamData.ceoId)
-                    .every(pId => updatedTeamData.hiring.requests[pId]);
+                const freshTeamData = (await getDoc(doc(db, 'teams', currentTeamId))).data();
+                const allDirectors = Object.keys(freshTeamData.players).filter(pId => pId !== freshTeamData.ceoId);
+                const allDirectorsRequested = allDirectors.every(pId => freshTeamData.hiring.requests[pId]);
 
-                if(allDirectorsRequested && currentUser.uid === teamData.creatorId) {
-                    let totalHiringScore = 0;
-                    Object.values(updatedTeamData.players).forEach(p => {
-                        if (p.hiringScore) totalHiringScore += p.hiringScore;
-                    });
-                     await updateDoc(doc(db, 'teams', currentTeamId), {
-                         score: updatedTeamData.score + totalHiringScore
-                     });
+                if(allDirectorsRequested) {
+                    if (!freshTeamData.hiring.directorScoresTallied) {
+                        let totalHiringScore = 0;
+                        Object.values(freshTeamData.players).forEach(p => {
+                            if (p.hiringScore) totalHiringScore += p.hiringScore;
+                        });
+                         await updateDoc(doc(db, 'teams', currentTeamId), {
+                             score: freshTeamData.score + totalHiringScore,
+                             'hiring.directorScoresTallied': true
+                         });
+                    }
                 }
             };
         }
@@ -1477,88 +1463,114 @@
             const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
             const allDirectorsRequested = directors.every(p => teamData.hiring.requests && teamData.hiring.requests[p.id]);
 
+            const ceoViewContainer = document.getElementById('hiring-ceo-view').querySelector('.bg-gray-700');
+            if (!ceoViewContainer) return;
+
             if (!allDirectorsRequested) {
-                 document.getElementById('hiring-ceo-view').innerHTML = `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
+                 ceoViewContainer.innerHTML = `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
                  return;
             }
             
-            document.getElementById('budget-display').textContent = `R$ ${teamData.budget.toFixed(2)}`;
-            const approvalList = document.getElementById('ceo-hiring-approval-list');
-            approvalList.innerHTML = '';
+            ceoViewContainer.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
+                    <div class="text-right">
+                        <p class="text-gray-400 text-sm">Orçamento Disponível</p>
+                        <p class="text-2xl font-bold text-green-400" id="budget-display">R$ ${teamData.budget.toFixed(2)}</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-6">Abaixo estão as sugestões dos diretores. Você tem total liberdade para contratar quem julgar necessário, respeitando o orçamento.</p>
+                
+                <h4 class="text-lg font-bold mb-3 text-indigo-300">Sugestões da Diretoria</h4>
+                <div id="director-suggestions-list" class="space-y-4 mb-6 max-h-48 overflow-y-auto pr-2"></div>
 
+                <h4 class="text-lg font-bold mb-3 text-indigo-300">Painel de Contratação do CEO</h4>
+                <div id="ceo-hiring-panel" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+
+                <div class="mt-6 pt-4 border-t border-gray-600 flex justify-between items-center">
+                    <p>Custo Total: <span id="total-cost-display" class="font-bold">R$ 0,00</span></p>
+                    <button id="finalize-hiring-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Finalizar Contratações</button>
+                </div>
+            `;
+
+            const suggestionsList = document.getElementById('director-suggestions-list');
+            suggestionsList.innerHTML = '';
             for (const director of directors) {
                 const directorRoleKey = teamData.roles[director.id];
                 const requests = teamData.hiring.requests[director.id] || {};
-                
                 if (Object.keys(requests).length === 0) continue;
                 
-                let directorSection = `
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <h4 class="font-bold">${director.name} (${directorRoles[directorRoleKey].title}) solicitou:</h4>
-                        <div class="mt-2 space-y-2">`;
-                
+                let directorSection = `<div class="bg-gray-800 p-3 rounded-lg"><p class="font-semibold">${director.name} (${directorRoles[directorRoleKey].title}) sugeriu:</p><ul class="list-disc list-inside text-sm text-gray-300 mt-1">`;
                 for (const hireId in requests) {
                      const quantity = requests[hireId];
                      const hireInfo = allPossibleHires.find(h => h.id === hireId);
-                     const totalCost = hireCosts[hireId] * quantity;
-                     directorSection += `
-                        <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-700 text-white">
-                            <input type="checkbox" data-hire-id="${hireId}" data-quantity="${quantity}" data-cost="${totalCost}" class="form-checkbox ceo-hire-checkbox bg-gray-800 border-gray-600 text-indigo-500 rounded focus:ring-indigo-500 w-5 h-5">
-                            <span>${quantity}x ${hireInfo.name} (Custo Total: R$ ${totalCost.toFixed(2)})</span>
-                        </label>
-                     `;
+                     directorSection += `<li>${quantity}x ${hireInfo.name}</li>`;
                 }
-                
-                directorSection += `</div></div>`;
-                approvalList.innerHTML += directorSection;
+                directorSection += `</ul></div>`;
+                suggestionsList.innerHTML += directorSection;
             }
+             if (suggestionsList.innerHTML === '') {
+                suggestionsList.innerHTML = '<p class="text-gray-400 text-sm">Nenhuma sugestão foi feita pelos diretores.</p>';
+            }
+
+            const hiringPanel = document.getElementById('ceo-hiring-panel');
+            allPossibleHires.forEach(hire => {
+                hiringPanel.innerHTML += `
+                    <div class="grid grid-cols-3 gap-2 items-center">
+                        <label for="ceo-hire-${hire.id}" class="col-span-2">
+                            ${hire.name} <span class="text-xs text-gray-400">(R$ ${hireCosts[hire.id].toFixed(2)})</span>
+                        </label>
+                        <input type="number" id="ceo-hire-${hire.id}" data-hire-id="${hire.id}" min="0" max="5" placeholder="0" 
+                               class="form-input ceo-hire-input bg-gray-900 border-gray-600 text-white rounded w-full text-center">
+                    </div>
+                `;
+            });
             
-            // Lógica de cálculo de custo
-            const checkboxes = document.querySelectorAll('.ceo-hire-checkbox');
+            const numberInputs = document.querySelectorAll('.ceo-hire-input');
             const totalCostDisplay = document.getElementById('total-cost-display');
             const finalizeButton = document.getElementById('finalize-hiring-button');
             
             function updateCost() {
                 let totalCost = 0;
-                checkboxes.forEach(cb => {
-                    if (cb.checked) {
-                        totalCost += parseFloat(cb.dataset.cost);
+                numberInputs.forEach(input => {
+                    const quantity = parseInt(input.value, 10) || 0;
+                    if (quantity > 0) {
+                        const hireId = input.dataset.hireId;
+                        totalCost += hireCosts[hireId] * quantity;
                     }
                 });
                 totalCostDisplay.textContent = `R$ ${totalCost.toFixed(2)}`;
                 if (totalCost > teamData.budget) {
                     totalCostDisplay.classList.add('text-red-500');
-                    totalCostDisplay.classList.remove('text-white');
                     finalizeButton.disabled = true;
                 } else {
                     totalCostDisplay.classList.remove('text-red-500');
-                    totalCostDisplay.classList.add('text-white');
                     finalizeButton.disabled = false;
                 }
             }
             
-            checkboxes.forEach(cb => cb.addEventListener('change', updateCost));
+            numberInputs.forEach(input => input.addEventListener('input', updateCost));
             updateCost();
             
             finalizeButton.onclick = async () => {
                 const approvedHires = [];
-                checkboxes.forEach(cb => {
-                    if (cb.checked) {
+                numberInputs.forEach(input => {
+                    const quantity = parseInt(input.value, 10) || 0;
+                    if (quantity > 0) {
                         approvedHires.push({
-                            id: cb.dataset.hireId,
-                            quantity: parseInt(cb.dataset.quantity)
+                            id: input.dataset.hireId,
+                            quantity: quantity
                         });
                     }
                 });
                 
-                // Pontuação
                 let score = 0;
                 const allEssential = Object.values(directorNeeds).flatMap(n => n.essential);
                 const uniqueEssential = [...new Set(allEssential)];
                 
                 uniqueEssential.forEach(essential => {
                     if (approvedHires.some(h => h.id === essential)) {
-                        score += 120; // Contratou quem era essencial
+                        score += 120;
                     }
                 });
                 
