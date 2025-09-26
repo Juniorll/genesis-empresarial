@@ -141,10 +141,41 @@
                 <!-- Botão para o criador da equipe -->
             </div>
         </div>
+        
+        <!-- Tela de Votação do Nome da Empresa -->
+        <div id="company-name-screen" class="screen">
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 2: A Identidade da Empresa</h2>
+            <p class="text-center text-gray-400 mb-8">Toda grande empresa precisa de um nome. Primeiro, todos devem sugerir um nome. Depois, a equipe votará no melhor.</p>
+            
+            <!-- Fase de Sugestão -->
+            <div id="name-suggestion-phase">
+                <div class="max-w-md mx-auto">
+                    <h3 class="text-xl font-semibold text-center mb-4">Sugira um nome para a empresa:</h3>
+                    <input type="text" id="company-name-suggestion-input" placeholder="Ex: TecnoSoluções, InovaTech, etc." class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white mb-4">
+                    <button id="submit-name-suggestion-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg">Enviar Sugestão</button>
+                </div>
+                <div class="text-center mt-4">
+                    <p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p>
+                </div>
+            </div>
+
+            <!-- Fase de Votação -->
+            <div id="name-voting-phase" class="hidden">
+                <h3 class="text-xl font-semibold text-center mb-4">Votem no melhor nome:</h3>
+                <div id="name-voting-options-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                    <!-- Opções de nome para votar -->
+                </div>
+                <div id="name-vote-status" class="mt-6 text-center">
+                    <p class="text-lg">Aguardando votos de: <span id="name-waiting-for-players"></span></p>
+                </div>
+                <div id="name-vote-result" class="mt-6 text-center hidden"></div>
+            </div>
+        </div>
+
 
         <!-- Tela de Votação do Segmento de Empresa -->
         <div id="segment-vote-screen" class="screen">
-            <h2 class="text-3xl font-bold text-center mb-2">Etapa 2: O Mercado de Atuação</h2>
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 3: O Mercado de Atuação</h2>
             <p class="text-center text-gray-400 mb-8">A equipe deve escolher um segmento de tecnologia para a nova empresa. Leiam com atenção e votem!</p>
             <div id="segment-options-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Opções de segmento serão inseridas aqui -->
@@ -157,7 +188,7 @@
         
         <!-- Tela de Eleição do CEO -->
         <div id="ceo-election-screen" class="screen">
-            <h2 class="text-3xl font-bold text-center mb-2">Etapa 3: Liderança</h2>
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 4: Liderança</h2>
             <p class="text-center text-gray-400 mb-8">É hora de eleger o CEO da empresa. A votação é secreta. Escolha quem você acredita ser o mais preparado para liderar.</p>
             <div id="ceo-options-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
                 <!-- Opções de CEO serão inseridas aqui -->
@@ -192,7 +223,7 @@
         
         <!-- Tela de Atribuição de Cargos (Visão do CEO) -->
         <div id="role-assignment-screen" class="screen">
-            <h2 class="text-3xl font-bold text-center mb-2">Etapa 4: Montando a Diretoria</h2>
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 5: Montando a Diretoria</h2>
             <p class="text-center text-gray-400 mb-8">CEO, sua primeira missão é definir os cargos dos diretores. Analise o perfil de cada um e atribua as funções.</p>
             <div id="role-assignment-ceo-view" class="max-w-4xl mx-auto">
                 <!-- Tabela de atribuição de cargos -->
@@ -234,15 +265,15 @@
 
         <!-- Tela de Contratação Inicial -->
         <div id="hiring-screen" class="screen">
-            <h2 class="text-3xl font-bold text-center mb-2">Etapa 5: Expansão Inicial</h2>
+            <h2 class="text-3xl font-bold text-center mb-2">Etapa 6: Expansão Inicial</h2>
             <p class="text-center text-gray-400 mb-8">Cada diretor deve solicitar as contratações que julga essenciais para sua área. O CEO tomará a decisão final com base no orçamento.</p>
             
             <!-- Visão dos Diretores -->
             <div id="hiring-director-view">
-                <div class="bg-gray-700 p-6 rounded-lg max-w-3xl mx-auto">
+                <div class="bg-gray-700 p-6 rounded-lg max-w-4xl mx-auto">
                     <h3 class="text-xl font-semibold mb-2">Sua Área: <span id="director-role-title" class="text-indigo-400"></span></h3>
                     <p class="text-gray-400 mb-4" id="director-needs-description"></p>
-                    <div id="hiring-positions-list" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto pr-2">
+                    <div id="hiring-positions-list" class="space-y-2 max-h-80 overflow-y-auto pr-2">
                         <!-- Lista de cargos para contratar -->
                     </div>
                     <button id="submit-hiring-requests-button" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">Enviar Solicitações</button>
@@ -304,19 +335,27 @@
         <div id="final-report-screen" class="screen">
             <h2 class="text-3xl font-bold text-center mb-2 brand-gradient">Fim do Ato 1</h2>
             <p class="text-center text-gray-400 mb-8">Confira o desempenho da sua equipe nesta primeira fase.</p>
-            <div class="max-w-3xl mx-auto bg-gray-700 p-6 rounded-lg">
-                <div class="text-center mb-6">
-                    <p class="text-lg text-gray-300">Pontuação Final da Equipe</p>
-                    <p class="text-6xl font-bold text-indigo-400" id="final-score-display"></p>
-                    <p class="text-gray-400">de <span id="max-score-display"></span> pontos possíveis</p>
+            <div class="max-w-4xl mx-auto grid lg:grid-cols-2 gap-8">
+                <div class="bg-gray-700 p-6 rounded-lg">
+                    <div class="text-center mb-6">
+                        <p class="text-lg text-gray-300">Pontuação Final da Equipe</p>
+                        <p class="text-6xl font-bold text-indigo-400" id="final-score-display"></p>
+                        <p class="text-gray-400">de <span id="max-score-display"></span> pontos possíveis</p>
+                    </div>
+                     <div id="ceo-satisfaction-report" class="text-center mb-8 p-4 bg-gray-800 rounded-lg">
+                        <p class="text-lg text-gray-300">Satisfação Média com o CEO</p>
+                        <p class="text-4xl font-bold text-pink-400" id="ceo-final-satisfaction-avg"></p>
+                     </div>
+                    <h3 class="text-xl font-semibold mb-4">Análise de Desempenho:</h3>
+                    <div id="score-losses-container" class="space-y-3">
+                        <!-- Detalhes das perdas de pontos -->
+                    </div>
                 </div>
-                 <div id="ceo-satisfaction-report" class="text-center mb-8 p-4 bg-gray-800 rounded-lg">
-                    <p class="text-lg text-gray-300">Satisfação Média com o CEO</p>
-                    <p class="text-4xl font-bold text-pink-400" id="ceo-final-satisfaction-avg"></p>
-                 </div>
-                <h3 class="text-xl font-semibold mb-4">Análise de Desempenho:</h3>
-                <div id="score-losses-container" class="space-y-3">
-                    <!-- Detalhes das perdas de pontos -->
+                <div class="bg-gray-700 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-center">Ranking de Empresas</h3>
+                    <div id="ranking-container" class="space-y-2">
+                        <p class="text-center text-gray-400">Carregando ranking...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -346,7 +385,7 @@
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, serverTimestamp, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
         // Configuração do Firebase fornecida pelo usuário
         const firebaseConfig = {
@@ -440,12 +479,12 @@
         };
 
         const allPossibleHires = [
-            { id: 'dev_front', name: 'Dev Front-End', area: 'CTO' }, { id: 'dev_back', name: 'Dev Back-End', area: 'CTO' }, { id: 'devops', name: 'DevOps', area: 'CTO' }, { id: 'qa', name: 'Analista de QA', area: 'CTO' },
-            { id: 'social_media', name: 'Analista de Mídias Sociais', area: 'CMO' }, { id: 'seo', name: 'Especialista em SEO', area: 'CMO' }, { id: 'paid_traffic', name: 'Gestor de Tráfego Pago', area: 'CMO' }, { id: 'content', name: 'Produtor de Conteúdo', area: 'CMO' },
-            { id: 'support_l1', name: 'Suporte Nível 1', area: 'COO' }, { id: 'support_l2', name: 'Suporte Nível 2', area: 'COO' }, { id: 'success', name: 'Customer Success', area: 'COO' }, { id: 'process', name: 'Analista de Processos', area: 'COO' },
-            { id: 'ux_designer', name: 'UX Designer', area: 'CPO' }, { id: 'ui_designer', name: 'UI Designer', area: 'CPO' }, { id: 'product_owner', name: 'Product Owner', area: 'CPO' }, { id: 'data_analyst', name: 'Analista de Dados', area: 'CPO' },
-            { id: 'recruiter', name: 'Recrutador(a)', area: 'CHRO' }, { id: 'dp', name: 'Analista de DP', area: 'CHRO' }, { id: 'culture', name: 'Analista de Cultura', area: 'CHRO' },
-            { id: 'sales_sdr', name: 'Vendedor (SDR)', area: 'CMO' }, { id: 'sales_closer', name: 'Vendedor (Closer)', area: 'CMO' },
+            { id: 'dev_front', name: 'Dev Front-End', area: 'Tecnologia' }, { id: 'dev_back', name: 'Dev Back-End', area: 'Tecnologia' }, { id: 'devops', name: 'DevOps', area: 'Tecnologia' }, { id: 'qa', name: 'Analista de QA', area: 'Tecnologia' },
+            { id: 'social_media', name: 'Analista de Mídias Sociais', area: 'Marketing' }, { id: 'seo', name: 'Especialista em SEO', area: 'Marketing' }, { id: 'paid_traffic', name: 'Gestor de Tráfego Pago', area: 'Marketing' }, { id: 'content', name: 'Produtor de Conteúdo', area: 'Marketing' },
+            { id: 'support_l1', name: 'Suporte Nível 1', area: 'Operações' }, { id: 'support_l2', name: 'Suporte Nível 2', area: 'Operações' }, { id: 'success', name: 'Customer Success', area: 'Operações' }, { id: 'process', name: 'Analista de Processos', area: 'Operações' },
+            { id: 'ux_designer', name: 'UX Designer', area: 'Produto' }, { id: 'ui_designer', name: 'UI Designer', area: 'Produto' }, { id: 'product_owner', name: 'Product Owner', area: 'Produto' }, { id: 'data_analyst', name: 'Analista de Dados', area: 'Produto' },
+            { id: 'recruiter', name: 'Recrutador(a)', area: 'RH' }, { id: 'dp', name: 'Analista de DP', area: 'RH' }, { id: 'culture', name: 'Analista de Cultura', area: 'RH' },
+            { id: 'sales_sdr', name: 'Vendedor (SDR)', area: 'Vendas' }, { id: 'sales_closer', name: 'Vendedor (Closer)', area: 'Vendas' },
         ];
 
         const hireCosts = {
@@ -458,11 +497,11 @@
         };
 
         const directorNeeds = {
-            CTO: { desc: "Sua missão é construir um produto robusto e escalável. Sem um bom time técnico, a empresa não sai do papel.", essential: ['dev_front', 'dev_back'] },
-            CMO: { desc: "Sua missão é trazer os primeiros clientes. Sem marketing e vendas, o melhor produto do mundo não se vende sozinho.", essential: ['paid_traffic', 'sales_sdr'] },
-            COO: { desc: "Sua missão é garantir que os clientes fiquem satisfeitos. Um mau atendimento pode destruir a reputação da empresa.", essential: ['support_l1', 'success'] },
-            CPO: { desc: "Sua missão é garantir que o produto resolva um problema real. Construir a coisa errada é o caminho mais rápido para o fracasso.", essential: ['ux_designer', 'data_analyst'] },
-            CHRO: { desc: "Sua missão é montar a equipe certa. Contratar as pessoas erradas nos cargos-chave pode ser fatal para uma startup.", essential: ['recruiter'] }
+            CTO: { desc: "Sua missão é construir um produto robusto, escalável e seguro. A tecnologia é a espinha dorsal do nosso negócio. Uma falha aqui pode comprometer tudo. Pense nas competências essenciais para lançar a primeira versão (MVP) e sustentá-la.", essential: ['dev_front', 'dev_back'] },
+            CMO: { desc: "Sua missão é gerar demanda e trazer os primeiros clientes. Sem marketing e vendas, o melhor produto do mundo não se vende sozinho. Você precisa criar a máquina de aquisição de clientes. Quais peças são indispensáveis para começar a gerar tração?", essential: ['paid_traffic', 'sales_sdr'] },
+            COO: { desc: "Sua missão é garantir que a entrega seja perfeita e os clientes fiquem satisfeitos, transformando-os em fãs. Um mau atendimento pode destruir a reputação da empresa no início. Quais funções são críticas para garantir uma experiência de cliente memorável?", essential: ['support_l1', 'success'] },
+            CPO: { desc: "Sua missão é ser a voz do cliente e garantir que o produto resolva um problema real do mercado. Construir a coisa errada é o caminho mais rápido para o fracasso. Que profissionais você precisa para descobrir as dores dos usuários e desenhar a solução certa?", essential: ['ux_designer', 'data_analyst'] },
+            CHRO: { desc: "Sua missão é construir uma cultura forte e montar a equipe certa. Contratar as pessoas erradas nos cargos-chave pode ser fatal para uma startup. Qual a primeira e mais crucial contratação para começar a estruturar o time dos sonhos?", essential: ['recruiter'] }
         };
 
         // --- FUNÇÕES AUXILIARES ---
@@ -606,7 +645,7 @@
             if (!teamData.players[currentUser.uid]) {
                 // Se foi removido ou houve um erro, volta para a tela de seleção
                 console.warn("Jogador não encontrado nos dados da equipe. Retornando...");
-                unsubscribeFromTeam();
+                if (unsubscribeFromTeam) unsubscribeFromTeam();
                 localStorage.removeItem('teamId');
                 showScreen('team-select-screen');
                 return;
@@ -623,6 +662,9 @@
                     break;
                 case 'profile_results':
                      renderProfileResults(teamData);
+                    break;
+                case 'company_name_vote':
+                    renderCompanyNameVote(teamData);
                     break;
                 case 'segment_vote':
                     renderSegmentVote(teamData);
@@ -792,14 +834,132 @@
                 document.getElementById('profile-waiting-container').classList.add('hidden');
                 document.getElementById('profile-continue-container').innerHTML = `
                     <p class="text-lg text-gray-400 mb-4">Todos concluíram o teste. Quando estiverem prontos, avancem para a próxima etapa.</p>
-                    <button id="continue-to-segments-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Escolher Segmento da Empresa</button>
+                    <button id="continue-to-naming-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Definir Nome da Empresa</button>
                 `;
-                document.getElementById('continue-to-segments-button').onclick = async () => {
-                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'segment_vote', segmentVote: { votes: {}, attempt: 1 } });
+                document.getElementById('continue-to-naming-button').onclick = async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'company_name_vote', companyNameVote: { suggestions: {}, votes: {}, attempt: 1 } });
                 };
             } else {
                  document.getElementById('profile-waiting-container').classList.remove('hidden');
                  document.getElementById('profile-continue-container').innerHTML = '';
+            }
+        }
+        
+        function renderCompanyNameVote(teamData) {
+            showScreen('company-name-screen');
+            const me = teamData.players[currentUser.uid];
+            const suggestions = teamData.companyNameVote.suggestions || {};
+            const allPlayers = Object.values(teamData.players);
+            
+            const suggestionPhase = document.getElementById('name-suggestion-phase');
+            const votingPhase = document.getElementById('name-voting-phase');
+
+            // Checa se todos já sugeriram
+            const allSuggested = allPlayers.every(p => suggestions[p.id]);
+
+            if (!allSuggested) {
+                suggestionPhase.classList.remove('hidden');
+                votingPhase.classList.add('hidden');
+                
+                const mySuggestion = suggestions[currentUser.uid];
+                if (mySuggestion) {
+                    suggestionPhase.innerHTML = `<p class="text-center text-xl">Sua sugestão foi enviada! Aguardando os demais...</p>`;
+                } else {
+                     document.getElementById('submit-name-suggestion-button').onclick = async () => {
+                        const name = document.getElementById('company-name-suggestion-input').value.trim();
+                        if (name) {
+                            await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.suggestions.${currentUser.uid}`]: name });
+                        } else {
+                            alert("Por favor, sugira um nome.");
+                        }
+                    };
+                }
+                const waitingFor = allPlayers.filter(p => !suggestions[p.id]).map(p => p.name).join(', ');
+                document.getElementById('name-suggestion-waiting-for').textContent = waitingFor;
+
+            } else {
+                // Fase de votação
+                suggestionPhase.classList.add('hidden');
+                votingPhase.classList.remove('hidden');
+                
+                const myVote = teamData.companyNameVote.votes[currentUser.uid];
+                const optionsContainer = document.getElementById('name-voting-options-container');
+                optionsContainer.innerHTML = '';
+
+                for (const playerId in suggestions) {
+                    const name = suggestions[playerId];
+                    const suggesterName = teamData.players[playerId].name;
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-lg border-2 transition text-center ${myVote === name ? 'bg-indigo-900 border-indigo-500' : 'bg-gray-700 border-gray-600 hover:border-indigo-500 cursor-pointer'}`;
+                    card.innerHTML = `
+                        <p class="font-bold text-lg">${name}</p>
+                        <p class="text-xs text-gray-400">sugerido por ${suggesterName}</p>
+                    `;
+                    if (!myVote) {
+                        card.onclick = () => castNameVote(name);
+                    }
+                    optionsContainer.appendChild(card);
+                }
+
+                const waitingFor = allPlayers.filter(p => !teamData.companyNameVote.votes[p.id]).map(p => p.name);
+                if (waitingFor.length > 0) {
+                    document.getElementById('name-vote-status').classList.remove('hidden');
+                    document.getElementById('name-waiting-for-players').textContent = waitingFor.join(', ');
+                } else {
+                    document.getElementById('name-vote-status').classList.add('hidden');
+                    if (currentUser.uid === teamData.creatorId) {
+                        processNameVote(teamData);
+                    }
+                }
+            }
+        }
+        
+        async function castNameVote(name) {
+             await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.votes.${currentUser.uid}`]: name });
+        }
+        
+        async function processNameVote(teamData) {
+            const votes = Object.values(teamData.companyNameVote.votes);
+            const voteCounts = votes.reduce((acc, vote) => { acc[vote] = (acc[vote] || 0) + 1; return acc; }, {});
+
+            let maxVotes = 0;
+            let winners = [];
+            for (const name in voteCounts) {
+                if (voteCounts[name] > maxVotes) {
+                    maxVotes = voteCounts[name];
+                    winners = [name];
+                } else if (voteCounts[name] === maxVotes) {
+                    winners.push(name);
+                }
+            }
+
+            const resultContainer = document.getElementById('name-vote-result');
+            resultContainer.classList.remove('hidden');
+
+            if (winners.length === 1) {
+                const winnerName = winners[0];
+                resultContainer.innerHTML = `<p class="text-xl">O nome da empresa será <span class="font-bold text-indigo-400">${winnerName}</span>! Preparando próxima etapa...</p>`;
+                
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'segment_vote',
+                        companyName: winnerName,
+                        segmentVote: { votes: {}, attempt: 1 }
+                    });
+                }, 4000);
+            } else {
+                const attempt = teamData.companyNameVote.attempt;
+                const pointsLost = attempt * 30;
+                resultContainer.innerHTML = `<p class="text-xl text-red-400">Houve um empate! A votação será reiniciada. A equipe perdeu ${pointsLost} pontos por falta de consenso.</p>`;
+
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'companyNameVote.votes': {},
+                        'companyNameVote.attempt': attempt + 1,
+                        score: (teamData.score || 0) - pointsLost,
+                        scoreLosses: [...(teamData.scoreLosses || []), { stage: 'Nome da Empresa', reason: `A ${attempt}ª nova votação indicou falta de alinhamento.`}]
+                    });
+                }, 4000);
             }
         }
         
@@ -1260,28 +1420,32 @@
             const positionsList = document.getElementById('hiring-positions-list');
             positionsList.innerHTML = '';
             allPossibleHires.forEach(hire => {
-                const isMyArea = hire.area === myRoleKey;
-                const labelClass = isMyArea ? 'text-white' : 'text-gray-500 cursor-not-allowed';
-                const inputDisabled = isMyArea ? '' : 'disabled';
                 positionsList.innerHTML += `
-                    <label class="flex items-center space-x-2 p-2 rounded ${isMyArea ? 'hover:bg-gray-600' : ''} ${labelClass}">
-                        <input type="checkbox" value="${hire.id}" class="form-checkbox bg-gray-800 border-gray-600 text-indigo-500 rounded focus:ring-indigo-500" ${inputDisabled}>
-                        <span>${hire.name}</span>
-                    </label>
+                    <div class="grid grid-cols-3 gap-2 items-center">
+                        <label for="hire-${hire.id}" class="col-span-2">
+                            ${hire.name} <span class="text-xs text-gray-400">(${hire.area})</span>
+                        </label>
+                        <input type="number" id="hire-${hire.id}" min="0" max="5" placeholder="0" 
+                               class="form-input bg-gray-800 border-gray-600 text-white rounded w-full text-center">
+                    </div>
                 `;
             });
 
             document.getElementById('submit-hiring-requests-button').onclick = async () => {
-                const selectedHires = [];
-                positionsList.querySelectorAll('input[type="checkbox"]:checked').forEach(input => {
-                    selectedHires.push(input.value);
+                const selectedHires = {};
+                positionsList.querySelectorAll('input[type="number"]').forEach(input => {
+                    const quantity = parseInt(input.value, 10);
+                    if (quantity > 0) {
+                        const hireId = input.id.replace('hire-', '');
+                        selectedHires[hireId] = quantity;
+                    }
                 });
                 
                 // Pontuação
                 const essentialHires = directorNeeds[myRoleKey].essential;
                 let score = 0;
                 essentialHires.forEach(essential => {
-                    if (selectedHires.includes(essential)) {
+                    if (selectedHires[essential] && selectedHires[essential] > 0) {
                         score += 100; // Acertou o essencial
                     }
                 });
@@ -1292,17 +1456,18 @@
                 });
                 
                  // Verificar se todos os diretores solicitaram
-                const allDirectorsRequested = Object.keys(teamData.players)
-                    .filter(pId => pId !== teamData.ceoId)
-                    .every(pId => teamData.hiring.requests[pId]);
+                const updatedTeamData = (await getDoc(doc(db, 'teams', currentTeamId))).data();
+                const allDirectorsRequested = Object.keys(updatedTeamData.players)
+                    .filter(pId => pId !== updatedTeamData.ceoId)
+                    .every(pId => updatedTeamData.hiring.requests[pId]);
 
                 if(allDirectorsRequested && currentUser.uid === teamData.creatorId) {
                     let totalHiringScore = 0;
-                    Object.values(teamData.players).forEach(p => {
+                    Object.values(updatedTeamData.players).forEach(p => {
                         if (p.hiringScore) totalHiringScore += p.hiringScore;
                     });
                      await updateDoc(doc(db, 'teams', currentTeamId), {
-                         score: teamData.score + totalHiringScore
+                         score: updatedTeamData.score + totalHiringScore
                      });
                 }
             };
@@ -1310,7 +1475,7 @@
         
         function renderHiringCeoView(teamData) {
             const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
-            const allDirectorsRequested = directors.every(p => teamData.hiring.requests[p.id]);
+            const allDirectorsRequested = directors.every(p => teamData.hiring.requests && teamData.hiring.requests[p.id]);
 
             if (!allDirectorsRequested) {
                  document.getElementById('hiring-ceo-view').innerHTML = `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
@@ -1323,25 +1488,26 @@
 
             for (const director of directors) {
                 const directorRoleKey = teamData.roles[director.id];
-                const requests = teamData.hiring.requests[director.id] || [];
+                const requests = teamData.hiring.requests[director.id] || {};
                 
-                if (requests.length === 0) continue;
+                if (Object.keys(requests).length === 0) continue;
                 
                 let directorSection = `
                     <div class="bg-gray-800 p-4 rounded-lg">
                         <h4 class="font-bold">${director.name} (${directorRoles[directorRoleKey].title}) solicitou:</h4>
-                        <div class="mt-2 grid grid-cols-2 gap-2">`;
+                        <div class="mt-2 space-y-2">`;
                 
-                requests.forEach(hireId => {
+                for (const hireId in requests) {
+                     const quantity = requests[hireId];
                      const hireInfo = allPossibleHires.find(h => h.id === hireId);
-                     const cost = hireCosts[hireId];
+                     const totalCost = hireCosts[hireId] * quantity;
                      directorSection += `
-                        <label class="flex items-center space-x-2 p-2 rounded hover:bg-gray-700 text-white">
-                            <input type="checkbox" value="${hireId}" data-cost="${cost}" class="form-checkbox ceo-hire-checkbox bg-gray-800 border-gray-600 text-indigo-500 rounded focus:ring-indigo-500">
-                            <span>${hireInfo.name} (R$ ${cost.toFixed(2)})</span>
+                        <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-700 text-white">
+                            <input type="checkbox" data-hire-id="${hireId}" data-quantity="${quantity}" data-cost="${totalCost}" class="form-checkbox ceo-hire-checkbox bg-gray-800 border-gray-600 text-indigo-500 rounded focus:ring-indigo-500 w-5 h-5">
+                            <span>${quantity}x ${hireInfo.name} (Custo Total: R$ ${totalCost.toFixed(2)})</span>
                         </label>
                      `;
-                });
+                }
                 
                 directorSection += `</div></div>`;
                 approvalList.innerHTML += directorSection;
@@ -1377,7 +1543,12 @@
             finalizeButton.onclick = async () => {
                 const approvedHires = [];
                 checkboxes.forEach(cb => {
-                    if (cb.checked) approvedHires.push(cb.value);
+                    if (cb.checked) {
+                        approvedHires.push({
+                            id: cb.dataset.hireId,
+                            quantity: parseInt(cb.dataset.quantity)
+                        });
+                    }
                 });
                 
                 // Pontuação
@@ -1386,7 +1557,7 @@
                 const uniqueEssential = [...new Set(allEssential)];
                 
                 uniqueEssential.forEach(essential => {
-                    if (approvedHires.includes(essential)) {
+                    if (approvedHires.some(h => h.id === essential)) {
                         score += 120; // Contratou quem era essencial
                     }
                 });
@@ -1423,9 +1594,9 @@
             if (teamData.finalHires && teamData.finalHires.length > 0) {
                  container.innerHTML += '<div class="mt-6 pt-4 border-t border-gray-600"><h4 class="text-lg font-semibold mb-4">Equipe Contratada</h4></div>';
                  let hiresHtml = '<div class="flex justify-center gap-2 flex-wrap">';
-                 teamData.finalHires.forEach(hireId => {
-                     const hireInfo = allPossibleHires.find(h => h.id === hireId);
-                     hiresHtml += `<div class="bg-gray-600 text-sm py-1 px-3 rounded-full">${hireInfo.name}</div>`;
+                 teamData.finalHires.forEach(hire => {
+                     const hireInfo = allPossibleHires.find(h => h.id === hire.id);
+                     hiresHtml += `<div class="bg-gray-600 text-sm py-1 px-3 rounded-full">${hireInfo.name} ${hire.quantity > 1 ? `(x${hire.quantity})` : ''}</div>`;
                  });
                  hiresHtml += '</div>';
                  container.innerHTML += hiresHtml;
@@ -1461,10 +1632,10 @@
             }
         }
         
-        function renderFinalReport(teamData) {
+        async function renderFinalReport(teamData) {
             showScreen('final-report-screen');
             document.getElementById('final-score-display').textContent = teamData.score;
-            document.getElementById('max-score-display').textContent = '1500'; // Valor máximo estimado
+            document.getElementById('max-score-display').textContent = '2000'; // Valor máximo estimado atualizado
 
             // Média de satisfação com o CEO
             const ceoRatings = Object.values(teamData.ceoSatisfaction.ratings || {});
@@ -1488,6 +1659,51 @@
             } else {
                  lossesContainer.innerHTML = `<div class="bg-gray-800 p-3 rounded-lg text-green-400"><p>Parabéns! Sua equipe não teve perdas de pontos por repetição de tarefas, demonstrando grande alinhamento!</p></div>`;
             }
+            
+            // Renderizar ranking
+            renderRanking();
+        }
+
+        async function renderRanking() {
+            const rankingContainer = document.getElementById('ranking-container');
+            rankingContainer.innerHTML = '<p class="text-center text-gray-400">Carregando ranking...</p>';
+            
+            try {
+                // NOTA: Isso requer regras de segurança do Firestore que permitam a leitura da coleção 'teams' por usuários autenticados.
+                // Exemplo de regra: rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /teams/{teamId} { allow read: if request.auth != null; ... } } }
+                const teamsRef = collection(db, 'teams');
+                const q = query(teamsRef, where("gameStage", "==", "final_report"));
+                const querySnapshot = await getDocs(q);
+                
+                const teams = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    teams.push({
+                        id: doc.id,
+                        name: data.companyName || `Equipe ${doc.id.substring(0,4)}`,
+                        score: data.score || 0
+                    });
+                });
+
+                teams.sort((a, b) => b.score - a.score);
+
+                let rankingHtml = '<ol class="space-y-2">';
+                teams.forEach((team, index) => {
+                    const isMyTeam = team.id === currentTeamId;
+                    rankingHtml += `
+                        <li class="flex justify-between items-center p-2 rounded ${isMyTeam ? 'bg-indigo-600' : 'bg-gray-800'}">
+                            <span class="font-semibold">${index + 1}. ${team.name}</span>
+                            <span class="font-bold text-lg">${team.score} pts</span>
+                        </li>
+                    `;
+                });
+                rankingHtml += '</ol>';
+                rankingContainer.innerHTML = rankingHtml;
+
+            } catch (error) {
+                console.error("Erro ao buscar ranking:", error);
+                rankingContainer.innerHTML = '<p class="text-center text-red-400">Não foi possível carregar o ranking. Verifique as regras de segurança do Firestore.</p>';
+            }
         }
         
         // --- CONTROLES DO PROFESSOR ---
@@ -1509,9 +1725,48 @@
         
         document.getElementById('prof-reset-game').addEventListener('click', async () => {
             if (!profAccess || !currentTeamId) return;
-            if (confirm('Tem certeza que deseja ZERAR o jogo para esta equipe? Todas as informações serão perdidas.')) {
-                // Ao deletar, o onSnapshot de todos os clientes vai disparar o "doc não existe" e recarregar a página deles.
-                await deleteDoc(doc(db, 'teams', currentTeamId));
+            // Usando a API de prompt nativa com cuidado, já que alert() foi desencorajado.
+            // Em um app real, um modal customizado seria melhor.
+            const confirmation = window.prompt("Para confirmar, digite ZERAR em maiúsculas.");
+            if (confirmation === 'ZERAR') {
+                 // Ao deletar, o onSnapshot de todos os clientes vai disparar o "doc não existe" e recarregar a página deles.
+                const teamRef = doc(db, 'teams', currentTeamId);
+                const teamSnap = await getDoc(teamRef);
+                if (teamSnap.exists()) {
+                    const players = teamSnap.data().players;
+                    const newTeamData = {
+                        ...teamSnap.data(),
+                        gameStage: 'lobby',
+                        score: 0,
+                        scoreLosses: [],
+                        companyName: null,
+                        companyNameVote: null,
+                        chosenSegment: null,
+                        segmentVote: null,
+                        ceoId: null,
+                        ceoElection: null,
+                        ceoSatisfaction: null,
+                        roles: null,
+                        roleSatisfaction: null,
+                        hiring: null,
+                        finalHires: null,
+                        finalSatisfaction: null
+                    };
+                    // Limpa dados específicos dos jogadores
+                    for(const pId in players) {
+                        delete newTeamData.players[pId].quizCompleted;
+                        delete newTeamData.players[pId].answers;
+                        delete newTeamData.players[pId].profileKey;
+                        delete newTeamData.players[pId].profile;
+                        delete newTeamData.players[pId].hiringScore;
+                    }
+
+                    await setDoc(teamRef, newTeamData);
+                    alert("O jogo foi reiniciado para esta equipe.");
+
+                }
+            } else {
+                alert("Operação cancelada.");
             }
         });
         
@@ -1524,3 +1779,4 @@
     </script>
 </body>
 </html>
+
