@@ -324,7 +324,6 @@
 
         // --- CONTEÚDO E LÓGICA DO JOGO ---
 
-        // (Conteúdo do Ato 1 omitido para brevidade... está no código completo abaixo)
         const quizQuestions = [ { question: "Diante de um grande projeto com prazo apertado, qual sua primeira reação?", options: ["Planejar cada etapa meticulosamente.", "Reunir a equipe para um brainstorm de ideias inovadoras.", "Começar a executar as tarefas mais urgentes imediatamente.", "Analisar os riscos e criar planos de contingência."] }, { question: "Qual ambiente de trabalho te deixa mais produtivo?", options: ["Um local organizado, silencioso e com regras claras.", "Um espaço colaborativo, cheio de energia e novas ideias.", "Um ambiente dinâmico, focado em resultados e metas.", "Um lugar que valoriza a segurança, estabilidade e o bem-estar da equipe."] }, { question: "Ao receber um feedback negativo, como você lida?", options: ["Agradeço, analiso os pontos e crio um plano de melhoria.", "Vejo como uma oportunidade para repensar minha abordagem de forma criativa.", "Foco em como posso reverter o resultado rapidamente.", "Busco entender o sentimento da outra pessoa e fortalecer a relação."] }, { question: "Qual tipo de tarefa te dá mais satisfação?", options: ["Otimizar um processo para torná-lo mais eficiente.", "Criar algo completamente novo, que ninguém pensou antes.", "Superar uma meta desafiadora e ver o resultado concreto.", "Ajudar um colega a resolver um problema ou desenvolver uma habilidade."] }, { question: "Em uma discussão em grupo, seu papel costuma ser:", options: ["O que organiza as ideias e define os próximos passos.", "O que propõe soluções 'fora da caixa' e inspira os outros.", "O que mantém o foco no objetivo e impulsiona a ação.", "O que garante que todos sejam ouvidos e o clima seja positivo."] }, { question: "O que é mais importante para o sucesso de uma empresa?", options: ["Processos bem definidos e controle de qualidade rigoroso.", "Inovação constante e capacidade de se adaptar ao futuro.", "Agressividade comercial e conquista de mercado.", "Uma cultura forte, com funcionários felizes e engajados."] }, { question: "Como você toma decisões importantes?", options: ["Com base em dados, fatos e análises detalhadas.", "Seguindo minha intuição e visão de longo prazo.", "De forma rápida e pragmática, focando no impacto imediato.", "Considerando o impacto nas pessoas e nos valores da equipe."] }, { question: "Seu lema profissional seria algo como:", options: ["'Ordem e progresso.'", "'Pense diferente.'", "'Feito é melhor que perfeito.'", "'Pessoas em primeiro lugar.'"] }, { question: "O que te frustra mais em um projeto?", options: ["Falta de planejamento e mudanças de escopo constantes.", "Falta de liberdade para experimentar e testar novas ideias.", "Burocracia e lentidão que impedem o progresso.", "Conflitos interpessoais e falta de espírito de equipe."] }, { question: "Qual líder famoso você mais admira?", options: ["Um gestor como Alfred Sloan (General Motors), mestre da organização.", "Um visionário como Steve Jobs (Apple), que mudou o mundo.", "Um executor como Jeff Bezos (Amazon), focado em crescimento.", "Um líder humano como Howard Schultz (Starbucks), que valoriza as pessoas."] } ];
         const profileMapping = { 0: 'A', 1: 'I', 2: 'E', 3: 'C' };
         const profiles = { 'A': { title: "O Analista", description: "Metódico, organizado e detalhista. Você é excelente em planejar, otimizar processos e tomar decisões baseadas em dados. Sua força está em trazer ordem ao caos e garantir a qualidade e eficiência das entregas." }, 'I': { title: "O Inovador", description: "Criativo, visionário e inspirador. Você enxerga o futuro e adora criar soluções disruptivas. Sua energia move a equipe para fora da zona de conforto, gerando ideias que podem transformar o mercado." }, 'E': { title: "O Executor", description: "Pragmático, focado e orientado a resultados. Você é a pessoa que faz acontecer. Transforma ideias em ações concretas, supera obstáculos e não descansa até que as metas sejam atingidas. Sua agilidade é contagiante." }, 'C': { title: "O Comunicador", description: "Empático, diplomático e motivador. Você é o elo que une a equipe. Sua habilidade em ouvir, mediar conflitos e criar um ambiente positivo é fundamental para manter o time engajado e colaborativo." } };
@@ -497,56 +496,961 @@
         }
         
         // --- FUNÇÕES DE RENDERIZAÇÃO (Ato 1) ---
-        // (Funções do Ato 1 omitidas para brevidade, estão no código completo abaixo)
-        function renderLobby(teamData) { showScreen('lobby-screen'); document.getElementById('team-id-display').textContent = teamData.teamId; const playerListLobby = document.getElementById('player-list-lobby'); playerListLobby.innerHTML = ''; Object.values(teamData.players).forEach(player => { const playerEl = document.createElement('div'); playerEl.className = 'flex items-center bg-gray-800 p-2 rounded'; playerEl.innerHTML = `<div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div><span class="text-white">${player.name}</span>`; playerListLobby.appendChild(playerEl); }); const startGameContainer = document.getElementById('start-game-container'); if (currentUser.uid === teamData.creatorId) { startGameContainer.innerHTML = `<button id="start-game-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato 1</button>`; document.getElementById('start-game-button').onclick = async () => { if (Object.keys(teamData.players).length < 2) { return alert("Você precisa de pelo menos 2 pessoas na equipe para começar."); } await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'quiz' }); }; } else { startGameContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder (${teamData.players[teamData.creatorId].name}) iniciar o jogo...</p>`; } }
-        let currentQuestionIndex = 0; let userAnswers = [];
-        function renderQuiz(teamData) { showScreen('quiz-screen'); const me = teamData.players[currentUser.uid]; if (me.quizCompleted) { document.getElementById('quiz-content').classList.add('hidden'); document.getElementById('quiz-waiting').classList.remove('hidden'); return; } document.getElementById('quiz-content').classList.remove('hidden'); document.getElementById('quiz-waiting').classList.add('hidden'); const question = quizQuestions[currentQuestionIndex]; document.getElementById('question-number').textContent = currentQuestionIndex + 1; document.getElementById('question-text').textContent = question.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; question.options.forEach((option, index) => { const button = document.createElement('button'); button.className = "w-full text-left bg-gray-800 hover:bg-indigo-600 p-4 rounded-lg transition"; button.textContent = option; button.onclick = () => selectAnswer(index); optionsContainer.appendChild(button); }); }
-        async function selectAnswer(optionIndex) { userAnswers.push(optionIndex); if (currentQuestionIndex < quizQuestions.length - 1) { currentQuestionIndex++; renderQuiz(currentTeamData); } else { document.getElementById('quiz-content').classList.add('hidden'); document.getElementById('quiz-waiting').classList.remove('hidden'); const counts = { 'A': 0, 'I': 0, 'E': 0, 'C': 0 }; userAnswers.forEach(answer => { counts[profileMapping[answer]]++; }); let myProfileKey = 'A'; let maxCount = 0; for (const key in counts) { if (counts[key] > maxCount) { maxCount = counts[key]; myProfileKey = key; } } await updateDoc(doc(db, 'teams', currentTeamId), { [`players.${currentUser.uid}.quizCompleted`]: true, [`players.${currentUser.uid}.answers`]: userAnswers, [`players.${currentUser.uid}.profileKey`]: myProfileKey, [`players.${currentUser.uid}.profile`]: profiles[myProfileKey] }); const teamData = (await getDoc(doc(db, 'teams', currentTeamId))).data(); const allDone = Object.values(teamData.players).every(p => p.quizCompleted); if (allDone) { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'profile_results' }); } } }
-        function renderProfileResults(teamData) { showScreen('profile-results-screen'); const me = teamData.players[currentUser.uid]; const myProfileContainer = document.getElementById('my-profile-container'); myProfileContainer.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-indigo-400">Seu Perfil: <span class="text-white">${me.profile.title}</span></h3><div class="bg-gray-700 p-4 rounded-lg"><p class="text-gray-300">${me.profile.description}</p></div>`; const teamProfilesContainer = document.getElementById('team-profiles-container'); teamProfilesContainer.innerHTML = ''; Object.values(teamData.players).filter(p => p.id !== currentUser.uid).forEach(player => { const profileEl = document.createElement('div'); profileEl.className = 'bg-gray-700 p-4 rounded-lg'; profileEl.innerHTML = `<h4 class="font-semibold">${player.name}: <span class="text-pink-400">${player.profile.title}</span></h4><p class="text-sm text-gray-400">${player.profile.description}</p>`; teamProfilesContainer.appendChild(profileEl); }); if (currentUser.uid === teamData.creatorId) { document.getElementById('profile-waiting-container').innerHTML = ''; document.getElementById('profile-continue-container').innerHTML = `<p class="text-lg text-gray-400 mb-4">Todos concluíram. Avancem para a próxima etapa.</p><button id="continue-to-naming-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Definir Nome da Empresa</button>`; document.getElementById('continue-to-naming-button').onclick = async () => { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'company_name_vote', companyNameVote: { suggestions: {}, votes: {}, attempt: 1 } }); }; } else { document.getElementById('profile-waiting-container').innerHTML = `<p class="text-lg text-gray-400">Aguardando o líder da equipe iniciar a próxima etapa...</p>`; document.getElementById('profile-continue-container').innerHTML = ''; } }
-        function renderCompanyNameVote(teamData) { /* ... Lógica existente ... */ }
-        function renderSegmentVote(teamData) { /* ... Lógica existente ... */ }
-        function renderCeoElection(teamData) { /* ... Lógica existente ... */ }
-        function renderCeoSatisfaction(teamData) { /* ... Lógica existente ... */ }
-        function renderRoleAssignment(teamData) { /* ... Lógica existente ... */ }
-        function renderRoleSatisfaction(teamData) { /* ... Lógica existente ... */ }
-        function renderHiring(teamData) { /* ... Lógica existente ... */ }
-        function renderOrgChart(teamData) { /* ... Lógica existente ... */ }
+        function renderLobby(teamData) { 
+            showScreen('lobby-screen'); 
+            document.getElementById('team-id-display').textContent = teamData.teamId; 
+            const playerListLobby = document.getElementById('player-list-lobby'); 
+            playerListLobby.innerHTML = ''; 
+            Object.values(teamData.players).forEach(player => { 
+                const playerEl = document.createElement('div'); 
+                playerEl.className = 'flex items-center bg-gray-800 p-2 rounded'; 
+                playerEl.innerHTML = `<div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div><span class="text-white">${player.name}</span>`; 
+                playerListLobby.appendChild(playerEl); 
+            }); 
+            const startGameContainer = document.getElementById('start-game-container'); 
+            if (currentUser.uid === teamData.creatorId) { 
+                startGameContainer.innerHTML = `<button id="start-game-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato 1</button>`; 
+                document.getElementById('start-game-button').onclick = async () => { 
+                    if (Object.keys(teamData.players).length < 2) { 
+                        return alert("Você precisa de pelo menos 2 pessoas na equipe para começar."); 
+                    } 
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'quiz' }); 
+                }; 
+            } else { 
+                startGameContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder (${teamData.players[teamData.creatorId].name}) iniciar o jogo...</p>`; 
+            } 
+        }
         
-        function renderFinalReport(teamData) {
-            showScreen('final-report-screen');
-            document.getElementById('final-score-display').textContent = teamData.score;
-            document.getElementById('max-score-display').textContent = '2000'; 
-            const ceoRatings = Object.values(teamData.ceoSatisfaction.ratings || {});
-            const roleRatings = Object.values(teamData.roleSatisfaction.ratings || {});
-            const finalRatings = Object.values(teamData.finalSatisfaction.ratings || {});
-            const allRatings = [...ceoRatings, ...roleRatings, ...finalRatings];
-            const avgSatisfaction = allRatings.length > 0 ? (allRatings.reduce((a, b) => a + b, 0) / allRatings.length).toFixed(1) : "N/A";
-            document.getElementById('ceo-satisfaction-report').innerHTML = `<p class="text-lg text-gray-300">Satisfação Média com o CEO</p><p class="text-4xl font-bold text-pink-400">${avgSatisfaction}</p>`;
-            const lossesContainer = document.getElementById('score-losses-container');
-            lossesContainer.innerHTML = '';
-            if (teamData.scoreLosses && teamData.scoreLosses.length > 0) {
-                teamData.scoreLosses.forEach(loss => { lossesContainer.innerHTML += `<div class="bg-gray-800 p-3 rounded-lg"><p class="font-semibold text-red-400">Ponto de Atenção em: ${loss.stage}</p><p class="text-sm text-gray-400">${loss.reason}</p></div>`; });
-            } else {
-                 lossesContainer.innerHTML = `<div class="bg-gray-800 p-3 rounded-lg text-green-400"><p>Parabéns! Sua equipe demonstrou grande alinhamento no Ato 1!</p></div>`;
-            }
-            renderRanking('ranking-container', 'final_report');
+        let currentQuestionIndex = 0; 
+        let userAnswers = [];
+        
+        function renderQuiz(teamData) { 
+            showScreen('quiz-screen'); 
+            const me = teamData.players[currentUser.uid]; 
+            if (me.quizCompleted) { 
+                document.getElementById('quiz-content').classList.add('hidden'); 
+                document.getElementById('quiz-waiting').classList.remove('hidden'); 
+                return; 
+            } 
+            document.getElementById('quiz-content').classList.remove('hidden'); 
+            document.getElementById('quiz-waiting').classList.add('hidden'); 
+            const question = quizQuestions[currentQuestionIndex]; 
+            document.getElementById('question-number').textContent = currentQuestionIndex + 1; 
+            document.getElementById('question-text').textContent = question.question; 
+            const optionsContainer = document.getElementById('options-container'); 
+            optionsContainer.innerHTML = ''; 
+            question.options.forEach((option, index) => { 
+                const button = document.createElement('button'); 
+                button.className = "w-full text-left bg-gray-800 hover:bg-indigo-600 p-4 rounded-lg transition"; 
+                button.textContent = option; button.onclick = () => selectAnswer(index); 
+                optionsContainer.appendChild(button); 
+            }); 
+        }
+
+        async function selectAnswer(optionIndex) { 
+            userAnswers.push(optionIndex); 
+            if (currentQuestionIndex < quizQuestions.length - 1) { 
+                currentQuestionIndex++; 
+                renderQuiz(currentTeamData); 
+            } else { 
+                document.getElementById('quiz-content').classList.add('hidden'); 
+                document.getElementById('quiz-waiting').classList.remove('hidden'); 
+                const counts = { 'A': 0, 'I': 0, 'E': 0, 'C': 0 }; 
+                userAnswers.forEach(answer => { counts[profileMapping[answer]]++; }); 
+                let myProfileKey = 'A'; 
+                let maxCount = 0; 
+                for (const key in counts) { 
+                    if (counts[key] > maxCount) { 
+                        maxCount = counts[key]; 
+                        myProfileKey = key; 
+                    } 
+                } 
+                await updateDoc(doc(db, 'teams', currentTeamId), { 
+                    [`players.${currentUser.uid}.quizCompleted`]: true, 
+                    [`players.${currentUser.uid}.answers`]: userAnswers, 
+                    [`players.${currentUser.uid}.profileKey`]: myProfileKey, 
+                    [`players.${currentUser.uid}.profile`]: profiles[myProfileKey] 
+                }); 
+                const teamData = (await getDoc(doc(db, 'teams', currentTeamId))).data(); 
+                const allDone = Object.values(teamData.players).every(p => p.quizCompleted); 
+                if (allDone) { 
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'profile_results' }); 
+                } 
+            } 
+        }
+        
+        function renderProfileResults(teamData) {
+            showScreen('profile-results-screen');
+            const me = teamData.players[currentUser.uid];
+
+            const myProfileContainer = document.getElementById('my-profile-container');
+            myProfileContainer.innerHTML = `
+                <h3 class="text-xl font-semibold mb-4 text-indigo-400">Seu Perfil: <span class="text-white">${me.profile.title}</span></h3>
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <p class="text-gray-300">${me.profile.description}</p>
+                </div>
+            `;
             
-            const continueContainer = document.getElementById('continue-to-act2-container');
+            const teamProfilesContainer = document.getElementById('team-profiles-container');
+            teamProfilesContainer.innerHTML = '';
+            Object.values(teamData.players).filter(p => p.id !== currentUser.uid).forEach(player => {
+                const profileEl = document.createElement('div');
+                profileEl.className = 'bg-gray-700 p-4 rounded-lg';
+                profileEl.innerHTML = `
+                    <h4 class="font-semibold">${player.name}: <span class="text-pink-400">${player.profile.title}</span></h4>
+                    <p class="text-sm text-gray-400">${player.profile.description}</p>
+                `;
+                teamProfilesContainer.appendChild(profileEl);
+            });
+
+            const waitingContainer = document.getElementById('profile-waiting-container');
+            const continueContainer = document.getElementById('profile-continue-container');
+
             if (currentUser.uid === teamData.creatorId) {
-                continueContainer.innerHTML = `<button id="start-act2-button" class="mt-4 bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-lg transition">Iniciar Ato 2</button>`;
-                document.getElementById('start-act2-button').onclick = async () => {
-                    await updateDoc(doc(db, 'teams', currentTeamId), {
-                        gameStage: 'act2_mvp',
-                        act2_mvp: { features: {}, architecture: {} },
-                        act2_crisis: { currentIndex: 0, solved: {} },
-                        act2_metrics: { quality: 100, satisfaction: 100, reputation: 100 }
-                    });
+                waitingContainer.classList.add('hidden');
+                waitingContainer.innerHTML = '';
+                continueContainer.classList.remove('hidden');
+                continueContainer.innerHTML = `
+                    <p class="text-lg text-gray-400 mb-4">Todos concluíram o teste. Quando estiverem prontos, avancem para a próxima etapa.</p>
+                    <button id="continue-to-naming-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition">Definir Nome da Empresa</button>
+                `;
+                document.getElementById('continue-to-naming-button').onclick = async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'company_name_vote', companyNameVote: { suggestions: {}, votes: {}, attempt: 1 } });
                 };
             } else {
-                 continueContainer.innerHTML = `<p class="text-gray-400">Aguardando o líder iniciar o Ato 2...</p>`;
+                 waitingContainer.classList.remove('hidden');
+                 waitingContainer.innerHTML = `<p class="text-lg text-gray-400">Aguardando o líder da equipe iniciar a próxima etapa...</p>`;
+                 continueContainer.classList.add('hidden');
+                 continueContainer.innerHTML = '';
             }
         }
         
+        async function castNameVote(name) {
+             await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.votes.${currentUser.uid}`]: name });
+        }
+        
+        async function processNameVote(teamData) {
+            const votes = Object.values(teamData.companyNameVote.votes);
+            const voteCounts = votes.reduce((acc, vote) => { acc[vote] = (acc[vote] || 0) + 1; return acc; }, {});
+
+            let maxVotes = 0;
+            let winners = [];
+            for (const name in voteCounts) {
+                if (voteCounts[name] > maxVotes) {
+                    maxVotes = voteCounts[name];
+                    winners = [name];
+                } else if (voteCounts[name] === maxVotes) {
+                    winners.push(name);
+                }
+            }
+
+            const resultContainer = document.getElementById('name-vote-result');
+            if(!resultContainer) return;
+            resultContainer.classList.remove('hidden');
+
+            if (winners.length === 1) {
+                const winnerName = winners[0];
+                resultContainer.innerHTML = `<p class="text-xl">O nome da empresa será <span class="font-bold text-indigo-400">${winnerName}</span>! Preparando próxima etapa...</p>`;
+                
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'segment_vote',
+                        companyName: winnerName,
+                        segmentVote: { votes: {}, attempt: 1 }
+                    });
+                }, 4000);
+            } else {
+                const attempt = teamData.companyNameVote.attempt;
+                const pointsLost = attempt * 30;
+                resultContainer.innerHTML = `<p class="text-xl text-red-400">Houve um empate! A votação será reiniciada. A equipe perdeu ${pointsLost} pontos por falta de consenso.</p>`;
+
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'companyNameVote.votes': {},
+                        'companyNameVote.attempt': attempt + 1,
+                        score: (teamData.score || 0) - pointsLost,
+                        scoreLosses: [...(teamData.scoreLosses || []), { stage: 'Nome da Empresa', reason: `A ${attempt}ª nova votação indicou falta de alinhamento.`}]
+                    });
+                }, 4000);
+            }
+        }
+
+        function renderCompanyNameVote(teamData) {
+            showScreen('company-name-screen');
+            const suggestions = teamData.companyNameVote.suggestions || {};
+            const allPlayers = Object.values(teamData.players);
+            
+            const suggestionPhase = document.getElementById('name-suggestion-phase');
+            const votingPhase = document.getElementById('name-voting-phase');
+
+            const allSuggested = allPlayers.every(p => suggestions[p.id]);
+
+            if (!allSuggested) {
+                suggestionPhase.classList.remove('hidden');
+                votingPhase.classList.add('hidden');
+                
+                const mySuggestion = suggestions[currentUser.uid];
+                if (mySuggestion) {
+                    suggestionPhase.innerHTML = `<p class="text-center text-xl">Sua sugestão foi enviada! Aguardando os demais...</p>
+                    <div class="text-center mt-4"><p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p></div>`;
+                } else {
+                    suggestionPhase.innerHTML = `
+                        <div class="max-w-md mx-auto">
+                            <h3 class="text-xl font-semibold text-center mb-4">Sugira um nome para a empresa:</h3>
+                            <input type="text" id="company-name-suggestion-input" placeholder="Ex: TecnoSoluções, InovaTech, etc." class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white mb-4">
+                            <button id="submit-name-suggestion-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg">Enviar Sugestão</button>
+                        </div>
+                        <div class="text-center mt-4">
+                            <p>Aguardando sugestões de: <span id="name-suggestion-waiting-for"></span></p>
+                        </div>
+                    `;
+                     document.getElementById('submit-name-suggestion-button').onclick = async () => {
+                        const name = document.getElementById('company-name-suggestion-input').value.trim();
+                        if (name) {
+                            await updateDoc(doc(db, 'teams', currentTeamId), { [`companyNameVote.suggestions.${currentUser.uid}`]: name });
+                        } else {
+                            alert("Por favor, sugira um nome.");
+                        }
+                    };
+                }
+                const waitingFor = allPlayers.filter(p => !suggestions[p.id]).map(p => p.name).join(', ');
+                if(document.getElementById('name-suggestion-waiting-for')) {
+                    document.getElementById('name-suggestion-waiting-for').textContent = waitingFor;
+                }
+
+            } else {
+                suggestionPhase.classList.add('hidden');
+                votingPhase.classList.remove('hidden');
+
+                votingPhase.innerHTML = `
+                    <h3 class="text-xl font-semibold text-center mb-4">Votem no melhor nome:</h3>
+                    <div id="name-voting-options-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                    </div>
+                    <div id="name-vote-status" class="mt-6 text-center">
+                        <p class="text-lg">Aguardando votos de: <span id="name-waiting-for-players"></span></p>
+                    </div>
+                    <div id="name-vote-result" class="mt-6 text-center hidden"></div>
+                `;
+                
+                const myVote = teamData.companyNameVote.votes[currentUser.uid];
+                const optionsContainer = document.getElementById('name-voting-options-container');
+                optionsContainer.innerHTML = '';
+
+                for (const playerId in suggestions) {
+                    const name = suggestions[playerId];
+                    const suggesterName = teamData.players[playerId].name;
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-lg border-2 transition text-center ${myVote === name ? 'bg-indigo-900 border-indigo-500' : 'bg-gray-700 border-gray-600 hover:border-indigo-500 cursor-pointer'}`;
+                    card.innerHTML = `<p class="font-bold text-lg">${name}</p><p class="text-xs text-gray-400">sugerido por ${suggesterName}</p>`;
+                    if (!myVote) {
+                        card.onclick = () => castNameVote(name);
+                    }
+                    optionsContainer.appendChild(card);
+                }
+
+                const waitingFor = allPlayers.filter(p => !teamData.companyNameVote.votes[p.id]).map(p => p.name);
+                if (waitingFor.length > 0) {
+                    document.getElementById('name-vote-status').classList.remove('hidden');
+                    document.getElementById('name-waiting-for-players').textContent = waitingFor.join(', ');
+                } else {
+                    document.getElementById('name-vote-status').classList.add('hidden');
+                    if (currentUser.uid === teamData.creatorId) {
+                        processNameVote(teamData);
+                    }
+                }
+            }
+        }
+
+        function renderSegmentVote(teamData) {
+            showScreen('segment-vote-screen');
+            const segmentOptionsContainer = document.getElementById('segment-options-container');
+            segmentOptionsContainer.innerHTML = '';
+            
+            const myVote = teamData.segmentVote.votes[currentUser.uid];
+
+            for (const key in companySegments) {
+                const segment = companySegments[key];
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 transition ${myVote === key ? 'bg-indigo-900 border-indigo-500' : 'bg-gray-700 border-gray-600 hover:border-indigo-500 cursor-pointer'}`;
+                card.innerHTML = `
+                    <h4 class="text-lg font-bold">${segment.title}</h4>
+                    <p class="text-sm text-gray-400 mt-2 mb-3">${segment.description}</p>
+                    <p class="text-xs text-gray-500 font-semibold">Necessidades Chave:</p>
+                    <p class="text-xs text-gray-300">${segment.needs}</p>
+                `;
+                if (!myVote) {
+                    card.onclick = () => castSegmentVote(key);
+                }
+                segmentOptionsContainer.appendChild(card);
+            }
+            
+            const waitingFor = Object.values(teamData.players).filter(p => !teamData.segmentVote.votes[p.id]).map(p => p.name);
+            if (waitingFor.length > 0) {
+                document.getElementById('segment-vote-status').innerHTML = `<p class="text-lg">Aguardando votos de: <span id="segment-waiting-for-players">${waitingFor.join(', ')}</span></p>`;
+                document.getElementById('segment-vote-status').classList.remove('hidden');
+                document.getElementById('segment-vote-result').classList.add('hidden');
+            } else {
+                 document.getElementById('segment-vote-status').classList.add('hidden');
+                 if (currentUser.uid === teamData.creatorId) {
+                    processSegmentVote(teamData);
+                 }
+            }
+        }
+        
+        async function castSegmentVote(segmentKey) {
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                [`segmentVote.votes.${currentUser.uid}`]: segmentKey
+            });
+        }
+        
+        async function processSegmentVote(teamData) {
+            const votes = Object.values(teamData.segmentVote.votes);
+            const voteCounts = votes.reduce((acc, vote) => {
+                acc[vote] = (acc[vote] || 0) + 1;
+                return acc;
+            }, {});
+
+            let maxVotes = 0;
+            let winners = [];
+            for (const segment in voteCounts) {
+                if (voteCounts[segment] > maxVotes) {
+                    maxVotes = voteCounts[segment];
+                    winners = [segment];
+                } else if (voteCounts[segment] === maxVotes) {
+                    winners.push(segment);
+                }
+            }
+
+            const resultContainer = document.getElementById('segment-vote-result');
+            resultContainer.classList.remove('hidden');
+
+            if (winners.length === 1) {
+                const winnerKey = winners[0];
+                const winnerSegment = companySegments[winnerKey];
+                
+                let score = 0;
+                const teamProfiles = Object.values(teamData.players).map(p => p.profileKey);
+                const idealProfiles = winnerSegment.idealProfiles;
+                
+                let matches = 0;
+                teamProfiles.forEach(p => {
+                    if (idealProfiles.includes(p)) {
+                        matches++;
+                    }
+                });
+                score = matches * 50;
+                
+                if (idealProfiles.every(ip => teamProfiles.includes(ip))) {
+                    score += 100;
+                }
+
+                resultContainer.innerHTML = `<p class="text-xl">Segmento escolhido: <span class="font-bold text-indigo-400">${winnerSegment.title}</span>! Preparando próxima etapa...</p>`;
+                
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'ceo_election',
+                        chosenSegment: winnerKey,
+                        score: (teamData.score || 0) + score,
+                        ceoElection: { votes: {}, attempt: 1 }
+                    });
+                }, 4000);
+
+            } else {
+                const attempt = teamData.segmentVote.attempt;
+                const pointsLost = attempt * 50;
+                resultContainer.innerHTML = `<p class="text-xl text-red-400">Houve um empate! A votação será reiniciada. A falta de consenso custou ${pointsLost} pontos à equipe.</p>`;
+
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'segmentVote.votes': {},
+                        'segmentVote.attempt': attempt + 1,
+                        score: (teamData.score || 0) - pointsLost,
+                        scoreLosses: [...(teamData.scoreLosses || []), { stage: 'Escolha de Segmento', reason: `A ${attempt}ª nova votação indicou falta de alinhamento inicial.`}]
+                    });
+                }, 4000);
+            }
+        }
+
+        function renderCeoElection(teamData) {
+            showScreen('ceo-election-screen');
+            const ceoOptionsContainer = document.getElementById('ceo-options-container');
+            ceoOptionsContainer.innerHTML = '';
+            
+            const myVote = teamData.ceoElection.votes[currentUser.uid];
+
+            Object.values(teamData.players).forEach(player => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 text-center transition ${myVote === player.id ? 'bg-indigo-900 border-indigo-500' : 'bg-gray-700 border-gray-600 hover:border-indigo-500 cursor-pointer'}`;
+                card.innerHTML = `
+                    <p class="font-bold text-lg">${player.name}</p>
+                    <p class="text-sm text-indigo-300">${player.profile.title}</p>
+                `;
+                 if (!myVote) {
+                    card.onclick = () => castCeoVote(player.id);
+                }
+                ceoOptionsContainer.appendChild(card);
+            });
+            
+            const waitingFor = Object.values(teamData.players).filter(p => !teamData.ceoElection.votes[p.id]).map(p => p.name);
+            if (waitingFor.length > 0) {
+                document.getElementById('ceo-vote-status').innerHTML = `<p class="text-lg">Aguardando votos de: <span>${waitingFor.join(', ')}</span></p>`;
+                document.getElementById('ceo-vote-status').classList.remove('hidden');
+            } else {
+                 document.getElementById('ceo-vote-status').classList.add('hidden');
+                 if (currentUser.uid === teamData.creatorId) {
+                    processCeoVote(teamData);
+                 }
+            }
+        }
+        
+        async function castCeoVote(playerId) {
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                [`ceoElection.votes.${currentUser.uid}`]: playerId
+            });
+        }
+        
+        async function processCeoVote(teamData) {
+            const votes = Object.values(teamData.ceoElection.votes);
+            const voteCounts = votes.reduce((acc, vote) => {
+                acc[vote] = (acc[vote] || 0) + 1;
+                return acc;
+            }, {});
+
+            let maxVotes = 0;
+            let electedId = null;
+            let hasMajority = false;
+            const totalPlayers = Object.keys(teamData.players).length;
+
+            for (const playerId in voteCounts) {
+                if (voteCounts[playerId] > maxVotes) {
+                    maxVotes = voteCounts[playerId];
+                    electedId = playerId;
+                }
+            }
+
+            if (maxVotes > totalPlayers / 2) {
+                hasMajority = true;
+            }
+
+            const resultContainer = document.getElementById('ceo-vote-result');
+            resultContainer.classList.remove('hidden');
+
+            if (hasMajority) {
+                const electedCEO = teamData.players[electedId];
+                
+                const uniqueVotes = new Set(votes);
+                let divergenceScore = 0;
+                if (uniqueVotes.size === 1) divergenceScore = 200;
+                else if (uniqueVotes.size === 2) divergenceScore = 100;
+                else if (uniqueVotes.size === 3) divergenceScore = 50;
+                
+                const segment = companySegments[teamData.chosenSegment];
+                let profileFitScore = 0;
+                if (segment.idealProfiles.includes(electedCEO.profileKey)) {
+                    profileFitScore = 150;
+                } else if (electedCEO.profileKey === 'E' || electedCEO.profileKey === 'C') {
+                    profileFitScore = 75;
+                }
+                
+                const totalScore = divergenceScore + profileFitScore;
+
+                resultContainer.innerHTML = `<p class="text-xl">CEO eleito: <span class="font-bold text-indigo-400">${electedCEO.name}</span>! Avançando...</p>`;
+                
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'ceo_satisfaction',
+                        ceoId: electedId,
+                        roles: { [electedId]: 'CEO' },
+                        score: teamData.score + totalScore,
+                        ceoSatisfaction: { ratings: {} }
+                    });
+                }, 4000);
+                
+            } else {
+                const attempt = teamData.ceoElection.attempt;
+                const pointsLost = attempt * 75;
+                resultContainer.innerHTML = `<p class="text-xl text-red-400">Ninguém obteve a maioria! Nova eleição. A equipe perdeu ${pointsLost} pontos.</p>`;
+
+                setTimeout(async () => {
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        'ceoElection.votes': {},
+                        'ceoElection.attempt': attempt + 1,
+                        score: teamData.score - pointsLost,
+                        scoreLosses: [...teamData.scoreLosses, { stage: 'Eleição de CEO', reason: `A ${attempt}ª nova votação foi necessária.`}]
+                    });
+                }, 4000);
+            }
+        }
+        
+        function renderCeoSatisfaction(teamData) {
+            showScreen('ceo-satisfaction-screen');
+            document.getElementById('elected-ceo-name').textContent = teamData.players[teamData.ceoId].name;
+            
+            const myRating = teamData.ceoSatisfaction.ratings[currentUser.uid];
+            const inputContainer = document.getElementById('ceo-satisfaction-input-container');
+            const waitingContainer = document.getElementById('ceo-satisfaction-waiting');
+
+            if (currentUser.uid === teamData.ceoId) {
+                inputContainer.innerHTML = `<p class="text-lg">Você é o CEO. Aguarde a avaliação da sua equipe.</p>`;
+                const allRated = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId).every(pId => teamData.ceoSatisfaction.ratings[pId]);
+                 if(allRated) {
+                     const ratings = Object.values(teamData.ceoSatisfaction.ratings);
+                     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                     inputContainer.innerHTML += `<p class="text-2xl mt-4">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
+                 }
+            } else {
+                 if (myRating) {
+                     inputContainer.innerHTML = '';
+                     inputContainer.classList.add('hidden');
+                     waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
+                     waitingContainer.classList.remove('hidden');
+                 } else {
+                    inputContainer.classList.remove('hidden');
+                    waitingContainer.classList.add('hidden');
+                    inputContainer.innerHTML = `<p class="mb-4">Qual seu nível de satisfação?</p>
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="submitSatisfaction('ceo', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                            <button onclick="submitSatisfaction('ceo', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                            <button onclick="submitSatisfaction('ceo', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                            <button onclick="submitSatisfaction('ceo', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                            <button onclick="submitSatisfaction('ceo', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                        </div>`;
+                 }
+            }
+
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+            const allMembersRated = members.every(pId => teamData.ceoSatisfaction.ratings[pId]);
+            
+            if (allMembersRated && currentUser.uid === teamData.creatorId) {
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'role_assignment' });
+                }, 5000);
+            }
+        }
+        
+        window.submitSatisfaction = async (type, rating) => {
+            const key = type === 'ceo' ? 'ceoSatisfaction' : (type === 'role' ? 'roleSatisfaction' : 'finalSatisfaction');
+            await updateDoc(doc(db, 'teams', currentTeamId), {
+                [`${key}.ratings.${currentUser.uid}`]: rating
+            });
+        }
+        
+        function renderRoleAssignment(teamData) {
+            showScreen('role-assignment-screen');
+            const ceoView = document.getElementById('role-assignment-ceo-view');
+            const memberView = document.getElementById('role-assignment-member-view');
+            
+            if (currentUser.uid === teamData.ceoId) {
+                ceoView.classList.remove('hidden');
+                memberView.classList.add('hidden');
+                
+                const assignmentList = document.createElement('div');
+                assignmentList.className = 'space-y-4';
+                ceoView.innerHTML = '';
+                ceoView.appendChild(assignmentList);
+
+                const membersToAssign = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
+                const availableRoles = Object.keys(directorRoles).slice(0, membersToAssign.length);
+
+                membersToAssign.forEach(player => {
+                    const el = document.createElement('div');
+                    el.className = 'grid grid-cols-3 gap-4 items-center bg-gray-800 p-3 rounded-lg';
+                    el.innerHTML = `
+                        <div class="col-span-1">
+                            <p class="font-semibold">${player.name}</p>
+                            <p class="text-sm text-indigo-300">${player.profile.title}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <select id="role-select-${player.id}" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                                <option value="">Selecione um cargo...</option>
+                                ${availableRoles.map(roleKey => `<option value="${roleKey}">${directorRoles[roleKey].title}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                    assignmentList.appendChild(el);
+                });
+                
+                const confirmButton = document.createElement('button');
+                confirmButton.id = 'confirm-roles-button';
+                confirmButton.className = 'mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition';
+                confirmButton.textContent = 'Confirmar Diretoria';
+                ceoView.appendChild(confirmButton);
+
+                confirmButton.onclick = async () => {
+                    const assignments = {};
+                    let allAssigned = true;
+                    const usedRoles = new Set();
+
+                    membersToAssign.forEach(player => {
+                        const select = document.getElementById(`role-select-${player.id}`);
+                        if (select.value) {
+                            assignments[player.id] = select.value;
+                            usedRoles.add(select.value);
+                        } else { allAssigned = false; }
+                    });
+
+                    if (!allAssigned) return alert("Você deve atribuir um cargo para cada membro.");
+                    if (usedRoles.size !== membersToAssign.length) return alert("Cada membro deve receber um cargo diferente.");
+
+                    let assignmentScore = 0;
+                    for(const playerId in assignments) {
+                        const roleKey = assignments[playerId];
+                        const playerProfile = teamData.players[playerId].profileKey;
+                        if (directorRoles[roleKey].idealProfiles.includes(playerProfile)) {
+                            assignmentScore += 100;
+                        } else {
+                            assignmentScore += 25;
+                        }
+                    }
+                    
+                    await updateDoc(doc(db, 'teams', currentTeamId), {
+                        gameStage: 'role_satisfaction',
+                        roles: { ...teamData.roles, ...assignments },
+                        score: teamData.score + assignmentScore,
+                        roleSatisfaction: { ratings: {} }
+                    });
+                };
+
+            } else {
+                ceoView.classList.add('hidden');
+                memberView.classList.remove('hidden');
+                memberView.innerHTML = `<p class="text-xl mb-4">Aguardando o CEO definir os cargos da diretoria...</p><div class="animate-pulse text-gray-400">Aguardando...</div>`;
+            }
+        }
+        
+        function renderRoleSatisfaction(teamData) {
+            showScreen('role-satisfaction-screen');
+            const myRoleKey = teamData.roles[currentUser.uid];
+            if (!myRoleKey) return; // Aguardando atribuição
+            const myRole = directorRoles[myRoleKey];
+            
+            document.getElementById('my-assigned-role').innerHTML = `<p>Seu cargo: <span class="font-bold text-2xl text-indigo-400">${myRole.title}</span></p><p class="text-sm text-gray-400">${myRole.description}</p>`;
+            
+            const assignedRolesList = document.getElementById('assigned-roles-list');
+            assignedRolesList.innerHTML = '';
+            for (const playerId in teamData.roles) {
+                const roleKey = teamData.roles[playerId];
+                const player = teamData.players[playerId];
+                if (!player || !directorRoles[roleKey]) continue;
+                const el = document.createElement('p');
+                el.innerHTML = `<span class="font-semibold">${player.name}:</span> <span class="text-gray-300">${directorRoles[roleKey].title}</span>`;
+                assignedRolesList.appendChild(el);
+            }
+
+            const myRating = teamData.roleSatisfaction.ratings[currentUser.uid];
+            const inputContainer = document.getElementById('role-satisfaction-input-container');
+            const waitingContainer = document.getElementById('role-satisfaction-waiting');
+            
+            if (currentUser.uid === teamData.ceoId) {
+                inputContainer.innerHTML = `<p class="text-center">Aguarde a avaliação da equipe.</p>`;
+                const allRated = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId).every(pId => teamData.roleSatisfaction.ratings[pId]);
+                 if(allRated) {
+                     const ratings = Object.values(teamData.roleSatisfaction.ratings);
+                     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                     inputContainer.innerHTML += `<p class="text-xl mt-2">Satisfação Média: <span class="font-bold text-pink-400">${avg.toFixed(1)}</span></p>`;
+                 }
+            } else {
+                 if (myRating) {
+                     inputContainer.innerHTML = '';
+                     inputContainer.classList.add('hidden');
+                     waitingContainer.innerHTML = `<p class="text-lg">Aguardando os outros membros avaliarem...</p>`;
+                     waitingContainer.classList.remove('hidden');
+                 } else {
+                    inputContainer.classList.remove('hidden');
+                    waitingContainer.classList.add('hidden');
+                    inputContainer.innerHTML = `<p class="text-center mb-4">Qual seu nível de satisfação com seu cargo?</p>
+                        <div class="flex justify-center space-x-2">
+                           <button onclick="submitSatisfaction('role', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                           <button onclick="submitSatisfaction('role', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                           <button onclick="submitSatisfaction('role', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                           <button onclick="submitSatisfaction('role', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                           <button onclick="submitSatisfaction('role', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                        </div>`;
+                 }
+            }
+            
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+            const allMembersRated = members.every(pId => teamData.roleSatisfaction.ratings[pId]);
+            
+            if (allMembersRated && currentUser.uid === teamData.creatorId) {
+                const budget = Object.keys(teamData.players).length * 4000;
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), { 
+                         gameStage: 'hiring',
+                         hiring: { requests: {} },
+                         budget: budget,
+                     });
+                }, 5000);
+            }
+        }
+        
+        function renderHiring(teamData) {
+            showScreen('hiring-screen');
+            const directorView = document.getElementById('hiring-director-view');
+            const ceoView = document.getElementById('hiring-ceo-view');
+
+            if (currentUser.uid === teamData.ceoId) {
+                directorView.innerHTML = '';
+                directorView.style.display = 'none';
+                ceoView.classList.remove('hidden');
+                renderHiringCeoView(teamData);
+            } else {
+                directorView.style.display = 'block';
+                ceoView.innerHTML = '';
+                ceoView.classList.add('hidden');
+                const myRequests = teamData.hiring.requests[currentUser.uid];
+                
+                if (myRequests) {
+                    directorView.innerHTML = `<div class="text-center"><p class="text-lg">Solicitações enviadas! Aguardando os demais diretores e a decisão final do CEO...</p></div>`;
+                } else {
+                    renderHiringDirectorView(teamData);
+                }
+            }
+        }
+        
+        function renderHiringDirectorView(teamData) {
+            const directorView = document.getElementById('hiring-director-view');
+            const myRoleKey = teamData.roles[currentUser.uid];
+            directorView.innerHTML = `
+                <div class="bg-gray-700 p-6 rounded-lg max-w-4xl mx-auto">
+                    <h3 class="text-xl font-semibold mb-2">Sua Área: <span id="director-role-title" class="text-indigo-400">${directorRoles[myRoleKey].title}</span></h3>
+                    <p class="text-gray-400 mb-4" id="director-needs-description">${directorNeeds[myRoleKey].desc}</p>
+                    <div id="hiring-positions-list" class="space-y-2 max-h-80 overflow-y-auto pr-2">
+                        ${allPossibleHires.map(hire => `
+                            <div class="grid grid-cols-3 gap-2 items-center">
+                                <label for="hire-${hire.id}" class="col-span-2">
+                                    ${hire.name} <span class="text-xs text-gray-400">(${hire.area})</span>
+                                </label>
+                                <input type="number" id="hire-${hire.id}" min="0" max="5" placeholder="0" 
+                                       class="form-input bg-gray-800 border-gray-600 text-white rounded w-full text-center">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button id="submit-hiring-requests-button" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">Enviar Solicitações</button>
+                </div>`;
+
+            document.getElementById('submit-hiring-requests-button').onclick = async () => {
+                const selectedHires = {};
+                directorView.querySelectorAll('input[type="number"]').forEach(input => {
+                    const quantity = parseInt(input.value, 10);
+                    if (quantity > 0) {
+                        const hireId = input.id.replace('hire-', '');
+                        selectedHires[hireId] = quantity;
+                    }
+                });
+                
+                const essentialHires = directorNeeds[myRoleKey].essential;
+                let score = 0;
+                essentialHires.forEach(essential => {
+                    if (selectedHires[essential] && selectedHires[essential] > 0) {
+                        score += 100;
+                    }
+                });
+                
+                await updateDoc(doc(db, 'teams', currentTeamId), {
+                    [`hiring.requests.${currentUser.uid}`]: selectedHires,
+                    [`players.${currentUser.uid}.hiringScore`]: score
+                });
+                
+                const freshTeamData = (await getDoc(doc(db, 'teams', currentTeamId))).data();
+                const allDirectors = Object.keys(freshTeamData.players).filter(pId => pId !== freshTeamData.ceoId);
+                const allDirectorsRequested = allDirectors.every(pId => freshTeamData.hiring.requests[pId]);
+
+                if(allDirectorsRequested && !freshTeamData.hiring.directorScoresTallied) {
+                    let totalHiringScore = 0;
+                    Object.values(freshTeamData.players).forEach(p => {
+                        if (p.hiringScore) totalHiringScore += p.hiringScore;
+                    });
+                     await updateDoc(doc(db, 'teams', currentTeamId), {
+                         score: freshTeamData.score + totalHiringScore,
+                         'hiring.directorScoresTallied': true
+                     });
+                }
+            };
+        }
+        
+        function renderHiringCeoView(teamData) {
+            const ceoView = document.getElementById('hiring-ceo-view');
+            const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
+            const allDirectorsRequested = directors.every(p => teamData.hiring.requests && teamData.hiring.requests[p.id]);
+
+            const ceoViewContainer = ceoView.querySelector('.bg-gray-700');
+            if (!ceoViewContainer) return;
+
+            if (!allDirectorsRequested) {
+                 ceoViewContainer.innerHTML = `<p class="text-center text-xl">Aguardando as solicitações de contratação de todos os diretores...</p>`;
+                 return;
+            }
+            
+            ceoViewContainer.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Decisão Final de Contratação</h3>
+                    <div class="text-right">
+                        <p class="text-gray-400 text-sm">Orçamento Disponível</p>
+                        <p class="text-2xl font-bold text-green-400" id="budget-display">R$ ${teamData.budget.toFixed(2)}</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-6">Abaixo estão as sugestões dos diretores. Você tem total liberdade para contratar quem julgar necessário, respeitando o orçamento.</p>
+                <h4 class="text-lg font-bold mb-3 text-indigo-300">Sugestões da Diretoria</h4>
+                <div id="director-suggestions-list" class="space-y-4 mb-6 max-h-48 overflow-y-auto pr-2"></div>
+                <h4 class="text-lg font-bold mb-3 text-indigo-300">Painel de Contratação do CEO</h4>
+                <div id="ceo-hiring-panel" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+                <div class="mt-6 pt-4 border-t border-gray-600 flex justify-between items-center">
+                    <p>Custo Total: <span id="total-cost-display" class="font-bold">R$ 0,00</span></p>
+                    <button id="finalize-hiring-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-500 disabled:cursor-not-allowed">Finalizar Contratações</button>
+                </div>
+            `;
+
+            const suggestionsList = document.getElementById('director-suggestions-list');
+            suggestionsList.innerHTML = '';
+            directors.forEach(director => {
+                const directorRoleKey = teamData.roles[director.id];
+                const requests = teamData.hiring.requests[director.id] || {};
+                if (Object.keys(requests).length === 0) return;
+                let directorSection = `<div class="bg-gray-800 p-3 rounded-lg"><p class="font-semibold">${director.name} (${directorRoles[directorRoleKey].title}) sugeriu:</p><ul class="list-disc list-inside text-sm text-gray-300 mt-1">`;
+                for (const hireId in requests) {
+                     const quantity = requests[hireId];
+                     const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                     directorSection += `<li>${quantity}x ${hireInfo.name}</li>`;
+                }
+                directorSection += `</ul></div>`;
+                suggestionsList.innerHTML += directorSection;
+            });
+            if (suggestionsList.innerHTML === '') { suggestionsList.innerHTML = '<p class="text-gray-400 text-sm">Nenhuma sugestão foi feita.</p>'; }
+
+            document.getElementById('ceo-hiring-panel').innerHTML = allPossibleHires.map(hire => `
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label for="ceo-hire-${hire.id}" class="col-span-2">${hire.name} <span class="text-xs text-gray-400">(R$ ${hireCosts[hire.id].toFixed(2)})</span></label>
+                    <input type="number" id="ceo-hire-${hire.id}" data-hire-id="${hire.id}" min="0" max="5" placeholder="0" class="form-input ceo-hire-input bg-gray-900 border-gray-600 text-white rounded w-full text-center">
+                </div>`).join('');
+            
+            const numberInputs = document.querySelectorAll('.ceo-hire-input');
+            const totalCostDisplay = document.getElementById('total-cost-display');
+            const finalizeButton = document.getElementById('finalize-hiring-button');
+            
+            const updateCost = () => {
+                let totalCost = 0;
+                numberInputs.forEach(input => {
+                    const quantity = parseInt(input.value, 10) || 0;
+                    if (quantity > 0) totalCost += hireCosts[input.dataset.hireId] * quantity;
+                });
+                totalCostDisplay.textContent = `R$ ${totalCost.toFixed(2)}`;
+                totalCostDisplay.classList.toggle('text-red-500', totalCost > teamData.budget);
+                finalizeButton.disabled = totalCost > teamData.budget;
+            };
+            
+            numberInputs.forEach(input => input.addEventListener('input', updateCost));
+            updateCost();
+            
+            finalizeButton.onclick = async () => {
+                const approvedHires = [];
+                numberInputs.forEach(input => {
+                    const quantity = parseInt(input.value, 10) || 0;
+                    if (quantity > 0) approvedHires.push({ id: input.dataset.hireId, quantity: quantity });
+                });
+                
+                let score = 0;
+                const uniqueEssential = [...new Set(Object.values(directorNeeds).flatMap(n => n.essential))];
+                uniqueEssential.forEach(essential => {
+                    if (approvedHires.some(h => h.id === essential)) score += 120;
+                });
+                
+                await updateDoc(doc(db, 'teams', currentTeamId), {
+                    gameStage: 'org_chart',
+                    finalHires: approvedHires,
+                    score: teamData.score + score,
+                    finalSatisfaction: { ratings: {} }
+                });
+            }
+        }
+        
+        function renderOrgChart(teamData) {
+            showScreen('org-chart-screen');
+            const container = document.getElementById('org-chart-container');
+            const ceo = teamData.players[teamData.ceoId];
+            container.innerHTML = `<div class="mb-6"><div class="inline-block bg-indigo-600 p-3 rounded-lg shadow-lg"><p class="font-bold">${ceo.name}</p><p class="text-sm text-indigo-200">CEO</p></div></div>`;
+            
+            let directorsHtml = '<div class="flex justify-center gap-4 flex-wrap">';
+            const directors = Object.values(teamData.players).filter(p => p.id !== teamData.ceoId);
+            directors.forEach(dir => {
+                 const roleKey = teamData.roles[dir.id];
+                 directorsHtml += `<div class="bg-pink-600 p-3 rounded-lg shadow-md"><p class="font-semibold">${dir.name}</p><p class="text-sm text-pink-200">${directorRoles[roleKey].title}</p></div>`;
+            });
+            directorsHtml += '</div>';
+            container.innerHTML += directorsHtml;
+            
+            if (teamData.finalHires && teamData.finalHires.length > 0) {
+                 container.innerHTML += '<div class="mt-6 pt-4 border-t border-gray-600"><h4 class="text-lg font-semibold mb-4">Equipe Contratada</h4></div>';
+                 let hiresHtml = '<div class="flex justify-center gap-2 flex-wrap">';
+                 teamData.finalHires.forEach(hire => {
+                     const hireInfo = allPossibleHires.find(h => h.id === hire.id);
+                     hiresHtml += `<div class="bg-gray-600 text-sm py-1 px-3 rounded-full">${hireInfo.name} ${hire.quantity > 1 ? `(x${hire.quantity})` : ''}</div>`;
+                 });
+                 hiresHtml += '</div>';
+                 container.innerHTML += hiresHtml;
+            }
+            
+            const comparisonContainer = document.getElementById('hiring-comparison-container');
+            if (currentUser.uid !== teamData.ceoId) {
+                comparisonContainer.classList.remove('hidden');
+                let comparisonHtml = `<h3 class="text-xl font-semibold mb-4 text-center">Comparativo: Suas Sugestões vs. Decisões do CEO</h3>`;
+                const mySuggestions = teamData.hiring.requests[currentUser.uid] || {};
+                const ceoDecisions = teamData.finalHires || [];
+                const allComparedHiresIds = new Set([...Object.keys(mySuggestions), ...ceoDecisions.map(d => d.id)]);
+                if (allComparedHiresIds.size === 0) {
+                     comparisonHtml += `<p class="text-center text-gray-400">Você não fez sugestões e o CEO não contratou.</p>`;
+                } else {
+                    let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="border-b border-gray-600"><th class="p-2">Cargo</th><th class="p-2 text-center">Sua Sugestão</th><th class="p-2 text-center">Decisão do CEO</th></tr></thead><tbody>`;
+                    allComparedHiresIds.forEach(hireId => {
+                        const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                        const suggestedQty = mySuggestions[hireId] || 0;
+                        const approvedQty = ceoDecisions.find(d => d.id === hireId)?.quantity || 0;
+                        let rowClass = 'border-b border-gray-700';
+                        if (suggestedQty > 0 && approvedQty === 0) rowClass += ' bg-red-900/40 text-red-300';
+                        else if (suggestedQty === 0 && approvedQty > 0) rowClass += ' bg-green-900/40 text-green-300';
+                        else if (suggestedQty > 0 && approvedQty > 0) rowClass += ' bg-blue-900/40';
+                        tableHtml += `<tr class="${rowClass}"><td class="p-2 font-semibold">${hireInfo.name}</td><td class="p-2 text-center">${suggestedQty}</td><td class="p-2 text-center font-bold">${approvedQty}</td></tr>`;
+                    });
+                    tableHtml += `</tbody></table></div>`;
+                    comparisonHtml += tableHtml;
+                }
+                comparisonContainer.innerHTML = comparisonHtml;
+            } else {
+                comparisonContainer.classList.add('hidden');
+                comparisonContainer.innerHTML = '';
+            }
+            
+            const finalSatisfactionContainer = document.getElementById('final-satisfaction-container');
+            if (currentUser.uid === teamData.ceoId) {
+                finalSatisfactionContainer.innerHTML = `<p class="text-center">Aguarde a avaliação final da equipe.</p>`;
+            } else {
+                const myRating = teamData.finalSatisfaction.ratings[currentUser.uid];
+                 if (myRating) {
+                     finalSatisfactionContainer.innerHTML = `<div id="final-satisfaction-waiting" class="text-center"><p class="text-lg">Aguardando os outros membros avaliarem...</p></div>`;
+                 } else {
+                     finalSatisfactionContainer.innerHTML = `<div id="final-satisfaction-input-container">
+                        <p class="text-center mb-4">Qual seu nível de satisfação com as contratações?</p>
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="submitSatisfaction('final', 1)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-red-500 transition">1</button>
+                            <button onclick="submitSatisfaction('final', 2)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-orange-500 transition">2</button>
+                            <button onclick="submitSatisfaction('final', 3)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-yellow-500 transition">3</button>
+                            <button onclick="submitSatisfaction('final', 4)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-lime-500 transition">4</button>
+                            <button onclick="submitSatisfaction('final', 5)" class="satisfaction-btn w-12 h-12 rounded-full bg-gray-600 hover:bg-green-500 transition">5</button>
+                        </div>
+                    </div>`;
+                 }
+            }
+
+            const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
+            const allMembersRated = members.every(pId => teamData.finalSatisfaction.ratings[pId]);
+            
+            if (allMembersRated && currentUser.uid === teamData.creatorId) {
+                setTimeout(async () => {
+                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'final_report' });
+                }, 3000);
+            }
+        }
+
         // --- FUNÇÕES DE RENDERIZAÇÃO (Ato 2) ---
 
         function renderMvpPlanning(teamData) {
@@ -561,10 +1465,7 @@
             ctoView.classList.add('hidden');
             ceoView.classList.add('hidden');
             memberView.classList.add('hidden');
-
-            const mvpData = teamData.act2_mvp;
             
-            // Lógica de visualização por cargo
             if (myRole === 'CPO') {
                 cpoView.classList.remove('hidden');
                 renderMvpCpoView(teamData);
@@ -668,9 +1569,9 @@
             
             if (teamData.act2_mvp.ceoDecision) {
                  view.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-center">Plano Aprovado!</h3><p class="text-center">A equipe já pode ver o plano de voo. Preparando a próxima etapa...</p>`;
-                 setTimeout(async () => {
-                     await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' });
-                 }, 4000);
+                 if (currentUser.uid === teamData.creatorId) {
+                    setTimeout(async () => { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' }); }, 4000);
+                 }
                  return;
             }
 
@@ -703,16 +1604,11 @@
                 const expenses = chosenArch.cost;
                 const newBudget = teamBudget - expenses;
 
-                // Scoring
                 let score = chosenArch.points;
                 let featureImpactScore = 0;
-                cpoChoice.forEach(fId => {
-                    const feature = mvpFeatures.find(f => f.id === fId);
-                    featureImpactScore += feature.impact * 10;
-                });
+                cpoChoice.forEach(fId => { featureImpactScore += mvpFeatures.find(f => f.id === fId).impact * 10; });
                 score += featureImpactScore;
                 
-                // Atualizar métricas
                 const metrics = teamData.act2_metrics;
                 metrics.quality += chosenArch.qualityImpact;
                 metrics.reputation += chosenArch.reputationImpact;
@@ -747,12 +1643,9 @@
                     </div>
                 </div>
                 <p class="mt-6 text-center">Preparando para a fase de desenvolvimento...</p>`;
-                 setTimeout(async () => {
-                     // Apenas o criador avança, para não haver escritas múltiplas
-                     if(currentUser.uid === teamData.creatorId) {
-                        await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' });
-                     }
-                 }, 4000);
+                 if(currentUser.uid === teamData.creatorId) {
+                    setTimeout(async () => { await updateDoc(doc(db, 'teams', currentTeamId), { gameStage: 'act2_crisis' }); }, 4000);
+                 }
             } else {
                  view.innerHTML = `<p class="text-center text-xl">Aguardando as definições de Produto, Tecnologia e a aprovação final do CEO...</p>`;
             }
@@ -830,14 +1723,13 @@
                         'act2_metrics.quality': teamData.act2_metrics.quality + qualityImpact
                     });
                      
-                    // Apenas o criador avança para o próximo evento para evitar concorrência
                     setTimeout(async () => {
                         if(currentUser.uid === teamData.creatorId) {
                             await updateDoc(doc(db, 'teams', currentTeamId), {
                                 'act2_crisis.currentIndex': crisisIndex + 1
                             });
                         }
-                    }, 4000); // tempo para todos verem o resultado
+                    }, 4000);
                  };
             }
         }
@@ -853,11 +1745,9 @@
             investmentView.classList.add('hidden');
             memberView.classList.add('hidden');
             
-            const cmoId = Object.keys(teamData.roles).find(k => teamData.roles[k] === 'CMO');
             const cmoDecision = teamData.act2_launch && teamData.act2_launch.marketingBudget;
 
             if (!cmoDecision) {
-                // Fase de decisão do CMO
                 if (myRole === 'CMO') {
                     cmoView.classList.remove('hidden');
                     renderLaunchCmoView(teamData);
@@ -866,7 +1756,6 @@
                     memberView.innerHTML = `<p class="text-center text-xl">Aguardando o Diretor(a) de Marketing alocar o orçamento de lançamento...</p>`;
                 }
             } else {
-                // Fase de votação do investimento
                 investmentView.classList.remove('hidden');
                 renderLaunchInvestmentView(teamData);
             }
@@ -914,20 +1803,21 @@
                 
                 if (total > budget) {
                     const overflow = total - budget;
-                    const lastChanged = this;
-                    lastChanged.value = parseFloat(lastChanged.value) - overflow;
-                    total = budget;
+                    sliders.forEach(s => { if (s !== this) s.value = Math.max(0, s.value - overflow/2) });
+                    total = sliders.reduce((acc, s) => acc + parseFloat(s.value), 0);
                 }
                 
                 sliders.forEach((slider, i) => displays[i].textContent = `R$ ${parseFloat(slider.value).toFixed(2)}`);
                 totalAllocatedDisp.textContent = `R$ ${total.toFixed(2)}`;
-                totalAllocatedDisp.classList.toggle('text-red-500', total < budget);
-                submitBtn.disabled = total < budget;
+                totalAllocatedDisp.classList.toggle('text-red-500', total > budget);
+                submitBtn.disabled = total > budget;
             }
 
             sliders.forEach(slider => slider.addEventListener('input', updateAllocation));
             
             submitBtn.onclick = async () => {
+                let total = sliders.reduce((acc, s) => acc + parseFloat(s.value), 0);
+                if (total > budget) return alert("Orçamento excedido!");
                 await updateDoc(doc(db, 'teams', currentTeamId), {
                     'act2_launch.marketingBudget': {
                         content: parseFloat(sliders[0].value),
@@ -946,11 +1836,11 @@
             const investmentAmount = teamData.budget * 2;
             const equity = 20;
 
-            if (myVote) {
+            if (myVote !== undefined) {
                 view.innerHTML = `<p class="text-center text-xl">Seu voto foi registrado. Aguardando o resto da equipe...</p>`;
                 
                 const allPlayers = Object.values(teamData.players);
-                const allVoted = allPlayers.every(p => investmentVote.votes[p.id]);
+                const allVoted = allPlayers.every(p => investmentVote.votes[p.id] !== undefined);
 
                 if (allVoted && currentUser.uid === teamData.creatorId) {
                     processInvestmentVote(teamData);
@@ -981,7 +1871,7 @@
         async function processInvestmentVote(teamData) {
             const votes = Object.values(teamData.act2_launch.investmentVote.votes);
             const yesVotes = votes.filter(v => v === true).length;
-            const decision = yesVotes > votes.length / 2; // Majority wins
+            const decision = yesVotes > votes.length / 2;
             
             const marketingBudget = teamData.act2_launch.marketingBudget;
             let revenue = (marketingBudget.content * 0.5) + (marketingBudget.paid * 1.5) + (marketingBudget.partners * 2.0);
@@ -990,24 +1880,26 @@
             const consensus = new Set(votes).size === 1;
             if (consensus) score += 150;
 
-            let finalBudget = teamData.budget - (marketingBudget.content + marketingBudget.paid + marketingBudget.partners);
+            let marketingSpend = marketingBudget.content + marketingBudget.paid + marketingBudget.partners;
+            let finalBudget = teamData.budget - marketingSpend;
             let reputationImpact = consensus ? 10 : -10;
 
-            if (decision) { // Aceitou
+            if (decision) {
                 finalBudget += teamData.budget * 2;
                 score += 100;
             }
 
-            const profit = revenue - teamData.act2_financials.expenses;
+            const profit = revenue - (teamData.act2_financials.expenses + marketingSpend);
             
             await updateDoc(doc(db, 'teams', currentTeamId), {
                 gameStage: 'act2_report',
                 budget: finalBudget,
                 score: teamData.score + score,
                 'act2_metrics.reputation': teamData.act2_metrics.reputation + reputationImpact,
-                'act2_metrics.satisfaction': teamData.act2_metrics.satisfaction + (revenue / 1000), // revenue improves satisfaction
+                'act2_metrics.satisfaction': teamData.act2_metrics.satisfaction + (revenue / 1000),
                 'act2_financials.revenue': revenue,
-                'act2_financials.profit': profit
+                'act2_financials.profit': profit,
+                'act2_financials.expenses': teamData.act2_financials.expenses + marketingSpend
             });
         }
         
@@ -1045,10 +1937,14 @@
                 });
                 teams.sort((a, b) => b.score - a.score);
                 let rankingHtml = '<ol class="space-y-2">';
-                teams.forEach((team, index) => {
-                    const isMyTeam = team.id === currentTeamId;
-                    rankingHtml += `<li class="flex justify-between items-center p-2 rounded ${isMyTeam ? 'bg-indigo-600' : 'bg-gray-800'}"><span class="font-semibold">${index + 1}. ${team.name}</span><span class="font-bold text-lg">${team.score} pts</span></li>`;
-                });
+                if (teams.length === 0) {
+                    rankingHtml += '<li class="text-center text-gray-500">Nenhuma equipe finalizou ainda.</li>';
+                } else {
+                    teams.forEach((team, index) => {
+                        const isMyTeam = team.id === currentTeamId;
+                        rankingHtml += `<li class="flex justify-between items-center p-2 rounded ${isMyTeam ? 'bg-indigo-600' : 'bg-gray-800'}"><span class="font-semibold">${index + 1}. ${team.name}</span><span class="font-bold text-lg">${team.score} pts</span></li>`;
+                    });
+                }
                 rankingHtml += '</ol>';
                 rankingContainer.innerHTML = rankingHtml;
             } catch (error) {
