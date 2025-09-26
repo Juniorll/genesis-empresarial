@@ -300,6 +300,11 @@
                     <!-- O organograma será renderizado aqui -->
                 </div>
             </div>
+            
+            <div id="hiring-comparison-container" class="max-w-4xl mx-auto bg-gray-800 border border-gray-700 p-6 rounded-lg mt-8 hidden">
+                <!-- Conteúdo da comparação será injetado aqui pelo JS -->
+            </div>
+
              <div id="final-satisfaction-container" class="max-w-lg mx-auto bg-gray-700 p-6 rounded-lg mt-8">
                 <div id="final-satisfaction-input-container">
                     <p class="text-center mb-4">Qual seu nível de satisfação com as contratações e a estrutura final?</p>
@@ -1614,16 +1619,72 @@
                  container.innerHTML += hiresHtml;
             }
             
-             // Lógica de avaliação
-             const me = teamData.players[currentUser.uid];
-             const myRating = teamData.finalSatisfaction.ratings[currentUser.uid];
+            // Lógica de Comparativo para Diretores
+            const comparisonContainer = document.getElementById('hiring-comparison-container');
+            if (currentUser.uid !== teamData.ceoId) {
+                comparisonContainer.classList.remove('hidden');
+                
+                let comparisonHtml = `<h3 class="text-xl font-semibold mb-4 text-center">Comparativo: Suas Sugestões vs. Decisões do CEO</h3>`;
+                const mySuggestions = teamData.hiring.requests[currentUser.uid] || {};
+                const ceoDecisions = teamData.finalHires || [];
 
-             const inputContainer = document.getElementById('final-satisfaction-input-container');
-             const waitingContainer = document.getElementById('final-satisfaction-waiting');
+                const allComparedHiresIds = new Set([...Object.keys(mySuggestions), ...ceoDecisions.map(d => d.id)]);
+                
+                if (allComparedHiresIds.size === 0) {
+                     comparisonHtml += `<p class="text-center text-gray-400">Você não fez sugestões e o CEO não realizou contratações.</p>`;
+                } else {
+                    let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b border-gray-600">
+                                                <th class="p-2">Cargo</th>
+                                                <th class="p-2 text-center">Sua Sugestão (Qtd.)</th>
+                                                <th class="p-2 text-center">Decisão do CEO (Qtd.)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
+
+                    allComparedHiresIds.forEach(hireId => {
+                        const hireInfo = allPossibleHires.find(h => h.id === hireId);
+                        const suggestedQty = mySuggestions[hireId] || 0;
+                        const approvedHire = ceoDecisions.find(d => d.id === hireId);
+                        const approvedQty = approvedHire ? approvedHire.quantity : 0;
+                        
+                        let rowClass = 'border-b border-gray-700'; // Default
+                        if (suggestedQty > 0 && approvedQty === 0) {
+                            rowClass += ' bg-red-900/40 text-red-300'; // Ignored
+                        } else if (suggestedQty === 0 && approvedQty > 0) {
+                             rowClass += ' bg-green-900/40 text-green-300'; // CEO Added
+                        } else if (suggestedQty > 0 && approvedQty > 0) {
+                             rowClass += ' bg-blue-900/40'; // Accepted
+                        }
+
+                        tableHtml += `<tr class="${rowClass}">
+                                        <td class="p-2 font-semibold">${hireInfo.name}</td>
+                                        <td class="p-2 text-center">${suggestedQty}</td>
+                                        <td class="p-2 text-center font-bold">${approvedQty}</td>
+                                      </tr>`;
+                    });
+
+                    tableHtml += `</tbody></table></div>`;
+                    comparisonHtml += tableHtml;
+                }
+                comparisonContainer.innerHTML = comparisonHtml;
+            } else {
+                comparisonContainer.classList.add('hidden');
+                comparisonContainer.innerHTML = '';
+            }
+
+            // Lógica de avaliação de satisfação (existente)
+            const me = teamData.players[currentUser.uid];
+            const myRating = teamData.finalSatisfaction.ratings[currentUser.uid];
+
+            const inputContainer = document.getElementById('final-satisfaction-input-container');
+            const waitingContainer = document.getElementById('final-satisfaction-waiting');
+            const finalSatisfactionContainer = document.getElementById('final-satisfaction-container');
             
-             if (currentUser.uid === teamData.ceoId) {
-                document.getElementById('final-satisfaction-container').innerHTML = `<p class="text-center">Aguarde a avaliação final da equipe.</p>`;
-             } else {
+            if (currentUser.uid === teamData.ceoId) {
+                finalSatisfactionContainer.innerHTML = `<p class="text-center">Aguarde a avaliação final da equipe.</p>`;
+            } else {
                  if (myRating) {
                      inputContainer.classList.add('hidden');
                      waitingContainer.classList.remove('hidden');
@@ -1631,7 +1692,7 @@
                      inputContainer.classList.remove('hidden');
                      waitingContainer.classList.add('hidden');
                  }
-             }
+            }
 
             // Checar se todos (exceto CEO) avaliaram
             const members = Object.keys(teamData.players).filter(pId => pId !== teamData.ceoId);
